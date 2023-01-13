@@ -18,15 +18,17 @@ package com.example.android.social.data
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.MainThread
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOf
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 interface ChatRepository {
-    fun getContacts(): LiveData<List<Contact>>
-    fun findContact(id: Long): LiveData<Contact?>
-    fun findMessages(id: Long): LiveData<List<Message>>
+    fun getContacts(): Flow<List<Contact>>
+    fun findContact(id: Long): Flow<Contact?>
+    fun findMessages(id: Long): Flow<List<Message>>
     fun sendMessage(id: Long, text: String, photoUri: Uri?, photoMimeType: String?)
     fun updateNotification(id: Long)
     fun activateChat(id: Long)
@@ -66,36 +68,22 @@ class DefaultChatRepository internal constructor(
     }
 
     @MainThread
-    override fun getContacts(): LiveData<List<Contact>> {
-        return MutableLiveData<List<Contact>>().apply {
-            postValue(Contact.CONTACTS)
-        }
+    override fun getContacts(): Flow<List<Contact>> {
+        return flowOf(Contact.CONTACTS)
     }
 
     @MainThread
-    override fun findContact(id: Long): LiveData<Contact?> {
-        return MutableLiveData<Contact>().apply {
-            postValue(Contact.CONTACTS.find { it.id == id })
-        }
+    override fun findContact(id: Long): Flow<Contact?> {
+        return flowOf(Contact.CONTACTS.find { it.id == id })
     }
 
     @MainThread
-    override fun findMessages(id: Long): LiveData<List<Message>> {
-        val chat = chats.getValue(id)
-        return object : LiveData<List<Message>>() {
-
-            private val listener = { messages: List<Message> ->
-                postValue(messages)
-            }
-
-            override fun onActive() {
-                value = chat.messages
-                chat.addListener(listener)
-            }
-
-            override fun onInactive() {
-                chat.removeListener(listener)
-            }
+    override fun findMessages(id: Long): Flow<List<Message>> {
+        return callbackFlow {
+            val listener: ChatThreadListener = { messages -> trySend(messages) }
+            val chat = chats.getValue(id)
+            chat.addListener(listener)
+            awaitClose { chat.removeListener { } }
         }
     }
 

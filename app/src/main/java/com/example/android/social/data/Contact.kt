@@ -37,14 +37,14 @@ abstract class Contact(
             object : Contact(4L, "Sheep", "sheep.jpg") {
                 override fun reply(text: String) = buildReply().apply {
                     this.text = "Look at me!"
-                    photo = "content://com.example.android.people/photo/sheep_full.jpg".toUri()
+                    photo = "content://com.example.android.social/photo/sheep_full.jpg".toUri()
                     photoMimeType = "image/jpeg"
                 }
             }
         )
     }
 
-    val iconUri = "content://com.example.android.people/icon/$id".toUri()
+    val iconUri = "content://com.example.android.social/icon/$id".toUri()
 
     val shortcutId = "contact_$id"
 
