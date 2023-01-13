@@ -17,20 +17,39 @@
 package com.example.android.social.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.android.social.ui.chat.Chat
 import com.example.android.social.ui.home.Home
 
 @Composable
 fun Main() {
     SocialTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+        val navController = rememberNavController()
+        NavHost(
+            navController = navController,
+            startDestination = "home"
         ) {
-            Home()
+            composable(
+                route = "home"
+            ) {
+                Home(
+                    modifier = Modifier.fillMaxSize(),
+                    onChatClicked = { chatId -> navController.navigate("chat/$chatId") }
+                )
+            }
+            composable(
+                route = "chat/{chatId}",
+                arguments = listOf(navArgument("chatId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
+                Chat(chatId = chatId)
+            }
         }
     }
 }

@@ -18,9 +18,11 @@ package com.example.android.social.ui.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,7 +49,10 @@ import com.example.android.social.ui.rememberIconPainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(modifier: Modifier = Modifier) {
+fun Home(
+    onChatClicked: (chatId: Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         modifier = modifier,
         topBar = { HomeAppBar() }
@@ -57,6 +62,7 @@ fun Home(modifier: Modifier = Modifier) {
         ChatList(
             contacts = contacts,
             contentPadding = innerPadding,
+            onChatClicked = onChatClicked,
             modifier = modifier
         )
     }
@@ -79,6 +85,7 @@ private fun HomeAppBar(
 fun ChatList(
     contacts: List<Contact>,
     contentPadding: PaddingValues,
+    onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -86,7 +93,10 @@ fun ChatList(
         contentPadding = contentPadding
     ) {
         items(items = contacts) { contact ->
-            ContactRow(contact = contact)
+            ContactRow(
+                contact = contact,
+                onClick = { onChatClicked(contact.id) }
+            )
         }
     }
 }
@@ -94,10 +104,14 @@ fun ChatList(
 @Composable
 fun ContactRow(
     contact: Contact,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.padding(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
