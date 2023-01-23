@@ -68,10 +68,10 @@ class NotificationHelper(private val context: Context) {
                     CHANNEL_NEW_MESSAGES,
                     context.getString(R.string.channel_new_messages),
                     // The importance must be IMPORTANCE_HIGH to show Bubbles.
-                    NotificationManager.IMPORTANCE_HIGH
+                    NotificationManager.IMPORTANCE_HIGH,
                 ).apply {
                     description = context.getString(R.string.channel_new_messages_description)
-                }
+                },
             )
         }
         updateShortcuts(null)
@@ -83,7 +83,7 @@ class NotificationHelper(private val context: Context) {
             val icon = IconCompat.createWithAdaptiveBitmap(
                 context.resources.assets.open(contact.icon).use { input ->
                     BitmapFactory.decodeStream(input)
-                }
+                },
             )
             // Create a dynamic shortcut for each of the contacts.
             // The same shortcut ID will be used when we show a bubble notification.
@@ -99,15 +99,15 @@ class NotificationHelper(private val context: Context) {
                         .setAction(Intent.ACTION_VIEW)
                         .setData(
                             Uri.parse(
-                                "https://android.example.com/chat/${contact.id}"
-                            )
-                        )
+                                "https://android.example.com/chat/${contact.id}",
+                            ),
+                        ),
                 )
                 .setPerson(
                     Person.Builder()
                         .setName(contact.name)
                         .setIcon(icon)
-                        .build()
+                        .build(),
                 )
                 .build()
         }
@@ -152,7 +152,7 @@ class NotificationHelper(private val context: Context) {
             Intent(context, BubbleActivity::class.java)
                 .setAction(Intent.ACTION_VIEW)
                 .setData(contentUri),
-            flagUpdateCurrent(mutable = true)
+            flagUpdateCurrent(mutable = true),
         )
         // Let's add some more content to the notification in case it falls back to a normal
         // notification.
@@ -162,7 +162,7 @@ class NotificationHelper(private val context: Context) {
             val m = NotificationCompat.MessagingStyle.Message(
                 message.text,
                 message.timestamp,
-                if (message.isIncoming) person else null
+                if (message.isIncoming) person else null,
             ).apply {
                 if (message.photoUri != null) {
                     setData(message.photoMimeType, message.photoUri)
@@ -192,7 +192,7 @@ class NotificationHelper(private val context: Context) {
                             setSuppressNotification(true)
                         }
                     }
-                    .build()
+                    .build(),
             )
             // The user can turn off the bubble in system settings. In that case, this notification
             // is shown as a normal notification instead of a bubble. Make sure that this
@@ -215,8 +215,8 @@ class NotificationHelper(private val context: Context) {
                     Intent(context, MainActivity::class.java)
                         .setAction(Intent.ACTION_VIEW)
                         .setData(contentUri),
-                    flagUpdateCurrent(mutable = false)
-                )
+                    flagUpdateCurrent(mutable = false),
+                ),
             )
             // Direct Reply
             .addAction(
@@ -228,16 +228,16 @@ class NotificationHelper(private val context: Context) {
                             context,
                             REQUEST_CONTENT,
                             Intent(context, ReplyReceiver::class.java).setData(contentUri),
-                            flagUpdateCurrent(mutable = true)
-                        )
+                            flagUpdateCurrent(mutable = true),
+                        ),
                     )
                     .addRemoteInput(
                         RemoteInput.Builder(ReplyReceiver.KEY_TEXT_REPLY)
                             .setLabel(context.getString(R.string.hint_input))
-                            .build()
+                            .build(),
                     )
                     .setAllowGeneratedReplies(true)
-                    .build()
+                    .build(),
             )
             // Let's add some more content to the notification in case it falls back to a normal
             // notification.
@@ -258,7 +258,7 @@ class NotificationHelper(private val context: Context) {
         if (Build.VERSION.SDK_INT < 30) return false
         val channel = notificationManager.getNotificationChannel(
             CHANNEL_NEW_MESSAGES,
-            contact.shortcutId
+            contact.shortcutId,
         )
         return notificationManager.areBubblesAllowed() || channel?.canBubble() == true
     }

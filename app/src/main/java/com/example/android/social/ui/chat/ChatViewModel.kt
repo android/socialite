@@ -14,20 +14,35 @@
  * limitations under the License.
  */
 
-package com.example.android.social.ui.home
+package com.example.android.social.ui.chat
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.example.android.social.data.ChatRepository
 import com.example.android.social.data.DefaultChatRepository
 import com.example.android.social.ui.stateInUi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 
-class HomeViewModel @JvmOverloads constructor(
+class ChatViewModel @JvmOverloads constructor(
     application: Application,
-    repository: ChatRepository = DefaultChatRepository.getInstance(application),
+    private val repository: ChatRepository = DefaultChatRepository.getInstance(application),
 ) : AndroidViewModel(application) {
 
-    val contacts = repository
-        .getContacts()
+    private val _chatId = MutableStateFlow(0L)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val contact = _chatId
+        .flatMapLatest { id -> repository.findContact(id) }
+        .stateInUi(null)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val messages = _chatId
+        .flatMapLatest { id -> repository.findMessages(id) }
         .stateInUi(emptyList())
+
+    fun setChatId(chatId: Long) {
+        _chatId.value = chatId
+    }
 }
