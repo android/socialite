@@ -80,10 +80,10 @@ class DefaultChatRepository internal constructor(
     @MainThread
     override fun findMessages(id: Long): Flow<List<Message>> {
         return callbackFlow {
-            val listener: ChatThreadListener = { messages -> trySend(messages) }
+            val listener: ChatThreadListener = { messages -> trySend(ArrayList(messages)) }
             val chat = chats.getValue(id)
             chat.addListener(listener)
-            trySend(chat.messages)
+            trySend(ArrayList(chat.messages))
             awaitClose { chat.removeListener { } }
         }
     }

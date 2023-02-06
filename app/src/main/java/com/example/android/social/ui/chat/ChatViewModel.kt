@@ -23,6 +23,7 @@ import com.example.android.social.data.DefaultChatRepository
 import com.example.android.social.ui.stateInUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 
 class ChatViewModel @JvmOverloads constructor(
@@ -42,7 +43,19 @@ class ChatViewModel @JvmOverloads constructor(
         .flatMapLatest { id -> repository.findMessages(id) }
         .stateInUi(emptyList())
 
+    private val _input = MutableStateFlow("")
+    val input: StateFlow<String> = _input
+
     fun setChatId(chatId: Long) {
         _chatId.value = chatId
+    }
+
+    fun updateInput(input: String) {
+        _input.value = input
+    }
+
+    fun send() {
+        repository.sendMessage(_chatId.value, _input.value, null, null)
+        _input.value = ""
     }
 }
