@@ -33,19 +33,19 @@ fun Main() {
         val navController = rememberNavController()
         NavHost(
             navController = navController,
-            startDestination = "home"
+            startDestination = "home",
         ) {
             composable(
-                route = "home"
+                route = "home",
             ) {
                 Home(
                     modifier = Modifier.fillMaxSize(),
-                    onChatClicked = { chatId -> navController.navigate("chat/$chatId") }
+                    onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
                 )
             }
             composable(
                 route = "chat/{chatId}",
-                arguments = listOf(navArgument("chatId") { type = NavType.LongType })
+                arguments = listOf(navArgument("chatId") { type = NavType.LongType }),
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
                 Chat(chatId = chatId)

@@ -23,7 +23,7 @@ data class Message(
     val text: String,
     val photoUri: Uri?,
     val photoMimeType: String?,
-    val timestamp: Long
+    val timestamp: Long,
 ) {
 
     val isIncoming: Boolean

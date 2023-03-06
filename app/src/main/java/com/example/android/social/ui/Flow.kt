@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.example.android.social.ui.home
+package com.example.android.social.ui
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import com.example.android.social.data.ChatRepository
-import com.example.android.social.data.DefaultChatRepository
-import com.example.android.social.ui.stateInUi
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 
-class HomeViewModel @JvmOverloads constructor(
-    application: Application,
-    repository: ChatRepository = DefaultChatRepository.getInstance(application),
-) : AndroidViewModel(application) {
-
-    val contacts = repository
-        .getContacts()
-        .stateInUi(emptyList())
+/**
+ * In context of a ViewModel, converts this [Flow] into a [StateFlow] so that it is suitable for
+ * use in UI.
+ */
+context(ViewModel)
+fun <T> Flow<T>.stateInUi(initialValue: T): StateFlow<T> {
+    return stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), initialValue)
 }

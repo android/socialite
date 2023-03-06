@@ -20,7 +20,7 @@ import androidx.core.net.toUri
 abstract class Contact(
     val id: Long,
     val name: String,
-    val icon: String
+    val icon: String,
 ) {
 
     companion object {
@@ -40,7 +40,7 @@ abstract class Contact(
                     photo = "content://com.example.android.social/photo/sheep_full.jpg".toUri()
                     photoMimeType = "image/jpeg"
                 }
-            }
+            },
         )
     }
 

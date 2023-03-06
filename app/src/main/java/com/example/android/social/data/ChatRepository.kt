@@ -39,7 +39,7 @@ interface ChatRepository {
 
 class DefaultChatRepository internal constructor(
     private val notificationHelper: NotificationHelper,
-    private val executor: Executor
+    private val executor: Executor,
 ) : ChatRepository {
 
     companion object {
@@ -49,7 +49,7 @@ class DefaultChatRepository internal constructor(
             return instance ?: synchronized(this) {
                 instance ?: DefaultChatRepository(
                     NotificationHelper(context),
-                    Executors.newFixedThreadPool(4)
+                    Executors.newFixedThreadPool(4),
                 ).also {
                     instance = it
                 }
@@ -83,6 +83,7 @@ class DefaultChatRepository internal constructor(
             val listener: ChatThreadListener = { messages -> trySend(messages) }
             val chat = chats.getValue(id)
             chat.addListener(listener)
+            trySend(chat.messages)
             awaitClose { chat.removeListener { } }
         }
     }
@@ -97,7 +98,7 @@ class DefaultChatRepository internal constructor(
                 timestamp = System.currentTimeMillis()
                 this.photo = photoUri
                 this.photoMimeType = photoMimeType
-            }
+            },
         )
         executor.execute {
             // The animal is typing...
