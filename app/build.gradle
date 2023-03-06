@@ -77,6 +77,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
 
     implementation 'com.google.accompanist:accompanist-drawablepainter:0.28.0'
+    implementation 'com.google.accompanist:accompanist-permissions:0.28.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
