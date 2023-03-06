@@ -44,9 +44,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -67,10 +64,14 @@ fun Chat(
     viewModel.setChatId(chatId)
     val contact by viewModel.contact.collectAsState()
     val messages by viewModel.messages.collectAsState()
+    val input by viewModel.input.collectAsState()
     contact?.let { c ->
         ChatContent(
             contact = c,
             messages = messages,
+            input = input,
+            onInputChanged = { viewModel.updateInput(it) },
+            onSendClick = { viewModel.send() },
             modifier = modifier,
         )
     }
@@ -81,6 +82,9 @@ fun Chat(
 private fun ChatContent(
     contact: Contact,
     messages: List<Message>,
+    input: String,
+    onInputChanged: (String) -> Unit,
+    onSendClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -97,6 +101,9 @@ private fun ChatContent(
                     .weight(1f),
             )
             InputBar(
+                input = input,
+                onInputChanged = onInputChanged,
+                onSendClick = onSendClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.ime),
@@ -166,17 +173,19 @@ private fun MessageBubble(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun InputBar(
+    input: String,
+    onInputChanged: (String) -> Unit,
+    onSendClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var text by remember { mutableStateOf("") }
     Row(modifier = modifier) {
         OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
+            value = input,
+            onValueChange = onInputChanged,
             modifier = Modifier.weight(1f),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
         )
-        IconButton(onClick = { /*TODO*/ }) {
+        IconButton(onClick = onSendClick) {
             Icon(
                 imageVector = Icons.Default.Send,
                 contentDescription = null,
@@ -198,6 +207,9 @@ private fun PreviewChatContent() {
                 Message(3L, 1L, "!", null, null, 0L),
                 Message(4L, 0L, "Hello, world!", null, null, 0L),
             ),
+            input = "Hello",
+            onInputChanged = {},
+            onSendClick = {},
         )
     }
 }
