@@ -46,6 +46,24 @@ class ChatViewModel @JvmOverloads constructor(
     private val _input = MutableStateFlow("")
     val input: StateFlow<String> = _input
 
+    /**
+     * We want to update the notification when the corresponding chat screen is open. Setting this
+     * to `true` updates the current notification, removing the unread message(s) badge icon and
+     * suppressing further notifications.
+     */
+    var foreground = false
+        set(value) {
+            field = value
+            val chatId = _chatId.value
+            if (chatId != 0L) {
+                if (value) {
+                    repository.activateChat(chatId)
+                } else {
+                    repository.deactivateChat(chatId)
+                }
+            }
+        }
+
     fun setChatId(chatId: Long) {
         _chatId.value = chatId
     }

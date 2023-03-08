@@ -42,13 +42,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.android.social.data.Contact
 import com.example.android.social.data.Message
@@ -74,6 +78,33 @@ fun Chat(
             onSendClick = { viewModel.send() },
             modifier = modifier,
         )
+    }
+    LifecycleEffect(
+        onResume = { viewModel.foreground = true },
+        onPause = { viewModel.foreground = false },
+    )
+}
+
+@Composable
+private fun LifecycleEffect(
+    onResume: () -> Unit = {},
+    onPause: () -> Unit = {},
+) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        val listener = object : DefaultLifecycleObserver {
+            override fun onResume(owner: LifecycleOwner) {
+                onResume()
+            }
+
+            override fun onPause(owner: LifecycleOwner) {
+                onPause()
+            }
+        }
+        lifecycle.addObserver(listener)
+        onDispose {
+            lifecycle.removeObserver(listener)
+        }
     }
 }
 

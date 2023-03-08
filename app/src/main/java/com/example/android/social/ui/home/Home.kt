@@ -89,7 +89,7 @@ private fun ChatList(
 ) {
     @SuppressLint("InlinedApi") // Granted at install time on API <33.
     val notificationPermissionState = rememberPermissionState(
-        android.Manifest.permission.POST_NOTIFICATIONS
+        android.Manifest.permission.POST_NOTIFICATIONS,
     )
     LazyColumn(
         modifier = modifier,
@@ -124,23 +124,23 @@ private fun NotificationPermissionCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
+        modifier = modifier,
     ) {
         Text(
             text = stringResource(R.string.permission_message),
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         )
         if (shouldShowRationale) {
             Text(
                 text = stringResource(R.string.permission_rationale),
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            contentAlignment = Alignment.TopEnd
+            contentAlignment = Alignment.TopEnd,
         ) {
             Button(onClick = onGrantClick) {
                 Text(text = stringResource(R.string.permission_grant))
