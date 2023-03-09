@@ -48,7 +48,10 @@ fun Main() {
                 arguments = listOf(navArgument("chatId") { type = NavType.LongType }),
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-                Chat(chatId = chatId)
+                Chat(
+                    chatId = chatId,
+                    foreground = true,
+                )
             }
         }
     }

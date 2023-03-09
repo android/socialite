@@ -62,6 +62,7 @@ import com.example.android.social.ui.SocialTheme
 @Composable
 fun Chat(
     chatId: Long,
+    foreground: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: ChatViewModel = viewModel()
@@ -80,7 +81,7 @@ fun Chat(
         )
     }
     LifecycleEffect(
-        onResume = { viewModel.foreground = true },
+        onResume = { viewModel.foreground = foreground },
         onPause = { viewModel.foreground = false },
     )
 }

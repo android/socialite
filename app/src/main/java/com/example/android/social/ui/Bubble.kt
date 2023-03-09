@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.example.android.social
+package com.example.android.social.ui
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import com.example.android.social.ui.Bubble
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.example.android.social.ui.chat.Chat
 
-class BubbleActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val chatId = intent.data?.lastPathSegment?.toLongOrNull()
-        setContent {
-            Bubble(chatId = chatId!!)
-        }
+@Composable
+fun Bubble(chatId: Long) {
+    SocialTheme {
+        Chat(
+            chatId = chatId,
+            foreground = false,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }

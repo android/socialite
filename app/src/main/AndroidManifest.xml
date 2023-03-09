@@ -41,6 +41,30 @@
             </intent-filter>
         </activity>
 
+        <!--
+            This Activity is the expanded Bubble. For that, this Activity has to have several
+            attributes.
+            - allowEmbedded="true": The expanded Bubble is embedded in the System UI.
+            - resizeableActivity="true": The expanded Bubble is resized by the System UI.
+            - documentLaunchMode="always": We show multiple bubbles in this sample. There will be
+                                           multiple instances of this Activity.
+        -->
+        <activity
+            android:name="com.example.android.social.BubbleActivity"
+            android:allowEmbedded="true"
+            android:documentLaunchMode="always"
+            android:exported="true"
+            android:resizeableActivity="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="android.example.com"
+                    android:pathPattern="/chat/*"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
+
         <provider
             android:name="com.example.android.social.AssetFileProvider"
             android:authorities="com.example.android.social"
