@@ -18,24 +18,25 @@ package com.example.android.social.ui.chat
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.example.android.social.data.ChatRepository
-import com.example.android.social.data.DefaultChatRepository
+import androidx.lifecycle.viewModelScope
+import com.example.android.social.repository.ChatRepository
 import com.example.android.social.ui.stateInUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.launch
 
 class ChatViewModel @JvmOverloads constructor(
     application: Application,
-    private val repository: ChatRepository = DefaultChatRepository.getInstance(application),
+    private val repository: ChatRepository = ChatRepository.getInstance(application),
 ) : AndroidViewModel(application) {
 
     private val _chatId = MutableStateFlow(0L)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val contact = _chatId
-        .flatMapLatest { id -> repository.findContact(id) }
+    val chat = _chatId
+        .flatMapLatest { id -> repository.findChat(id) }
         .stateInUi(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,18 +52,16 @@ class ChatViewModel @JvmOverloads constructor(
      * to `true` updates the current notification, removing the unread message(s) badge icon and
      * suppressing further notifications.
      */
-    var foreground = false
-        set(value) {
-            field = value
-            val chatId = _chatId.value
-            if (chatId != 0L) {
-                if (value) {
-                    repository.activateChat(chatId)
-                } else {
-                    repository.deactivateChat(chatId)
-                }
+    fun setForeground(foreground: Boolean) {
+        val chatId = _chatId.value
+        if (chatId != 0L) {
+            if (foreground) {
+                repository.activateChat(chatId)
+            } else {
+                repository.deactivateChat(chatId)
             }
         }
+    }
 
     fun setChatId(chatId: Long) {
         _chatId.value = chatId
@@ -73,7 +72,9 @@ class ChatViewModel @JvmOverloads constructor(
     }
 
     fun send() {
-        repository.sendMessage(_chatId.value, _input.value, null, null)
-        _input.value = ""
+        viewModelScope.launch {
+            repository.sendMessage(_chatId.value, _input.value, null, null)
+            _input.value = ""
+        }
     }
 }

@@ -54,9 +54,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.android.social.data.Contact
-import com.example.android.social.data.Message
-import com.example.android.social.ui.ContactRow
+import com.example.android.social.model.Chat
+import com.example.android.social.model.ChatDetail
+import com.example.android.social.model.Contact
+import com.example.android.social.model.Message
+import com.example.android.social.ui.ChatRow
 import com.example.android.social.ui.SocialTheme
 
 @Composable
@@ -67,12 +69,12 @@ fun Chat(
 ) {
     val viewModel: ChatViewModel = viewModel()
     viewModel.setChatId(chatId)
-    val contact by viewModel.contact.collectAsState()
+    val chat by viewModel.chat.collectAsState()
     val messages by viewModel.messages.collectAsState()
     val input by viewModel.input.collectAsState()
-    contact?.let { c ->
+    chat?.let { c ->
         ChatContent(
-            contact = c,
+            chat = c,
             messages = messages,
             input = input,
             onInputChanged = { viewModel.updateInput(it) },
@@ -81,8 +83,8 @@ fun Chat(
         )
     }
     LifecycleEffect(
-        onResume = { viewModel.foreground = foreground },
-        onPause = { viewModel.foreground = false },
+        onResume = { viewModel.setForeground(foreground) },
+        onPause = { viewModel.setForeground(false) },
     )
 }
 
@@ -112,7 +114,7 @@ private fun LifecycleEffect(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChatContent(
-    contact: Contact,
+    chat: ChatDetail,
     messages: List<Message>,
     input: String,
     onInputChanged: (String) -> Unit,
@@ -121,7 +123,7 @@ private fun ChatContent(
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { ChatAppBar(contact = contact) },
+        topBar = { ChatAppBar(chat = chat) },
     ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding),
@@ -147,13 +149,13 @@ private fun ChatContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChatAppBar(
-    contact: Contact,
+    chat: ChatDetail,
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
         title = {
-            ContactRow(
-                contact = contact,
+            ChatRow(
+                chat = chat,
                 onClick = null,
             )
         },
@@ -232,12 +234,12 @@ private fun InputBar(
 private fun PreviewChatContent() {
     SocialTheme {
         ChatContent(
-            contact = Contact.CONTACTS[0],
+            chat = ChatDetail(Chat(0L), listOf(Contact.CONTACTS[0])),
             messages = listOf(
-                Message(1L, 1L, "Hello", null, null, 0L),
-                Message(2L, 1L, "world", null, null, 0L),
-                Message(3L, 1L, "!", null, null, 0L),
-                Message(4L, 0L, "Hello, world!", null, null, 0L),
+                Message(1L, 1L, 1L, "Hello", null, null, 0L),
+                Message(2L, 2L, 1L, "world", null, null, 0L),
+                Message(3L, 3L, 1L, "!", null, null, 0L),
+                Message(4L, 4L, 1L, "Hello, world!", null, null, 0L),
             ),
             input = "Hello",
             onInputChanged = {},

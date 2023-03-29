@@ -20,8 +20,10 @@ import android.app.RemoteInput
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.example.android.social.data.ChatRepository
-import com.example.android.social.data.DefaultChatRepository
+import com.example.android.social.repository.ChatRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * Handles the "Reply" action in the chat notification.
@@ -33,8 +35,7 @@ class ReplyReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val repository: ChatRepository = DefaultChatRepository.getInstance(context)
-
+        val repository = ChatRepository.getInstance(context)
         val results = RemoteInput.getResultsFromIntent(intent) ?: return
         // The message typed in the notification reply.
         val input = results.getCharSequence(KEY_TEXT_REPLY)?.toString()
@@ -42,10 +43,18 @@ class ReplyReceiver : BroadcastReceiver() {
         val chatId = uri.lastPathSegment?.toLong() ?: return
 
         if (chatId > 0 && !input.isNullOrBlank()) {
-            repository.sendMessage(chatId, input.toString(), null, null)
-            // We should update the notification so that the user can see that the reply has been
-            // sent.
-            repository.updateNotification(chatId)
+            val pendingResult = goAsync()
+            val job = Job()
+            CoroutineScope(job).launch {
+                try {
+                    repository.sendMessage(chatId, input.toString(), null, null)
+                    // We should update the notification so that the user can see that the reply has
+                    // been sent.
+                    repository.updateNotification(chatId)
+                } finally {
+                    pendingResult.finish()
+                }
+            }
         }
     }
 }

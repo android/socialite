@@ -18,16 +18,23 @@ package com.example.android.social.ui.home
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.example.android.social.data.ChatRepository
-import com.example.android.social.data.DefaultChatRepository
+import androidx.lifecycle.viewModelScope
+import com.example.android.social.repository.ChatRepository
 import com.example.android.social.ui.stateInUi
+import kotlinx.coroutines.launch
 
 class HomeViewModel @JvmOverloads constructor(
     application: Application,
-    repository: ChatRepository = DefaultChatRepository.getInstance(application),
+    repository: ChatRepository = ChatRepository.getInstance(application),
 ) : AndroidViewModel(application) {
 
-    val contacts = repository
-        .getContacts()
+    val chats = repository
+        .getChats()
         .stateInUi(emptyList())
+
+    init {
+        viewModelScope.launch {
+            repository.initialize()
+        }
+    }
 }

@@ -38,8 +38,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.android.social.R
-import com.example.android.social.data.Contact
-import com.example.android.social.ui.ContactRow
+import com.example.android.social.model.ChatDetail
+import com.example.android.social.ui.ChatRow
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -56,9 +56,9 @@ fun Home(
         topBar = { HomeAppBar() },
     ) { innerPadding ->
         val viewModel: HomeViewModel = viewModel()
-        val contacts by viewModel.contacts.collectAsState()
+        val chats by viewModel.chats.collectAsState()
         ChatList(
-            contacts = contacts,
+            chats = chats,
             contentPadding = innerPadding,
             onChatClicked = onChatClicked,
             modifier = modifier,
@@ -82,7 +82,7 @@ private fun HomeAppBar(
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun ChatList(
-    contacts: List<Contact>,
+    chats: List<ChatDetail>,
     contentPadding: PaddingValues,
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -108,10 +108,10 @@ private fun ChatList(
                 )
             }
         }
-        items(items = contacts) { contact ->
-            ContactRow(
-                contact = contact,
-                onClick = { onChatClicked(contact.id) },
+        items(items = chats) { chat ->
+            ChatRow(
+                chat = chat,
+                onClick = { onChatClicked(chat.chat.id) },
             )
         }
     }

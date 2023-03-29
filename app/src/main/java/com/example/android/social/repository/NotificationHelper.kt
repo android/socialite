@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.social.data
+package com.example.android.social.repository
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -39,6 +40,8 @@ import com.example.android.social.BubbleActivity
 import com.example.android.social.MainActivity
 import com.example.android.social.R
 import com.example.android.social.ReplyReceiver
+import com.example.android.social.model.Contact
+import com.example.android.social.model.Message
 
 /**
  * Handles all operations related to [Notification].
@@ -138,12 +141,17 @@ class NotificationHelper(private val context: Context) {
     }
 
     @WorkerThread
-    fun showNotification(chat: Chat, fromUser: Boolean, update: Boolean = false) {
-        updateShortcuts(chat.contact)
-        val icon = IconCompat.createWithAdaptiveBitmapContentUri(chat.contact.iconUri)
+    fun showNotification(
+        contact: Contact,
+        messages: List<Message>,
+        fromUser: Boolean,
+        update: Boolean = false,
+    ) {
+        updateShortcuts(contact)
+        val icon = IconCompat.createWithAdaptiveBitmapContentUri(contact.iconUri)
         val user = Person.Builder().setName(context.getString(R.string.sender_you)).build()
-        val person = Person.Builder().setName(chat.contact.name).setIcon(icon).build()
-        val contentUri = "https://android.example.com/chat/${chat.contact.id}".toUri()
+        val person = Person.Builder().setName(contact.name).setIcon(icon).build()
+        val contentUri = "https://android.example.com/chat/${contact.id}".toUri()
 
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -157,15 +165,15 @@ class NotificationHelper(private val context: Context) {
         // Let's add some more content to the notification in case it falls back to a normal
         // notification.
         val messagingStyle = NotificationCompat.MessagingStyle(user)
-        val lastId = chat.messages.last().id
-        for (message in chat.messages) {
+        val lastId = messages.last().id
+        for (message in messages) {
             val m = NotificationCompat.MessagingStyle.Message(
                 message.text,
                 message.timestamp,
                 if (message.isIncoming) person else null,
             ).apply {
                 if (message.photoUri != null) {
-                    setData(message.photoMimeType, message.photoUri)
+                    setData(message.photoMimeType, message.photoUri.toUri())
                 }
             }
             if (message.id < lastId) {
@@ -197,13 +205,13 @@ class NotificationHelper(private val context: Context) {
             // The user can turn off the bubble in system settings. In that case, this notification
             // is shown as a normal notification instead of a bubble. Make sure that this
             // notification works as a normal notification as well.
-            .setContentTitle(chat.contact.name)
+            .setContentTitle(contact.name)
             .setSmallIcon(R.drawable.ic_message)
             .setCategory(Notification.CATEGORY_MESSAGE)
-            .setShortcutId(chat.contact.shortcutId)
+            .setShortcutId(contact.shortcutId)
             // This ID helps the intelligence services of the device to correlate this notification
             // with the corresponding dynamic shortcut.
-            .setLocusId(LocusIdCompat(chat.contact.shortcutId))
+            .setLocusId(LocusIdCompat(contact.shortcutId))
             .addPerson(person)
             .setShowWhen(true)
             // The content Intent is used when the user clicks on the "Open Content" icon button on
@@ -242,16 +250,16 @@ class NotificationHelper(private val context: Context) {
             // Let's add some more content to the notification in case it falls back to a normal
             // notification.
             .setStyle(messagingStyle)
-            .setWhen(chat.messages.last().timestamp)
+            .setWhen(messages.last().timestamp)
         // Don't sound/vibrate if an update to an existing notification.
         if (update) {
             builder.setOnlyAlertOnce(true)
         }
-        notificationManager.notify(chat.contact.id.toInt(), builder.build())
+        notificationManager.notify(contact.id.toInt(), builder.build())
     }
 
-    private fun dismissNotification(id: Long) {
-        notificationManager.cancel(id.toInt())
+    fun dismissNotification(chatId: Long) {
+        notificationManager.cancel(chatId.toInt())
     }
 
     fun canBubble(contact: Contact): Boolean {
@@ -261,15 +269,5 @@ class NotificationHelper(private val context: Context) {
             contact.shortcutId,
         )
         return notificationManager.areBubblesAllowed() || channel?.canBubble() == true
-    }
-
-    fun updateNotification(chat: Chat, chatId: Long, prepopulatedMsgs: Boolean) {
-        if (!prepopulatedMsgs) {
-            // Update notification bubble metadata to suppress notification so that the unread
-            // message badge icon on the collapsed bubble is removed.
-            showNotification(chat, fromUser = false, update = true)
-        } else {
-            dismissNotification(chatId)
-        }
     }
 }

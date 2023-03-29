@@ -21,7 +21,7 @@ import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.net.Uri
 import android.webkit.MimeTypeMap
-import com.example.android.social.data.Contact
+import com.example.android.social.model.Contact
 
 class AssetFileProvider : ContentProvider() {
 

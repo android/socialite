@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'com.android.application' version '7.4.2' apply false
-    id 'com.android.library' version '7.4.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.10' apply false
-    id 'com.diffplug.spotless' version '6.14.1' apply false
-}
+package com.example.android.social.data
 
-subprojects {
-    apply plugin: 'com.diffplug.spotless'
-    spotless {
-        kotlin {
-            target '**/*.kt'
-            ktlint('0.48.2')
-        }
-    }
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import com.example.android.social.model.Message
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface MessageDao {
+
+    @Insert
+    suspend fun insert(message: Message): Long
+
+    @Query("SELECT * FROM Message WHERE chatId = :chatId")
+    fun allByChatId(chatId: Long): Flow<List<Message>>
+
+    @Query("SELECT * FROM Message WHERE chatId = :chatId")
+    suspend fun loadAll(chatId: Long): List<Message>
 }

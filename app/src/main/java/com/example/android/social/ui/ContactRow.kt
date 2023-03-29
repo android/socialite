@@ -33,11 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.android.social.data.Contact
+import com.example.android.social.model.ChatDetail
 
 @Composable
-fun ContactRow(
-    contact: Contact,
+fun ChatRow(
+    chat: ChatDetail,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -51,6 +51,8 @@ fun ContactRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // This only supports DM for now.
+        val contact = chat.attendees.first()
         Image(
             painter = rememberIconPainter(contentUri = contact.iconUri),
             contentDescription = null,

@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'com.android.application' version '7.4.2' apply false
-    id 'com.android.library' version '7.4.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.10' apply false
-    id 'com.diffplug.spotless' version '6.14.1' apply false
-}
+package com.example.android.social.model
 
-subprojects {
-    apply plugin: 'com.diffplug.spotless'
-    spotless {
-        kotlin {
-            target '**/*.kt'
-            ktlint('0.48.2')
-        }
-    }
+import androidx.room.Embedded
+import androidx.room.Junction
+import androidx.room.Relation
+
+data class ChatDetail(
+    @Embedded
+    val chat: Chat,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+        associateBy = Junction(
+            ChatAttendee::class,
+            parentColumn = "chatId",
+            entityColumn = "attendeeId",
+        ),
+    )
+    val attendees: List<Contact>,
+) {
+    val firstContact: Contact
+        get() = attendees.first()
 }
