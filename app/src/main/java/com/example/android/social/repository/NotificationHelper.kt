@@ -24,7 +24,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Build
 import androidx.annotation.WorkerThread
 import androidx.core.app.NotificationCompat
@@ -100,11 +99,7 @@ class NotificationHelper(private val context: Context) {
                 .setIntent(
                     Intent(context, MainActivity::class.java)
                         .setAction(Intent.ACTION_VIEW)
-                        .setData(
-                            Uri.parse(
-                                "https://android.example.com/chat/${contact.id}",
-                            ),
-                        ),
+                        .setData(contact.contentUri),
                 )
                 .setPerson(
                     Person.Builder()
@@ -151,7 +146,6 @@ class NotificationHelper(private val context: Context) {
         val icon = IconCompat.createWithAdaptiveBitmapContentUri(contact.iconUri)
         val user = Person.Builder().setName(context.getString(R.string.sender_you)).build()
         val person = Person.Builder().setName(contact.name).setIcon(icon).build()
-        val contentUri = "https://android.example.com/chat/${contact.id}".toUri()
 
         val pendingIntent = PendingIntent.getActivity(
             context,
@@ -159,13 +153,13 @@ class NotificationHelper(private val context: Context) {
             // Launch BubbleActivity as the expanded bubble.
             Intent(context, BubbleActivity::class.java)
                 .setAction(Intent.ACTION_VIEW)
-                .setData(contentUri),
+                .setData(contact.contentUri),
             flagUpdateCurrent(mutable = true),
         )
         // Let's add some more content to the notification in case it falls back to a normal
         // notification.
         val messagingStyle = NotificationCompat.MessagingStyle(user)
-        val lastId = messages.last().id
+        val firstId = messages.first().id
         for (message in messages) {
             val m = NotificationCompat.MessagingStyle.Message(
                 message.text,
@@ -176,10 +170,10 @@ class NotificationHelper(private val context: Context) {
                     setData(message.photoMimeType, message.photoUri.toUri())
                 }
             }
-            if (message.id < lastId) {
-                messagingStyle.addHistoricMessage(m)
-            } else {
+            if (message.id == firstId) {
                 messagingStyle.addMessage(m)
+            } else {
+                messagingStyle.addHistoricMessage(m)
             }
         }
 
@@ -222,7 +216,7 @@ class NotificationHelper(private val context: Context) {
                     REQUEST_CONTENT,
                     Intent(context, MainActivity::class.java)
                         .setAction(Intent.ACTION_VIEW)
-                        .setData(contentUri),
+                        .setData(contact.contentUri),
                     flagUpdateCurrent(mutable = false),
                 ),
             )
@@ -235,7 +229,7 @@ class NotificationHelper(private val context: Context) {
                         PendingIntent.getBroadcast(
                             context,
                             REQUEST_CONTENT,
-                            Intent(context, ReplyReceiver::class.java).setData(contentUri),
+                            Intent(context, ReplyReceiver::class.java).setData(contact.contentUri),
                             flagUpdateCurrent(mutable = true),
                         ),
                     )

@@ -54,6 +54,9 @@ data class Contact(
     val iconUri: Uri
         get() = "content://com.example.android.social/icon/$id".toUri()
 
+    val contentUri: Uri
+        get() = "https://android.example.com/chat/$id".toUri()
+
     val shortcutId: String
         get() = "contact_$id"
 

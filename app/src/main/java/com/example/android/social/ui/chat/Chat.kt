@@ -171,6 +171,7 @@ private fun MessageList(
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(16.dp),
+        reverseLayout = true,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {
         items(items = messages) { message ->

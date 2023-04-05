@@ -54,7 +54,8 @@
             android:allowEmbedded="true"
             android:documentLaunchMode="always"
             android:exported="true"
-            android:resizeableActivity="true">
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE" />
