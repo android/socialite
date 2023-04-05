@@ -16,9 +16,7 @@
 
 package com.example.android.social.data
 
-import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -26,11 +24,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ChatDaoTest {
-
-    private fun createTestDatabase(): AppDatabase {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        return Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
-    }
 
     @Test
     fun initialData() = runBlocking {

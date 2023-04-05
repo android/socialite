@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package com.example.android.social.repository
+package com.example.android.social.ui.home
 
+import android.app.Application
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
+import com.example.android.social.awaitNotEmpty
+import com.example.android.social.repository.createTestRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -26,35 +30,15 @@ import org.junit.runner.RunWith
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
-class ChatRepositoryTest {
+class HomeViewModelTest {
 
     @Test
-    fun getChats() = runTest {
-        val repository = createTestRepository()
-        repository.getChats().test {
-            assertThat(awaitItem()).isEmpty()
-            repository.initialize()
-            assertThat(awaitItem()).isNotEmpty()
-        }
-    }
-
-    @Test
-    fun findChat() = runTest {
-        val repository = createTestRepository()
-        repository.findChat(1L).test {
-            assertThat(awaitItem()).isNull()
-            repository.initialize()
-            assertThat(awaitItem()!!.firstContact.name).isEqualTo("Cat")
-        }
-    }
-
-    @Test
-    fun findMessages() = runTest {
-        val repository = createTestRepository()
-        repository.findMessages(1L).test {
-            assertThat(awaitItem()).isEmpty()
-            repository.initialize()
-            assertThat(awaitItem()).hasSize(2)
+    fun initialize() = runTest {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val application = context.applicationContext as Application
+        val viewModel = HomeViewModel(application, createTestRepository())
+        viewModel.chats.test {
+            assertThat(awaitNotEmpty()).hasSize(4)
         }
     }
 }

@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package com.example.android.social.repository
+package com.example.android.social.ui.chat
 
+import android.app.Application
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
+import com.example.android.social.awaitNotEmpty
+import com.example.android.social.awaitNotNull
+import com.example.android.social.repository.createTestRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -26,35 +31,21 @@ import org.junit.runner.RunWith
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
-class ChatRepositoryTest {
+class ChatViewModelTest {
 
     @Test
-    fun getChats() = runTest {
+    fun setChatId() = runTest {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val application = context.applicationContext as Application
         val repository = createTestRepository()
-        repository.getChats().test {
-            assertThat(awaitItem()).isEmpty()
-            repository.initialize()
-            assertThat(awaitItem()).isNotEmpty()
+        repository.initialize()
+        val viewModel = ChatViewModel(application, repository)
+        viewModel.setChatId(1L)
+        viewModel.chat.test {
+            assertThat(awaitNotNull().firstContact.name).isEqualTo("Cat")
         }
-    }
-
-    @Test
-    fun findChat() = runTest {
-        val repository = createTestRepository()
-        repository.findChat(1L).test {
-            assertThat(awaitItem()).isNull()
-            repository.initialize()
-            assertThat(awaitItem()!!.firstContact.name).isEqualTo("Cat")
-        }
-    }
-
-    @Test
-    fun findMessages() = runTest {
-        val repository = createTestRepository()
-        repository.findMessages(1L).test {
-            assertThat(awaitItem()).isEmpty()
-            repository.initialize()
-            assertThat(awaitItem()).hasSize(2)
+        viewModel.messages.test {
+            assertThat(awaitNotEmpty()).hasSize(2)
         }
     }
 }

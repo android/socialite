@@ -101,4 +101,6 @@ dependencies {
     ksp "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     androidTestImplementation "androidx.room:room-testing:$room_version"
+
+    androidTestImplementation 'app.cash.turbine:turbine:0.12.3'
 }
