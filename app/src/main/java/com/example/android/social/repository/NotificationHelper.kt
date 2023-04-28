@@ -43,9 +43,17 @@ import com.example.android.social.model.Contact
 import com.example.android.social.model.Message
 
 /**
+ * Represents a reason why a shortcut should be pushed.
+ */
+enum class PushReason {
+    IncomingMessage,
+    OutgoingMessage,
+}
+
+/**
  * Handles all operations related to [Notification].
  */
-class NotificationHelper(private val context: Context) {
+class NotificationHelper(context: Context) {
 
     companion object {
         /**
@@ -56,6 +64,8 @@ class NotificationHelper(private val context: Context) {
         private const val REQUEST_CONTENT = 1
         private const val REQUEST_BUBBLE = 2
     }
+
+    private val appContext = context.applicationContext
 
     private val notificationManager: NotificationManager =
         context.getSystemService() ?: throw IllegalStateException()
@@ -68,59 +78,64 @@ class NotificationHelper(private val context: Context) {
             notificationManager.createNotificationChannel(
                 NotificationChannel(
                     CHANNEL_NEW_MESSAGES,
-                    context.getString(R.string.channel_new_messages),
+                    appContext.getString(R.string.channel_new_messages),
                     // The importance must be IMPORTANCE_HIGH to show Bubbles.
                     NotificationManager.IMPORTANCE_HIGH,
                 ).apply {
-                    description = context.getString(R.string.channel_new_messages_description)
+                    description = appContext.getString(R.string.channel_new_messages_description)
                 },
             )
         }
-        updateShortcuts(null)
+    }
+
+    private fun Contact.toShortcut(
+        additional: ShortcutInfoCompat.Builder.() -> ShortcutInfoCompat.Builder = { this }
+    ): ShortcutInfoCompat {
+        val icon = IconCompat.createWithAdaptiveBitmap(
+            appContext.resources.assets.open(icon).use { input ->
+                BitmapFactory.decodeStream(input)
+            },
+        )
+        return ShortcutInfoCompat.Builder(appContext, shortcutId)
+            .setLocusId(LocusIdCompat(shortcutId))
+            .setActivity(ComponentName(appContext, MainActivity::class.java))
+            .setShortLabel(name)
+            .setIcon(icon)
+            .setLongLived(true)
+            .setCategories(hashSetOf("com.example.android.bubbles.category.TEXT_SHARE_TARGET"))
+            .setIntent(
+                Intent(appContext, MainActivity::class.java)
+                    .setAction(Intent.ACTION_VIEW)
+                    .setData(contentUri),
+            )
+            .setPerson(
+                Person.Builder()
+                    .setName(name)
+                    .setIcon(icon)
+                    .build(),
+            )
+            .additional()
+            .build()
     }
 
     @WorkerThread
-    fun updateShortcuts(importantContact: Contact?) {
-        var shortcuts = Contact.CONTACTS.map { contact ->
-            val icon = IconCompat.createWithAdaptiveBitmap(
-                context.resources.assets.open(contact.icon).use { input ->
-                    BitmapFactory.decodeStream(input)
-                },
-            )
-            // Create a dynamic shortcut for each of the contacts.
-            // The same shortcut ID will be used when we show a bubble notification.
-            ShortcutInfoCompat.Builder(context, contact.shortcutId)
-                .setLocusId(LocusIdCompat(contact.shortcutId))
-                .setActivity(ComponentName(context, MainActivity::class.java))
-                .setShortLabel(contact.name)
-                .setIcon(icon)
-                .setLongLived(true)
-                .setCategories(setOf("com.example.android.bubbles.category.TEXT_SHARE_TARGET"))
-                .setIntent(
-                    Intent(context, MainActivity::class.java)
-                        .setAction(Intent.ACTION_VIEW)
-                        .setData(contact.contentUri),
-                )
-                .setPerson(
-                    Person.Builder()
-                        .setName(contact.name)
-                        .setIcon(icon)
-                        .build(),
-                )
-                .build()
-        }
-        // Move the important contact to the front of the shortcut list.
-        if (importantContact != null) {
-            shortcuts = shortcuts.sortedByDescending { it.id == importantContact.shortcutId }
-        }
-        // Truncate the list if we can't show all of our contacts.
-        val maxCount = ShortcutManagerCompat.getMaxShortcutCountPerActivity(context)
-        if (shortcuts.size > maxCount) {
-            shortcuts = shortcuts.take(maxCount)
-        }
-        for (shortcut in shortcuts) {
-            ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
-        }
+    fun pushShortcut(contact: Contact, reason: PushReason? = null) {
+        ShortcutManagerCompat.pushDynamicShortcut(
+            appContext,
+            contact.toShortcut {
+                when (reason) {
+                    PushReason.IncomingMessage -> {
+                        addCapabilityBinding("actions.intent.RECEIVE_MESSAGE")
+                    }
+
+                    PushReason.OutgoingMessage -> {
+                        addCapabilityBinding("actions.intent.SEND_MESSAGE")
+                    }
+
+                    else -> this
+                }
+            }
+        )
     }
 
     private fun flagUpdateCurrent(mutable: Boolean): Int {
@@ -142,16 +157,15 @@ class NotificationHelper(private val context: Context) {
         fromUser: Boolean,
         update: Boolean = false,
     ) {
-        updateShortcuts(contact)
         val icon = IconCompat.createWithAdaptiveBitmapContentUri(contact.iconUri)
-        val user = Person.Builder().setName(context.getString(R.string.sender_you)).build()
+        val user = Person.Builder().setName(appContext.getString(R.string.sender_you)).build()
         val person = Person.Builder().setName(contact.name).setIcon(icon).build()
 
         val pendingIntent = PendingIntent.getActivity(
-            context,
+            appContext,
             REQUEST_BUBBLE,
             // Launch BubbleActivity as the expanded bubble.
-            Intent(context, BubbleActivity::class.java)
+            Intent(appContext, BubbleActivity::class.java)
                 .setAction(Intent.ACTION_VIEW)
                 .setData(contact.contentUri),
             flagUpdateCurrent(mutable = true),
@@ -177,12 +191,14 @@ class NotificationHelper(private val context: Context) {
             }
         }
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_NEW_MESSAGES)
+        val builder = NotificationCompat.Builder(appContext, CHANNEL_NEW_MESSAGES)
             // A notification can be shown as a bubble by calling setBubbleMetadata()
             .setBubbleMetadata(
                 NotificationCompat.BubbleMetadata.Builder(pendingIntent, icon)
                     // The height of the expanded bubble.
-                    .setDesiredHeight(context.resources.getDimensionPixelSize(R.dimen.bubble_height))
+                    .setDesiredHeight(
+                        appContext.resources.getDimensionPixelSize(R.dimen.bubble_height)
+                    )
                     .apply {
                         // When the bubble is explicitly opened by the user, we can show the bubble
                         // automatically in the expanded state. This works only when the app is in
@@ -212,9 +228,9 @@ class NotificationHelper(private val context: Context) {
             // the expanded bubble, as well as when the fall-back notification is clicked.
             .setContentIntent(
                 PendingIntent.getActivity(
-                    context,
+                    appContext,
                     REQUEST_CONTENT,
-                    Intent(context, MainActivity::class.java)
+                    Intent(appContext, MainActivity::class.java)
                         .setAction(Intent.ACTION_VIEW)
                         .setData(contact.contentUri),
                     flagUpdateCurrent(mutable = false),
@@ -224,18 +240,19 @@ class NotificationHelper(private val context: Context) {
             .addAction(
                 NotificationCompat.Action
                     .Builder(
-                        IconCompat.createWithResource(context, R.drawable.ic_send),
-                        context.getString(R.string.label_reply),
+                        IconCompat.createWithResource(appContext, R.drawable.ic_send),
+                        appContext.getString(R.string.label_reply),
                         PendingIntent.getBroadcast(
-                            context,
+                            appContext,
                             REQUEST_CONTENT,
-                            Intent(context, ReplyReceiver::class.java).setData(contact.contentUri),
+                            Intent(appContext, ReplyReceiver::class.java)
+                                .setData(contact.contentUri),
                             flagUpdateCurrent(mutable = true),
                         ),
                     )
                     .addRemoteInput(
                         RemoteInput.Builder(ReplyReceiver.KEY_TEXT_REPLY)
-                            .setLabel(context.getString(R.string.hint_input))
+                            .setLabel(appContext.getString(R.string.hint_input))
                             .build(),
                     )
                     .setAllowGeneratedReplies(true)

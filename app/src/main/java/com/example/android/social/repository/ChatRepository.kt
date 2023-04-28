@@ -17,7 +17,6 @@
 package com.example.android.social.repository
 
 import android.content.Context
-import androidx.annotation.MainThread
 import androidx.room.Room
 import com.example.android.social.data.AppDatabase
 import com.example.android.social.model.ChatDetail
@@ -26,7 +25,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -68,18 +66,16 @@ class ChatRepository internal constructor(
         return database.chat().allDetails()
     }
 
-    @MainThread
     fun findChat(chatId: Long): Flow<ChatDetail?> {
         return database.chat().detailById(chatId)
     }
 
-    @MainThread
     fun findMessages(chatId: Long): Flow<List<Message>> {
         return database.message().allByChatId(chatId)
     }
 
-    @MainThread
     suspend fun sendMessage(chatId: Long, text: String, photoUri: String?, photoMimeType: String?) {
+        val detail = database.chat().loadDetailById(chatId) ?: return
         database.message().insert(
             Message(
                 id = 0L,
@@ -91,14 +87,15 @@ class ChatRepository internal constructor(
                 timestamp = System.currentTimeMillis(),
             ),
         )
+        notificationHelper.pushShortcut(detail.firstContact, PushReason.OutgoingMessage)
         CoroutineScope(executor.asCoroutineDispatcher()).launch {
             // The person is typing...
             delay(5000L)
-            val detail = database.chat().detailById(chatId).first() ?: return@launch
             // Receive a reply.
             database.message().insert(
                 detail.firstContact.reply(text).apply { this.chatId = chatId }.build(),
             )
+            notificationHelper.pushShortcut(detail.firstContact, PushReason.IncomingMessage)
             // Show notification if the chat is not on the foreground.
             if (chatId != currentChat) {
                 notificationHelper.showNotification(
