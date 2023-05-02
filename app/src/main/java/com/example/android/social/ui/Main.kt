@@ -16,6 +16,7 @@
 
 package com.example.android.social.ui
 
+import android.content.Intent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,11 +25,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
+import com.example.android.social.model.extractChatId
 import com.example.android.social.ui.chat.Chat
 import com.example.android.social.ui.home.Home
 
 @Composable
-fun Main() {
+fun Main(
+    shortcutParams: ShortcutParams?
+) {
     SocialTheme {
         val navController = rememberNavController()
         NavHost(
@@ -44,15 +49,36 @@ fun Main() {
                 )
             }
             composable(
-                route = "chat/{chatId}",
-                arguments = listOf(navArgument("chatId") { type = NavType.LongType }),
+                route = "chat/{chatId}?text={text}",
+                arguments = listOf(
+                    navArgument("chatId") { type = NavType.LongType },
+                    navArgument("text") { defaultValue = "" },
+                ),
+                deepLinks = listOf(
+                    navDeepLink {
+                        action = Intent.ACTION_VIEW
+                        uriPattern = "https://android.example.com/chat/{chatId}"
+                    },
+                )
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
+                val text = backStackEntry.arguments?.getString("text")
                 Chat(
                     chatId = chatId,
                     foreground = true,
+                    prefilledText = text
                 )
             }
         }
+        if (shortcutParams != null) {
+            val chatId = extractChatId(shortcutParams.shortcutId)
+            val text = shortcutParams.text
+            navController.navigate("chat/$chatId?text=$text")
+        }
     }
 }
+
+data class ShortcutParams(
+    val shortcutId: String,
+    val text: String,
+)

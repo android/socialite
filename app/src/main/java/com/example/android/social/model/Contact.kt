@@ -34,6 +34,8 @@ private val replyModels = mapOf<String, Contact.(String) -> Message.Builder>(
     },
 )
 
+private const val SHORTCUT_PREFIX = "contact_"
+
 @Entity
 data class Contact(
     @PrimaryKey
@@ -58,7 +60,7 @@ data class Contact(
         get() = "https://android.example.com/chat/$id".toUri()
 
     val shortcutId: String
-        get() = "contact_$id"
+        get() = "$SHORTCUT_PREFIX$id"
 
     fun buildReply(body: Message.Builder.() -> Unit) = Message.Builder().apply {
         senderId = this@Contact.id
@@ -69,5 +71,14 @@ data class Contact(
     fun reply(text: String): Message.Builder {
         val model = replyModels[replyModel] ?: { _ -> buildReply { this.text = "Hello" } }
         return model(this, text)
+    }
+}
+
+fun extractChatId(shortcutId: String): Long {
+    if (!shortcutId.startsWith(SHORTCUT_PREFIX)) return 0L
+    return try {
+        shortcutId.substring(SHORTCUT_PREFIX.length).toLong()
+    } catch (e: NumberFormatException) {
+        0L
     }
 }

@@ -16,17 +16,26 @@
 
 package com.example.android.social
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.android.social.ui.Main
+import com.example.android.social.ui.ShortcutParams
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Main()
+            Main(shortcutParams = extractShortcutParams(intent))
         }
+    }
+
+    private fun extractShortcutParams(intent: Intent?): ShortcutParams? {
+        if (intent == null || intent.action != Intent.ACTION_SEND) return null
+        val shortcutId = intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID) ?: return null
+        val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
+        return ShortcutParams(shortcutId, text)
     }
 }

@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -66,9 +67,15 @@ fun Chat(
     chatId: Long,
     foreground: Boolean,
     modifier: Modifier = Modifier,
+    prefilledText: String? = null,
 ) {
     val viewModel: ChatViewModel = viewModel()
     viewModel.setChatId(chatId)
+    prefilledText?.let { text ->
+        LaunchedEffect(text) {
+            viewModel.updateInput(prefilledText)
+        }
+    }
     val chat by viewModel.chat.collectAsState()
     val messages by viewModel.messages.collectAsState()
     val input by viewModel.input.collectAsState()

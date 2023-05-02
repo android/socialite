@@ -102,7 +102,7 @@ class NotificationHelper(context: Context) {
             .setShortLabel(name)
             .setIcon(icon)
             .setLongLived(true)
-            .setCategories(hashSetOf("com.example.android.bubbles.category.TEXT_SHARE_TARGET"))
+            .setCategories(hashSetOf("com.example.android.social.category.SHARE_TARGET"))
             .setIntent(
                 Intent(appContext, MainActivity::class.java)
                     .setAction(Intent.ACTION_VIEW)
