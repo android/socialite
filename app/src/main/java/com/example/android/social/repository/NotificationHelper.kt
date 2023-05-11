@@ -89,7 +89,7 @@ class NotificationHelper(context: Context) {
     }
 
     private fun Contact.toShortcut(
-        additional: ShortcutInfoCompat.Builder.() -> ShortcutInfoCompat.Builder = { this }
+        additional: ShortcutInfoCompat.Builder.() -> ShortcutInfoCompat.Builder = { this },
     ): ShortcutInfoCompat {
         val icon = IconCompat.createWithAdaptiveBitmap(
             appContext.resources.assets.open(icon).use { input ->
@@ -134,7 +134,7 @@ class NotificationHelper(context: Context) {
 
                     else -> this
                 }
-            }
+            },
         )
     }
 
@@ -197,7 +197,7 @@ class NotificationHelper(context: Context) {
                 NotificationCompat.BubbleMetadata.Builder(pendingIntent, icon)
                     // The height of the expanded bubble.
                     .setDesiredHeight(
-                        appContext.resources.getDimensionPixelSize(R.dimen.bubble_height)
+                        appContext.resources.getDimensionPixelSize(R.dimen.bubble_height),
                     )
                     .apply {
                         // When the bubble is explicitly opened by the user, we can show the bubble

@@ -32,7 +32,7 @@ import com.example.android.social.ui.home.Home
 
 @Composable
 fun Main(
-    shortcutParams: ShortcutParams?
+    shortcutParams: ShortcutParams?,
 ) {
     SocialTheme {
         val navController = rememberNavController()
@@ -59,14 +59,14 @@ fun Main(
                         action = Intent.ACTION_VIEW
                         uriPattern = "https://android.example.com/chat/{chatId}"
                     },
-                )
+                ),
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
                 val text = backStackEntry.arguments?.getString("text")
                 Chat(
                     chatId = chatId,
                     foreground = true,
-                    prefilledText = text
+                    prefilledText = text,
                 )
             }
         }
