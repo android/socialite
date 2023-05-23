@@ -34,6 +34,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.Social.SplashScreen"
             android:windowSoftInputMode="adjustResize">
             <!-- This activity is the one that's shown in the launcher. -->
             <intent-filter>

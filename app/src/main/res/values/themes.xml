@@ -15,5 +15,17 @@
   ~ limitations under the License.
 -->
 <resources>
+    <style name="Theme.Social.SplashScreen" parent="Theme.SplashScreen.IconBackground">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <!-- The background color behind the icon. -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/ic_launcher_background</item>
+        <!-- The background color for the splash screen. -->
+        <item name="windowSplashScreenBackground">?android:attr/windowBackground</item>
+        <!-- The duration, in milliseconds, of the icon animation of the splash screen. -->
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <!-- The 'core-splashscreen' library switches back to this theme. -->
+        <item name="postSplashScreenTheme">@style/Theme.Social</item>
+    </style>
+
     <style name="Theme.Social" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
