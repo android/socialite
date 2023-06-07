@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -48,6 +49,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -56,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.android.social.model.Chat
 import com.example.android.social.model.ChatDetail
 import com.example.android.social.model.Contact
@@ -196,8 +200,7 @@ private fun MessageBubble(
     Box(
         modifier = modifier.fillMaxWidth(),
     ) {
-        Text(
-            text = message.text,
+        Column(
             modifier = Modifier
                 .background(
                     if (message.isIncoming) {
@@ -209,7 +212,22 @@ private fun MessageBubble(
                 )
                 .align(if (message.isIncoming) Alignment.TopStart else Alignment.TopEnd)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-        )
+        ) {
+            Text(
+                text = message.text
+            )
+            if (message.photoUri != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current).data(message.photoUri)
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .height(250.dp)
+                        .padding(10.dp)
+                )
+            }
+
+        }
     }
 }
 
