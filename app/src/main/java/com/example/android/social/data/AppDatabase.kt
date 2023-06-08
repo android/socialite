@@ -54,8 +54,8 @@ abstract class AppDatabase : RoomDatabase() {
                         chatId = chatId,
                         senderId = contact.id,
                         text = "Send me a message",
-                        photoUri = null,
-                        photoMimeType = null,
+                        mediaUri = null,
+                        mediaMimeType = null,
                         timestamp = currentTimeMillis,
                     ),
                 )
@@ -65,8 +65,8 @@ abstract class AppDatabase : RoomDatabase() {
                         chatId = chatId,
                         senderId = contact.id,
                         text = "I will reply in 5 seconds",
-                        photoUri = null,
-                        photoMimeType = null,
+                        mediaUri = null,
+                        mediaMimeType = null,
                         timestamp = currentTimeMillis,
                     ),
                 )

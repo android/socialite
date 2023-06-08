@@ -74,7 +74,12 @@ class ChatRepository internal constructor(
         return database.message().allByChatId(chatId)
     }
 
-    suspend fun sendMessage(chatId: Long, text: String, photoUri: String?, photoMimeType: String?) {
+    suspend fun sendMessage(
+        chatId: Long,
+        text: String,
+        mediaUri: String?,
+        mediaMimeType: String?,
+    ) {
         val detail = database.chat().loadDetailById(chatId) ?: return
         database.message().insert(
             Message(
@@ -82,8 +87,8 @@ class ChatRepository internal constructor(
                 chatId = chatId,
                 senderId = 0L, // User
                 text = text,
-                photoUri = photoUri,
-                photoMimeType = photoMimeType,
+                mediaUri = mediaUri,
+                mediaMimeType = mediaMimeType,
                 timestamp = System.currentTimeMillis(),
             ),
         )

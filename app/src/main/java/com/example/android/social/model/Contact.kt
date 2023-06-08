@@ -23,13 +23,19 @@ import androidx.room.PrimaryKey
 
 private val replyModels = mapOf<String, Contact.(String) -> Message.Builder>(
     "cat" to { _ -> buildReply { this.text = "Meow" } },
-    "dog" to { _ -> buildReply { this.text = "Woof woof!!" } },
+    "dog" to { _ ->
+        buildReply {
+            this.text = "Check out the Top 3 Modern Android Development Announcements from I/O '23!"
+            mediaUri = "content://com.example.android.social/video/mad_io23_recap.mp4"
+            mediaMimeType = "video/mp4"
+        }
+    },
     "parrot" to { text -> buildReply { this.text = text } },
     "sheep" to { _ ->
         buildReply {
             this.text = "Look at me!"
-            photo = "content://com.example.android.social/photo/sheep_full.jpg"
-            photoMimeType = "image/jpeg"
+            mediaUri = "content://com.example.android.social/photo/sheep_full.jpg"
+            mediaMimeType = "image/jpeg"
         }
     },
 )

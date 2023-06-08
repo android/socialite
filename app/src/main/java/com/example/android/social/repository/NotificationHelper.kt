@@ -180,8 +180,8 @@ class NotificationHelper(context: Context) {
                 message.timestamp,
                 if (message.isIncoming) person else null,
             ).apply {
-                if (message.photoUri != null) {
-                    setData(message.photoMimeType, message.photoUri.toUri())
+                if (message.mediaUri != null) {
+                    setData(message.mediaMimeType, message.mediaUri.toUri())
                 }
             }
             if (message.id == firstId) {

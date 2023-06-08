@@ -47,8 +47,8 @@ data class Message(
     val chatId: Long,
     val senderId: Long,
     val text: String,
-    val photoUri: String?,
-    val photoMimeType: String?,
+    val mediaUri: String?,
+    val mediaMimeType: String?,
     val timestamp: Long,
 ) {
 
@@ -60,15 +60,23 @@ data class Message(
         var chatId: Long? = null
         var senderId: Long? = null
         var text: String? = null
-        var photo: String? = null
-        var photoMimeType: String? = null
+        var mediaUri: String? = null
+        var mediaMimeType: String? = null
         var timestamp: Long? = null
         fun build(): Message {
             requireNotNull(chatId)
             requireNotNull(senderId)
             requireNotNull(text)
             requireNotNull(timestamp)
-            return Message(id!!, chatId!!, senderId!!, text!!, photo, photoMimeType, timestamp!!)
+            return Message(
+                id!!,
+                chatId!!,
+                senderId!!,
+                text!!,
+                mediaUri,
+                mediaMimeType,
+                timestamp!!
+            )
         }
     }
 }

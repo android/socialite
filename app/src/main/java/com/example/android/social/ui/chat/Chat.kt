@@ -16,6 +16,7 @@
 
 package com.example.android.social.ui.chat
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,6 +67,8 @@ import com.example.android.social.model.Contact
 import com.example.android.social.model.Message
 import com.example.android.social.ui.ChatRow
 import com.example.android.social.ui.SocialTheme
+
+private const val TAG = "ChatUI"
 
 @Composable
 fun Chat(
@@ -216,17 +219,28 @@ private fun MessageBubble(
             Text(
                 text = message.text
             )
-            if (message.photoUri != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(message.photoUri)
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .height(250.dp)
-                        .padding(10.dp)
-                )
+            if (message.mediaUri != null) {
+                val mimeType = message.mediaMimeType
+                if (mimeType != null) {
+                    if (mimeType.contains("image")) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(message.mediaUri)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .height(250.dp)
+                                .padding(10.dp)
+                        )
+                    } else if (mimeType.contains("video")) {
+                        // TODO Display thumbnail of video
+                    } else {
+                        Log.e(TAG, "Unrecognized media type")
+                    }
+                } else {
+                    Log.e(TAG, "No MIME type associated with media object")
+                }
             }
-
         }
     }
 }
