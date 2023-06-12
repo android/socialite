@@ -16,8 +16,12 @@
 
 package com.example.android.social.ui.chat
 
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,13 +32,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,6 +58,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
@@ -238,7 +249,7 @@ private fun MessageBubble(
                                 .padding(10.dp)
                         )
                     } else if (mimeType.contains("video")) {
-                        // TODO Display thumbnail of video
+                        VideoMessagePreview(message.mediaUri)
                     } else {
                         Log.e(TAG, "Unrecognized media type")
                     }
@@ -247,6 +258,37 @@ private fun MessageBubble(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun VideoMessagePreview(videoUri: String) {
+    val mediaMetadataRetriever = MediaMetadataRetriever()
+    mediaMetadataRetriever.setDataSource(LocalContext.current, Uri.parse(videoUri))
+
+    // Return any frame that the framework considers representative of a valid frame
+    val bitmap = mediaMetadataRetriever.frameAtTime
+
+    if (bitmap != null) {
+        Box(modifier = Modifier.padding(10.dp)) {
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(Color.Gray, BlendMode.Darken)
+            )
+
+            Icon(
+                Icons.Filled.PlayArrow,
+                tint = Color.White,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(50.dp)
+                    .align(Alignment.Center)
+                    .border(3.dp, Color.White, shape = CircleShape)
+            )
+        }
+    } else {
+        Log.e(TAG, "Error rendering preview of video")
     }
 }
 
