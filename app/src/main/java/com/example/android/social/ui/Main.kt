@@ -17,6 +17,7 @@
 package com.example.android.social.ui
 
 import android.content.Intent
+import android.media.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,6 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.example.android.social.model.extractChatId
+import com.example.android.social.ui.camera.Camera
+import com.example.android.social.ui.camera.Media
 import com.example.android.social.ui.chat.Chat
 import com.example.android.social.ui.home.Home
 
@@ -66,7 +69,20 @@ fun Main(
                 Chat(
                     chatId = chatId,
                     foreground = true,
+                    onCameraClick = { navController.navigate("chat/$chatId/camera") },
                     prefilledText = text,
+                )
+            }
+            composable(
+                route = "chat/{chatId}/camera",
+                arguments = listOf(
+                    navArgument("chatId") { type = NavType.LongType },
+                )
+            ) { backStackEntry ->
+                val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
+                Camera(onMediaCaptured = { capturedMedia: Media ->
+                        navController.navigate("chat/$chatId")
+                    },
                 )
             }
         }

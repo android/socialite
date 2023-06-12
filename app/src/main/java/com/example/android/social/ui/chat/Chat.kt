@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -75,6 +76,7 @@ fun Chat(
     chatId: Long,
     foreground: Boolean,
     modifier: Modifier = Modifier,
+    onCameraClick: () -> Unit,
     prefilledText: String? = null,
 ) {
     val viewModel: ChatViewModel = viewModel()
@@ -94,6 +96,7 @@ fun Chat(
             input = input,
             onInputChanged = { viewModel.updateInput(it) },
             onSendClick = { viewModel.send() },
+            onCameraClick = onCameraClick,
             modifier = modifier,
         )
     }
@@ -134,6 +137,7 @@ private fun ChatContent(
     input: String,
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
+    onCameraClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -153,6 +157,7 @@ private fun ChatContent(
                 input = input,
                 onInputChanged = onInputChanged,
                 onSendClick = onSendClick,
+                onCameraClick = onCameraClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.ime),
@@ -251,9 +256,17 @@ private fun InputBar(
     input: String,
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
+    onCameraClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier) {
+        IconButton(onClick = onCameraClick) {
+            Icon(
+                imageVector = Icons.Default.PhotoCamera,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
         OutlinedTextField(
             value = input,
             onValueChange = onInputChanged,
@@ -288,6 +301,7 @@ private fun PreviewChatContent() {
             input = "Hello",
             onInputChanged = {},
             onSendClick = {},
+            onCameraClick = {}
         )
     }
 }

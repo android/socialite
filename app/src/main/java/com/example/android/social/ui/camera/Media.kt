@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-package com.example.android.social.ui
+package com.example.android.social.ui.camera
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.android.social.ui.chat.Chat
+import android.media.Image
+import android.provider.MediaStore.Video
 
-@Composable
-fun Bubble(chatId: Long) {
-    SocialTheme {
-        Chat(
-            chatId = chatId,
-            foreground = false,
-            onCameraClick = {}, //TODO (donovanfm): Hook up camera button in the Bubble composable
-            modifier = Modifier.fillMaxSize(),
-        )
+data class Media(var image: Image?, var video: Video?) {
+    init {
+        require((image == null) || (video == null)) {
+            "Only image or video can be specified, not both."
+        }
     }
+    constructor(i:Image): this(i, null)
+    constructor(v:Video): this(null, v)
+    constructor(): this(null, null)
 }
