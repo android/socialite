@@ -75,7 +75,7 @@ data class Message(
                 text!!,
                 mediaUri,
                 mediaMimeType,
-                timestamp!!
+                timestamp!!,
             )
         }
     }

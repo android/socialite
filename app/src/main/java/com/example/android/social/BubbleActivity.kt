@@ -19,7 +19,6 @@ package com.example.android.social
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.navigation.compose.rememberNavController
 import com.example.android.social.ui.Bubble
 
 class BubbleActivity : ComponentActivity() {

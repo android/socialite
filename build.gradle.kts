@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id 'com.android.application' version '8.0.1' apply false
-    id 'com.android.library' version '8.0.1' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.10' apply false
-    id 'com.diffplug.spotless' version '6.14.1' apply false
+    alias(libs.plugins.android.application).apply(false)
+    alias(libs.plugins.android.library).apply(false)
+    alias(libs.plugins.kotlin.android).apply(false)
+    alias(libs.plugins.spotless).apply(false)
 }
 
 subprojects {
-    apply plugin: 'com.diffplug.spotless'
-    spotless {
+    apply(plugin = "com.diffplug.spotless")
+    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         kotlin {
-            target '**/*.kt'
-            ktlint('0.48.2')
+            target("**/*.kt")
+            ktlint("0.48.2")
         }
     }
 }

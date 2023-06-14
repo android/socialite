@@ -222,7 +222,7 @@ private fun MessageBubble(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
             Text(
-                text = message.text
+                text = message.text,
             )
             if (message.mediaUri != null) {
                 val mimeType = message.mediaMimeType
@@ -235,7 +235,7 @@ private fun MessageBubble(
                             contentDescription = null,
                             modifier = Modifier
                                 .height(250.dp)
-                                .padding(10.dp)
+                                .padding(10.dp),
                         )
                     } else if (mimeType.contains("video")) {
                         // TODO Display thumbnail of video
@@ -301,7 +301,7 @@ private fun PreviewChatContent() {
             input = "Hello",
             onInputChanged = {},
             onSendClick = {},
-            onCameraClick = {}
+            onCameraClick = {},
         )
     }
 }

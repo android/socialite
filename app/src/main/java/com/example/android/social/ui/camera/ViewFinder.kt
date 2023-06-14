@@ -16,35 +16,29 @@
 
 package com.example.android.social.ui.camera
 
-import android.media.Image
 import androidx.camera.core.Preview
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import com.example.android.social.R
 import com.example.android.social.ui.camera.viewfinder.CameraPreview
 
 @Composable
-fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {} ) {
+fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {}) {
     val context = LocalContext.current
 
 //    if (cameraState == CameraState.NOT_READY) {
 //        Text(text = stringResource(R.string.camera_not_ready))
 //    } else if (cameraState == CameraState.READY) {
-        Box {
-            CameraPreview(
-                modifier = Modifier.fillMaxSize(),
-                onSurfaceProviderReady = onSurfaceProviderReady,
-                onRequestBitmapReady = {
-                    val bitmap = it.invoke()
-                }
-            )
-        }
+    Box {
+        CameraPreview(
+            modifier = Modifier.fillMaxSize(),
+            onSurfaceProviderReady = onSurfaceProviderReady,
+            onRequestBitmapReady = {
+                val bitmap = it.invoke()
+            },
+        )
     }
-//}
+}
+// }

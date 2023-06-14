@@ -17,7 +17,6 @@
 package com.example.android.social.ui
 
 import android.content.Intent
-import android.media.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -77,10 +76,11 @@ fun Main(
                 route = "chat/{chatId}/camera",
                 arguments = listOf(
                     navArgument("chatId") { type = NavType.LongType },
-                )
+                ),
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-                Camera(onMediaCaptured = { capturedMedia: Media ->
+                Camera(
+                    onMediaCaptured = { capturedMedia: Media ->
                         navController.navigate("chat/$chatId")
                     },
                 )

@@ -19,8 +19,6 @@ package com.example.android.social.ui
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.android.social.ui.chat.Chat
 
 @Composable
@@ -29,7 +27,7 @@ fun Bubble(chatId: Long) {
         Chat(
             chatId = chatId,
             foreground = false,
-            onCameraClick = {}, //TODO (donovanfm): Hook up camera button in the Bubble composable
+            onCameraClick = {}, // TODO (donovanfm): Hook up camera button in the Bubble composable
             modifier = Modifier.fillMaxSize(),
         )
     }

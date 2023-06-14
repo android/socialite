@@ -25,7 +25,7 @@ data class Media(var image: Image?, var video: Video?) {
             "Only image or video can be specified, not both."
         }
     }
-    constructor(i:Image): this(i, null)
-    constructor(v:Video): this(null, v)
-    constructor(): this(null, null)
+    constructor(i: Image) : this(i, null)
+    constructor(v: Video) : this(null, v)
+    constructor() : this(null, null)
 }

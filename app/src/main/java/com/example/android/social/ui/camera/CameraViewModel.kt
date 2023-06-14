@@ -29,7 +29,6 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.compose.ui.platform.LocalContext
 import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
@@ -58,7 +57,7 @@ class CameraViewModel @JvmOverloads constructor(
         .setTargetAspectRatio(AspectRatio.RATIO_16_9)
         .build()
 
-    fun initialize(): Unit {
+    fun initialize() {
         initializeJob = viewModelScope.launch {
             context = getApplication()
             cameraProvider = ProcessCameraProvider.getInstance(context).await()
@@ -67,7 +66,7 @@ class CameraViewModel @JvmOverloads constructor(
 
     fun startPreview(
         lifecycleOwner: LifecycleOwner,
-        surfaceProvider: Preview.SurfaceProvider
+        surfaceProvider: Preview.SurfaceProvider,
     ) {
         viewModelScope.launch {
             initializeJob.join()
@@ -80,7 +79,7 @@ class CameraViewModel @JvmOverloads constructor(
                 lifecycleOwner,
                 cameraSelector,
                 previewUseCase,
-                imageCaptureUseCase
+                imageCaptureUseCase,
             )
             viewFinderState.value.cameraState = CameraState.READY
         }
@@ -93,7 +92,7 @@ class CameraViewModel @JvmOverloads constructor(
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/SociaLite")
             }
         }
@@ -103,7 +102,8 @@ class CameraViewModel @JvmOverloads constructor(
             .Builder(
                 context.contentResolver,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues)
+                contentValues,
+            )
             .build()
         imageCaptureUseCase.takePicture(
             outputOptions,
@@ -115,11 +115,12 @@ class CameraViewModel @JvmOverloads constructor(
                 }
 
                 override fun
-                        onImageSaved(output: ImageCapture.OutputFileResults){
+                onImageSaved(output: ImageCapture.OutputFileResults) {
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
-            })
+            },
+        )
     }
 
     companion object {
@@ -129,7 +130,7 @@ class CameraViewModel @JvmOverloads constructor(
 
 data class ViewFinderState(
     var cameraState: CameraState = CameraState.NOT_READY,
-    val lensFacing: Int = CameraSelector.LENS_FACING_BACK
+    val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
 )
 
 /**
@@ -149,5 +150,5 @@ enum class CameraState {
     /**
      * Camera is initialized but the preview has been stopped.
      */
-    PREVIEW_STOPPED
+    PREVIEW_STOPPED,
 }

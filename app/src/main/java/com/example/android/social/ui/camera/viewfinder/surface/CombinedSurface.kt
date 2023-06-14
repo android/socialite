@@ -20,7 +20,8 @@ import android.graphics.Bitmap
 import android.util.Log
 import android.view.Surface
 import androidx.compose.runtime.Composable
-import com.example.android.social.ui.camera.viewfinder.surface.SurfaceType.*
+import com.example.android.social.ui.camera.viewfinder.surface.SurfaceType.SURFACE_VIEW
+import com.example.android.social.ui.camera.viewfinder.surface.SurfaceType.TEXTURE_VIEW
 
 private const val TAG = "CombinedSurface"
 
@@ -70,14 +71,14 @@ fun CombinedSurface(
                 }
                 true
             },
-            onRequestBitmapReady
+            onRequestBitmapReady,
         )
     }
 }
 
 sealed interface CombinedSurfaceEvent {
     data class SurfaceAvailable(
-        val surface: Surface
+        val surface: Surface,
     ) : CombinedSurfaceEvent
 
     object SurfaceDestroyed : CombinedSurfaceEvent
@@ -86,4 +87,3 @@ sealed interface CombinedSurfaceEvent {
 enum class SurfaceType {
     SURFACE_VIEW, TEXTURE_VIEW
 }
-
