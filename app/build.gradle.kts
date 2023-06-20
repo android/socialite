@@ -105,6 +105,9 @@ dependencies {
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
 
+    implementation (libs.media3.ui)
+    implementation (libs.media3.exoplayer)
+
     implementation("androidx.compose.material:material-icons-extended")
 
     androidTestImplementation(libs.turbine)

@@ -16,12 +16,14 @@
 
 package com.example.android.social.ui.chat
 
+import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,6 +75,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.android.social.VIDEO_URI_EXTRA
+import com.example.android.social.VideoPlayerActivity
 import com.example.android.social.model.Chat
 import com.example.android.social.model.ChatDetail
 import com.example.android.social.model.Contact
@@ -216,6 +220,8 @@ private fun MessageBubble(
     message: Message,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+
     Box(
         modifier = modifier.fillMaxWidth(),
     ) {
@@ -249,7 +255,13 @@ private fun MessageBubble(
                                 .padding(10.dp),
                         )
                     } else if (mimeType.contains("video")) {
-                        VideoMessagePreview(message.mediaUri)
+                        VideoMessagePreview(
+                            videoUri = message.mediaUri,
+                            onClick = {
+                                val intent = Intent(context, VideoPlayerActivity::class.java)
+                                intent.putExtra(VIDEO_URI_EXTRA, message.mediaUri)
+                                context.startActivity(intent)
+                            })
                     } else {
                         Log.e(TAG, "Unrecognized media type")
                     }
@@ -262,7 +274,7 @@ private fun MessageBubble(
 }
 
 @Composable
-private fun VideoMessagePreview(videoUri: String) {
+private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
     val mediaMetadataRetriever = MediaMetadataRetriever()
     mediaMetadataRetriever.setDataSource(LocalContext.current, Uri.parse(videoUri))
 
@@ -270,7 +282,11 @@ private fun VideoMessagePreview(videoUri: String) {
     val bitmap = mediaMetadataRetriever.frameAtTime
 
     if (bitmap != null) {
-        Box(modifier = Modifier.padding(10.dp)) {
+        Box(modifier = Modifier
+            .clickable {
+                onClick()
+            }
+            .padding(10.dp)) {
             Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = null,
