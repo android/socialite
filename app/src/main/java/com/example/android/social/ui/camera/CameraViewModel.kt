@@ -29,8 +29,16 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.MediaStoreOutputOptions
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
+import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
+import androidx.core.util.Consumer
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
@@ -46,15 +54,28 @@ class CameraViewModel @JvmOverloads constructor(
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
     private lateinit var initializeJob: Job
+
     private lateinit var context: Context
     var viewFinderState = MutableStateFlow(ViewFinderState())
+
+    private val previewUseCase = Preview.Builder()
+        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+        .build()
 
     private val imageCaptureUseCase = ImageCapture.Builder()
         .setTargetAspectRatio(AspectRatio.RATIO_16_9)
         .build()
 
-    private val previewUseCase = Preview.Builder()
-        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+    private val recorder = Recorder.Builder()
+        .setAspectRatio(AspectRatio.RATIO_16_9)
+        .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+        .build()
+
+    private var currentRecording: Recording? = null
+    private var audioEnabled = false
+    private lateinit var recordingState:VideoRecordEvent
+
+    private val videoCaptureUseCase = VideoCapture.Builder(recorder)
         .build()
 
     fun initialize() {
@@ -80,6 +101,7 @@ class CameraViewModel @JvmOverloads constructor(
                 cameraSelector,
                 previewUseCase,
                 imageCaptureUseCase,
+                videoCaptureUseCase
             )
             viewFinderState.value.cameraState = CameraState.READY
         }
@@ -121,6 +143,46 @@ class CameraViewModel @JvmOverloads constructor(
                 }
             },
         )
+    }
+
+    fun startVideoCapture() {
+        val name = "Socialite-recording-" +
+                SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                    .format(System.currentTimeMillis()) + ".mp4"
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Video.Media.DISPLAY_NAME, name)
+        }
+        val mediaStoreOutput = MediaStoreOutputOptions.Builder(
+            context.contentResolver,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+            .setContentValues(contentValues)
+            .build()
+
+        // configure Recorder and Start recording to the mediaStoreOutput.
+        currentRecording = videoCaptureUseCase.output
+            .prepareRecording(context, mediaStoreOutput)
+            .apply { if (audioEnabled) withAudioEnabled() }
+            .start(ContextCompat.getMainExecutor(context), captureListener)
+    }
+
+    private val captureListener = Consumer<VideoRecordEvent> { event ->
+        recordingState = event
+        if (event is VideoRecordEvent.Finalize) {
+            val msg = "Video capture succeeded: ${event.outputResults.outputUri}"
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun saveVideo() {
+        if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
+            return
+        }
+
+        val recording = currentRecording
+        if (recording != null) {
+            recording.stop()
+            currentRecording = null
+        }
     }
 
     companion object {
