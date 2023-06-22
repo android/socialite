@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package com.example.android.social.ui.camera
+package com.example.android.social.ui.media
 
-import android.net.Uri
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
-data class Media(var uri: Uri, var mediaType: MediaType) {}
-
-enum class MediaType {
-    PHOTO, VIDEO
+@Composable
+fun VideoEdit(uri: String) {
+    //TODO: Implement VideoEdit screen. Currently just displaying the video URI as text.
+    Text(
+        modifier = Modifier.padding(50.dp),
+        text = uri,
+    )
 }

@@ -107,7 +107,7 @@ class CameraViewModel @JvmOverloads constructor(
         }
     }
 
-    fun capturePhoto() {
+    fun capturePhoto(onMediaCaptured: (Media) -> Unit) {
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
             .format(System.currentTimeMillis())
@@ -136,16 +136,19 @@ class CameraViewModel @JvmOverloads constructor(
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
 
-                override fun
-                onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    if (output.savedUri != null) {
+                        onMediaCaptured(Media(output.savedUri!!, MediaType.PHOTO))
+                    } else {
+                        val msg = "Photo capture failed."
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                    }
                 }
             },
         )
     }
 
-    fun startVideoCapture() {
+    fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
         val name = "Socialite-recording-" +
                 SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                     .format(System.currentTimeMillis()) + ".mp4"
@@ -158,19 +161,18 @@ class CameraViewModel @JvmOverloads constructor(
             .setContentValues(contentValues)
             .build()
 
+        val captureListener = Consumer<VideoRecordEvent> { event ->
+            recordingState = event
+            if (event is VideoRecordEvent.Finalize) {
+                onMediaCaptured(Media(event.outputResults.outputUri, MediaType.VIDEO))
+            }
+        }
+
         // configure Recorder and Start recording to the mediaStoreOutput.
         currentRecording = videoCaptureUseCase.output
             .prepareRecording(context, mediaStoreOutput)
             .apply { if (audioEnabled) withAudioEnabled() }
             .start(ContextCompat.getMainExecutor(context), captureListener)
-    }
-
-    private val captureListener = Consumer<VideoRecordEvent> { event ->
-        recordingState = event
-        if (event is VideoRecordEvent.Finalize) {
-            val msg = "Video capture succeeded: ${event.outputResults.outputUri}"
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-        }
     }
 
     fun saveVideo() {

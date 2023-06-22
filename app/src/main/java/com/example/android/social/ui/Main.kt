@@ -29,8 +29,10 @@ import androidx.navigation.navDeepLink
 import com.example.android.social.model.extractChatId
 import com.example.android.social.ui.camera.Camera
 import com.example.android.social.ui.camera.Media
+import com.example.android.social.ui.camera.MediaType
 import com.example.android.social.ui.chat.Chat
 import com.example.android.social.ui.home.Home
+import com.example.android.social.ui.media.VideoEdit
 
 @Composable
 fun Main(
@@ -80,12 +82,37 @@ fun Main(
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
                 Camera(
-                    onMediaCaptured = { capturedMedia: Media ->
-                        navController.navigate("chat/$chatId")
+                    onMediaCaptured = { capturedMedia: Media? ->
+                        when (capturedMedia?.mediaType) {
+                            MediaType.PHOTO -> {
+                                // TODO: Add photo to chat messages.
+                                navController.navigate("chat/$chatId")
+                            }
+                            MediaType.VIDEO -> {
+                                navController.navigate("videoEdit?uri=${capturedMedia.uri}")
+                            }
+                            else -> {
+                                // No media to use.
+                                navController.navigate("chat/$chatId")
+                            }
+                        }
                     },
                 )
             }
+            composable(
+                route = "videoEdit?uri={videoUri}",
+                arguments = listOf(
+                    navArgument("videoUri") { type = NavType.StringType },
+                ),
+            ) { backStackEntry ->
+                val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
+                VideoEdit(
+                    uri = videoUri
+                )
+            }
         }
+
+
         if (shortcutParams != null) {
             val chatId = extractChatId(shortcutParams.shortcutId)
             val text = shortcutParams.text

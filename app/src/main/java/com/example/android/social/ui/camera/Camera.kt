@@ -54,7 +54,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Camera(onMediaCaptured: (Media) -> Unit) {
+fun Camera(onMediaCaptured: (Media?) -> Unit) {
     // TODO (donovanfm): implement switchable camera (front and back)
     // var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
 
@@ -81,7 +81,7 @@ fun Camera(onMediaCaptured: (Media) -> Unit) {
                         .height(50.dp),
                 ) {
                     IconButton(onClick = {
-                        onMediaCaptured(Media()) // An empty Media object
+                        onMediaCaptured(null)
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
@@ -138,7 +138,7 @@ fun Camera(onMediaCaptured: (Media) -> Unit) {
                 ) {
                     if (captureMode == CaptureMode.PHOTO) {
                         Button(
-                            onClick = { viewModel.capturePhoto() },
+                            onClick = { viewModel.capturePhoto(onMediaCaptured) },
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                             modifier = Modifier.height(75.dp).width(75.dp)
@@ -148,7 +148,7 @@ fun Camera(onMediaCaptured: (Media) -> Unit) {
                             onClick =
                             {
                                 captureMode = CaptureMode.VIDEO_RECORDING
-                                viewModel.startVideoCapture()
+                                viewModel.startVideoCapture(onMediaCaptured)
                             },
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
