@@ -32,7 +32,7 @@ import com.example.android.social.ui.camera.Media
 import com.example.android.social.ui.camera.MediaType
 import com.example.android.social.ui.chat.Chat
 import com.example.android.social.ui.home.Home
-import com.example.android.social.ui.media.VideoEdit
+import com.example.android.social.ui.media.VideoEditScreen
 
 @Composable
 fun Main(
@@ -106,7 +106,7 @@ fun Main(
                 ),
             ) { backStackEntry ->
                 val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
-                VideoEdit(
+                VideoEditScreen(
                     uri = videoUri
                 )
             }

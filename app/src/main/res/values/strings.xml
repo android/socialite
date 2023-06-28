@@ -35,4 +35,10 @@
     <string name="camera_not_available">Camera not available.</string>
     <string name="camera_not_ready">Camera not ready. Please wait.</string>
     <string name="request_permission">Request permission</string>
+
+    <!-- Video Edit Screen -->
+    <string name="remove_audio">Remove audio</string>
+    <string name="save_edited_video">Save Edited Video</string>
+    <string name="send_video">Send Video</string>
+
 </resources>
