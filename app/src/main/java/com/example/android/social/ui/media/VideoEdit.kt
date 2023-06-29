@@ -16,53 +16,86 @@
 
 package com.example.android.social.ui.media
 
+import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.ExportException
+import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.TransformationRequest
+import androidx.media3.transformer.Transformer
 import com.example.android.social.R
+import com.example.android.social.ui.camera.CameraViewModel
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 private const val TAG = "VideoEditScreen"
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun VideoEditScreen(uri: String) {
+    val context = LocalContext.current
+
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
+
+    val transformerListener: Transformer.Listener =
+        object : Transformer.Listener {
+            override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                Toast.makeText(context, "Edited video saved", Toast.LENGTH_LONG).show()
+            }
+
+            override fun onError(
+                composition: Composition,
+                exportResult: ExportResult,
+                exportException: ExportException
+            ) {
+                exportException.printStackTrace()
+                Toast.makeText(context, "Error applying edits on video", Toast.LENGTH_LONG).show()
+            }
+        }
 
     Column(
         modifier = Modifier
@@ -79,7 +112,7 @@ fun VideoEditScreen(uri: String) {
         Spacer(modifier = Modifier.weight(1f))
         Row(verticalAlignment = Alignment.Bottom) {
             Button(modifier = Modifier.padding(10.dp), onClick = {
-                // TODO Implement saving transformed video
+                applyVideoTransformation(context, uri, removeAudioEnabled, transformerListener)
             }) {
                 Text(text = stringResource(R.string.save_edited_video))
             }
@@ -91,6 +124,50 @@ fun VideoEditScreen(uri: String) {
             }
         }
     }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+fun applyVideoTransformation(
+    context: Context,
+    videoUri: String,
+    removeAudio: Boolean,
+    transformerListener: Transformer.Listener
+) {
+    val transformer = Transformer.Builder(context)
+        .setTransformationRequest(
+            // TODO In a future release of media3-transformer, we will be able to call
+            //  setVideoMimeType on Transformer directly.
+            TransformationRequest.Builder()
+                .setVideoMimeType(MimeTypes.VIDEO_H264)
+                .build()
+        )
+        .addListener(transformerListener)
+        .build()
+
+    val editedMediaItem =
+        EditedMediaItem.Builder(MediaItem.fromUri(videoUri)).setRemoveAudio(removeAudio).build()
+
+    val editedVideoFileName = "Socialite-edited-recording-" +
+            SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis()) + ".mp4"
+
+    // TODO: Investigate using MediaStoreOutputOptions instead of external cache file for saving
+    //  edited video https://github.com/androidx/media/issues/504
+    transformer.start(editedMediaItem, createNewVideoFilePath(context, editedVideoFileName))
+}
+
+fun createNewVideoFilePath(context: Context, fileName: String): String {
+    val externalCacheFile = createExternalCacheFile(context, fileName)
+    return externalCacheFile.absolutePath
+}
+
+/** Creates a cache file, resetting it if it already exists.  */
+@Throws(IOException::class)
+private fun createExternalCacheFile(context: Context, fileName: String): File {
+    val file = File(context.externalCacheDir, fileName)
+    check(!(file.exists() && !file.delete())) { "Could not delete the previous transformer output file" }
+    check(file.createNewFile()) { "Could not create the transformer output file" }
+    return file
 }
 
 @Composable
