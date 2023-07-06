@@ -19,14 +19,15 @@ package com.example.android.social.ui
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.android.social.ui.chat.Chat
+import com.example.android.social.ui.chat.ChatScreen
 
 @Composable
 fun Bubble(chatId: Long) {
     SocialTheme {
-        Chat(
+        ChatScreen(
             chatId = chatId,
             foreground = false,
+            onBackPressed = null,
             onCameraClick = {}, // TODO (donovanfm): Hook up camera button in the Bubble composable
             modifier = Modifier.fillMaxSize(),
         )

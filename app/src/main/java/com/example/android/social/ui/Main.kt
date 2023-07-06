@@ -30,7 +30,7 @@ import com.example.android.social.model.extractChatId
 import com.example.android.social.ui.camera.Camera
 import com.example.android.social.ui.camera.Media
 import com.example.android.social.ui.camera.MediaType
-import com.example.android.social.ui.chat.Chat
+import com.example.android.social.ui.chat.ChatScreen
 import com.example.android.social.ui.home.Home
 import com.example.android.social.ui.media.VideoEditScreen
 
@@ -67,9 +67,10 @@ fun Main(
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
                 val text = backStackEntry.arguments?.getString("text")
-                Chat(
+                ChatScreen(
                     chatId = chatId,
                     foreground = true,
+                    onBackPressed = { navController.popBackStack() },
                     onCameraClick = { navController.navigate("chat/$chatId/camera") },
                     prefilledText = text,
                 )
@@ -107,11 +108,10 @@ fun Main(
             ) { backStackEntry ->
                 val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
                 VideoEditScreen(
-                    uri = videoUri
+                    uri = videoUri,
                 )
             }
         }
-
 
         if (shortcutParams != null) {
             val chatId = extractChatId(shortcutParams.shortcutId)

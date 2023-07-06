@@ -45,7 +45,6 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(
     onChatClicked: (chatId: Long) -> Unit,
