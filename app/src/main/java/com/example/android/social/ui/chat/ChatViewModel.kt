@@ -24,7 +24,9 @@ import com.example.android.social.ui.stateInUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class ChatViewModel @JvmOverloads constructor(
@@ -35,14 +37,38 @@ class ChatViewModel @JvmOverloads constructor(
     private val _chatId = MutableStateFlow(0L)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val chat = _chatId
-        .flatMapLatest { id -> repository.findChat(id) }
-        .stateInUi(null)
+    private val _chat = _chatId.flatMapLatest { id -> repository.findChat(id) }
+
+    private val _attendees = _chat.map { c -> (c?.attendees ?: emptyList()).associateBy { it.id } }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val messages = _chatId
-        .flatMapLatest { id -> repository.findMessages(id) }
-        .stateInUi(emptyList())
+    private val _messages = _chatId.flatMapLatest { id -> repository.findMessages(id) }
+
+    val chat = _chat.stateInUi(null)
+
+    val messages = combine(_messages, _attendees) { messages, attendees ->
+        // Build a list of `ChatMessage` from this list of `Message`.
+        buildList {
+            for (i in messages.indices) {
+                val message = messages[i]
+                // Show the contact icon only at the first message if the same sender has multiple
+                // messages in a row.
+                val showIcon = i + 1 >= messages.size ||
+                    messages[i + 1].senderId != message.senderId
+                val iconUri = if (showIcon) attendees[message.senderId]?.iconUri else null
+                add(
+                    ChatMessage(
+                        text = message.text,
+                        mediaUri = message.mediaUri,
+                        mediaMimeType = message.mediaMimeType,
+                        timestamp = message.timestamp,
+                        isIncoming = message.isIncoming,
+                        senderIconUri = iconUri,
+                    ),
+                )
+            }
+        }
+    }.stateInUi(emptyList())
 
     private val _input = MutableStateFlow("")
     val input: StateFlow<String> = _input

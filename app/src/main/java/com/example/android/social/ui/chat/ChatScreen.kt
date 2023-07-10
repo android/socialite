@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -41,7 +42,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -98,7 +98,6 @@ import com.example.android.social.VideoPlayerActivity
 import com.example.android.social.model.Chat
 import com.example.android.social.model.ChatDetail
 import com.example.android.social.model.Contact
-import com.example.android.social.model.Message
 import com.example.android.social.ui.SocialTheme
 import com.example.android.social.ui.rememberIconPainter
 
@@ -168,7 +167,7 @@ private fun LifecycleEffect(
 @Composable
 private fun ChatContent(
     chat: ChatDetail,
-    messages: List<Message>,
+    messages: List<ChatMessage>,
     input: String,
     onBackPressed: (() -> Unit)?,
     onInputChanged: (String) -> Unit,
@@ -267,14 +266,7 @@ private fun ShortChatRow(
     ) {
         // This only supports DM for now.
         val contact = chat.attendees.first()
-        Image(
-            painter = rememberIconPainter(contentUri = contact.iconUri),
-            contentDescription = null,
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray),
-        )
+        SmallContactIcon(iconUri = contact.iconUri, size = 32.dp)
         Text(
             text = contact.name,
             style = MaterialTheme.typography.bodyLarge,
@@ -283,8 +275,20 @@ private fun ShortChatRow(
 }
 
 @Composable
+private fun SmallContactIcon(iconUri: Uri, size: Dp) {
+    Image(
+        painter = rememberIconPainter(contentUri = iconUri),
+        contentDescription = null,
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(Color.LightGray),
+    )
+}
+
+@Composable
 private fun MessageList(
-    messages: List<Message>,
+    messages: List<ChatMessage>,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -295,40 +299,47 @@ private fun MessageList(
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {
         items(items = messages) { message ->
-            MessageBubble(
-                message = message,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(
+                    16.dp,
+                    if (message.isIncoming) Alignment.Start else Alignment.End,
+                ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val iconSize = 48.dp
+                if (message.senderIconUri != null) {
+                    SmallContactIcon(iconUri = message.senderIconUri, size = iconSize)
+                } else {
+                    Spacer(modifier = Modifier.size(iconSize))
+                }
+                MessageBubble(message = message)
+            }
         }
     }
 }
 
 @Composable
 private fun MessageBubble(
-    message: Message,
+    message: ChatMessage,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-
-    Box(
-        modifier = modifier.fillMaxWidth(),
+    Surface(
+        modifier = modifier,
+        color = if (message.isIncoming) {
+            MaterialTheme.colorScheme.secondaryContainer
+        } else {
+            MaterialTheme.colorScheme.primary
+        },
+        shape = MaterialTheme.shapes.large,
     ) {
         Column(
-            modifier = Modifier
-                .background(
-                    if (message.isIncoming) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.secondaryContainer
-                    },
-                    RoundedCornerShape(16.dp),
-                )
-                .align(if (message.isIncoming) Alignment.TopStart else Alignment.TopEnd)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(16.dp),
         ) {
-            Text(
-                text = message.text,
-            )
+            Text(text = message.text)
             if (message.mediaUri != null) {
                 val mimeType = message.mediaMimeType
                 if (mimeType != null) {
@@ -481,10 +492,11 @@ private fun PreviewChatContent() {
         ChatContent(
             chat = ChatDetail(Chat(0L), listOf(Contact.CONTACTS[0])),
             messages = listOf(
-                Message(1L, 1L, 1L, "Hello", null, null, 0L),
-                Message(2L, 2L, 1L, "world", null, null, 0L),
-                Message(3L, 3L, 1L, "!", null, null, 0L),
-                Message(4L, 4L, 1L, "Hello, world!", null, null, 0L),
+                ChatMessage("Hi!", null, null, 0L, false, null),
+                ChatMessage("Hello", null, null, 0L, true, null),
+                ChatMessage("world", null, null, 0L, true, null),
+                ChatMessage("!", null, null, 0L, true, null),
+                ChatMessage("Hello, world!", null, null, 0L, true, null),
             ),
             input = "Hello",
             onBackPressed = {},

@@ -67,7 +67,7 @@ abstract class AppDatabase : RoomDatabase() {
                         text = "I will reply in 5 seconds",
                         mediaUri = null,
                         mediaMimeType = null,
-                        timestamp = currentTimeMillis,
+                        timestamp = currentTimeMillis + 1L,
                     ),
                 )
             }
