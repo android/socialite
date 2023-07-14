@@ -72,7 +72,6 @@ class CameraViewModel @JvmOverloads constructor(
         .build()
 
     private var currentRecording: Recording? = null
-    private var audioEnabled = false
     private lateinit var recordingState:VideoRecordEvent
 
     private val videoCaptureUseCase = VideoCapture.Builder(recorder)
@@ -154,6 +153,10 @@ class CameraViewModel @JvmOverloads constructor(
                     .format(System.currentTimeMillis()) + ".mp4"
         val contentValues = ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/SociaLite")
+            }
         }
         val mediaStoreOutput = MediaStoreOutputOptions.Builder(
             context.contentResolver,
@@ -171,7 +174,7 @@ class CameraViewModel @JvmOverloads constructor(
         // configure Recorder and Start recording to the mediaStoreOutput.
         currentRecording = videoCaptureUseCase.output
             .prepareRecording(context, mediaStoreOutput)
-            .apply { if (audioEnabled) withAudioEnabled() }
+            .apply { withAudioEnabled() } // TODO Add permission check for RECORD_AUDIO
             .start(ContextCompat.getMainExecutor(context), captureListener)
     }
 
