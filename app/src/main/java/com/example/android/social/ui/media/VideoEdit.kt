@@ -23,6 +23,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,10 +31,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material3.Button
@@ -41,6 +45,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,6 +85,9 @@ fun VideoEditScreen(uri: String) {
     val context = LocalContext.current
 
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
+    var overlayText by rememberSaveable { mutableStateOf("") }
+    var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
+    var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
 
     val transformerListener: Transformer.Listener =
         object : Transformer.Listener {
@@ -100,7 +108,9 @@ fun VideoEditScreen(uri: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 100.dp, bottom = 100.dp),
+            .padding(top = 100.dp, bottom = 100.dp)
+            .imePadding()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         VideoMessagePreview(uri)
@@ -108,11 +118,35 @@ fun VideoEditScreen(uri: String) {
         CheckBoxWithText(
             text = stringResource(R.string.remove_audio),
             checkedState = removeAudioEnabled,
-            onCheckChange = { removeAudioEnabled = it })
+            onCheckChange = { removeAudioEnabled = it },
+            fillRow = true
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        TextOverlayOption(
+            inputtedText = overlayText,
+            inputtedTextChange = {
+                // Limit character count to 20
+                if (it.length <= 20) {
+                    overlayText = it
+                }
+            },
+            redTextCheckedState = redOverlayTextEnabled,
+            redTextCheckedStateChange = { redOverlayTextEnabled = it },
+            largeTextCheckedState = largeOverlayTextEnabled,
+            largeTextCheckedStateChange = { largeOverlayTextEnabled = it }
+        )
         Spacer(modifier = Modifier.weight(1f))
         Row(verticalAlignment = Alignment.Bottom) {
             Button(modifier = Modifier.padding(10.dp), onClick = {
-                applyVideoTransformation(context, uri, removeAudioEnabled, transformerListener)
+                applyVideoTransformation(
+                    context = context,
+                    videoUri = uri,
+                    removeAudio = removeAudioEnabled,
+                    textOverlayText = overlayText,
+                    textOverlayRedSelected = redOverlayTextEnabled,
+                    textOverlayLargeSelected = largeOverlayTextEnabled,
+                    transformerListener
+                )
             }) {
                 Text(text = stringResource(R.string.save_edited_video))
             }
@@ -131,6 +165,9 @@ fun applyVideoTransformation(
     context: Context,
     videoUri: String,
     removeAudio: Boolean,
+    textOverlayText: String,
+    textOverlayRedSelected: Boolean,
+    textOverlayLargeSelected: Boolean,
     transformerListener: Transformer.Listener
 ) {
     val transformer = Transformer.Builder(context)
@@ -143,6 +180,8 @@ fun applyVideoTransformation(
         )
         .addListener(transformerListener)
         .build()
+
+    // TODO Apply textOverlayText, textOverlayRedSelected, textOverlayLargeSelected options
 
     val editedMediaItem =
         EditedMediaItem.Builder(MediaItem.fromUri(videoUri)).setRemoveAudio(removeAudio).build()
@@ -215,14 +254,53 @@ private fun VideoMessagePreview(videoUri: String) {
 }
 
 @Composable
+fun TextOverlayOption(
+    inputtedText: String,
+    inputtedTextChange: (String) -> Unit,
+    redTextCheckedState: Boolean,
+    redTextCheckedStateChange: (Boolean) -> Unit,
+    largeTextCheckedState: Boolean,
+    largeTextCheckedStateChange: (Boolean) -> Unit
+) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+    ) {
+        TextField(
+            value = inputtedText,
+            onValueChange = inputtedTextChange,
+            placeholder = { Text(stringResource(R.string.add_text_overlay_placeholder)) },
+            modifier = Modifier.width(200.dp)
+        )
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+            CheckBoxWithText(
+                text = stringResource(R.string.red_text_option),
+                checkedState = redTextCheckedState,
+                onCheckChange = redTextCheckedStateChange,
+                fillRow = false
+            )
+            CheckBoxWithText(
+                text = stringResource(R.string.large_text_option),
+                checkedState = largeTextCheckedState,
+                onCheckChange = largeTextCheckedStateChange,
+                fillRow = false
+            )
+        }
+    }
+}
+
+@Composable
 fun CheckBoxWithText(
     text: String,
     checkedState: Boolean,
-    onCheckChange: (Boolean) -> Unit
+    onCheckChange: (Boolean) -> Unit,
+    fillRow: Boolean
 ) {
     Row(
         Modifier
-            .fillMaxWidth()
+            .then(if (fillRow) Modifier.fillMaxWidth() else Modifier)
             .height(56.dp)
             .toggleable(
                 value = checkedState,

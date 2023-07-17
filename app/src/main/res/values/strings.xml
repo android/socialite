@@ -42,5 +42,8 @@
     <string name="remove_audio">Remove audio</string>
     <string name="save_edited_video">Save Edited Video</string>
     <string name="send_video">Send Video</string>
+    <string name="add_text_overlay_placeholder">Add text overlay</string>
+    <string name="red_text_option">Red</string>
+    <string name="large_text_option">Large</string>
 
 </resources>
