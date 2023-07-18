@@ -19,6 +19,12 @@ package com.example.android.social.ui.media
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.text.ParcelableSpan
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -64,14 +70,20 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.OverlayEffect
+import androidx.media3.effect.OverlaySettings
+import androidx.media3.effect.TextOverlay
+import androidx.media3.effect.TextureOverlay
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import com.example.android.social.R
 import com.example.android.social.ui.camera.CameraViewModel
+import com.google.common.collect.ImmutableList
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -181,10 +193,40 @@ fun applyVideoTransformation(
         .addListener(transformerListener)
         .build()
 
-    // TODO Apply textOverlayText, textOverlayRedSelected, textOverlayLargeSelected options
+    val overlaysBuilder = ImmutableList.Builder<TextureOverlay>()
+
+    if (textOverlayText.isNotEmpty()) {
+        val spannableStringBuilder = SpannableStringBuilder(textOverlayText)
+
+        val spanStart = 0
+        val spanEnd = textOverlayText.length
+
+        val redTextSpan = ForegroundColorSpan(android.graphics.Color.RED)
+        val doubleTextSpan = RelativeSizeSpan(2f)
+
+        if (textOverlayRedSelected) {
+            spannableStringBuilder.setSpan(
+                redTextSpan, spanStart, spanEnd, Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+        }
+        if (textOverlayLargeSelected) {
+            spannableStringBuilder.setSpan(
+                doubleTextSpan, spanStart, spanEnd, Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+        }
+
+        val textOverlay = TextOverlay.createStaticTextOverlay(
+            SpannableString.valueOf(spannableStringBuilder),
+        )
+
+        overlaysBuilder.add(textOverlay)
+    }
 
     val editedMediaItem =
-        EditedMediaItem.Builder(MediaItem.fromUri(videoUri)).setRemoveAudio(removeAudio).build()
+        EditedMediaItem.Builder(MediaItem.fromUri(videoUri))
+            .setRemoveAudio(removeAudio)
+            .setEffects(Effects(listOf(), listOf(OverlayEffect(overlaysBuilder.build()))))
+            .build()
 
     val editedVideoFileName = "Socialite-edited-recording-" +
             SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
