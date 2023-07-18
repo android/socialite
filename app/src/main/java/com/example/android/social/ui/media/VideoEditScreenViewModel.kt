@@ -40,13 +40,11 @@ import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
-import androidx.navigation.NavController
 import com.example.android.social.repository.ChatRepository
 import com.example.android.social.ui.camera.CameraViewModel
 import com.google.common.collect.ImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
@@ -81,7 +79,7 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
             override fun onError(
                 composition: Composition,
                 exportResult: ExportResult,
-                exportException: ExportException
+                exportException: ExportException,
             ) {
                 exportException.printStackTrace()
                 Toast.makeText(application, "Error applying edits on video", Toast.LENGTH_LONG)
@@ -96,7 +94,7 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
         removeAudio: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
-        textOverlayLargeSelected: Boolean
+        textOverlayLargeSelected: Boolean,
     ) {
         val transformer = Transformer.Builder(context)
             .setTransformationRequest(
@@ -104,7 +102,7 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
                 //  setVideoMimeType on Transformer directly.
                 TransformationRequest.Builder()
                     .setVideoMimeType(MimeTypes.VIDEO_H264)
-                    .build()
+                    .build(),
             )
             .addListener(transformerListener)
             .build()
@@ -122,12 +120,18 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
 
             if (textOverlayRedSelected) {
                 spannableStringBuilder.setSpan(
-                    redTextSpan, spanStart, spanEnd, Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    redTextSpan,
+                    spanStart,
+                    spanEnd,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE,
                 )
             }
             if (textOverlayLargeSelected) {
                 spannableStringBuilder.setSpan(
-                    doubleTextSpan, spanStart, spanEnd, Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                    doubleTextSpan,
+                    spanStart,
+                    spanEnd,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE,
                 )
             }
 
@@ -145,8 +149,8 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
                 .build()
 
         val editedVideoFileName = "Socialite-edited-recording-" +
-                SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
-                    .format(System.currentTimeMillis()) + ".mp4"
+            SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis()) + ".mp4"
 
         transformedVideoFilePath = createNewVideoFilePath(context, editedVideoFileName)
 
@@ -176,5 +180,4 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
             repository.sendMessage(_chatId.value, "", transformedVideoFilePath, "video/mp4")
         }
     }
-
 }

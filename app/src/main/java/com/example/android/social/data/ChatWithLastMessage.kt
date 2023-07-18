@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package com.example.android.social.ui.camera
+package com.example.android.social.data
 
-import android.net.Uri
+import androidx.room.DatabaseView
 
-data class Media(var uri: Uri, var mediaType: MediaType)
-
-enum class MediaType {
-    PHOTO, VIDEO
-}
+@DatabaseView(
+    """
+    SELECT c.id, MAX(m.timestamp) as timestamp, m.text 
+    FROM Chat as c INNER JOIN Message as m on c.id = m.chatId 
+    GROUP BY c.id
+""",
+)
+data class ChatWithLastMessage(
+    val id: Long,
+    val text: String = "",
+    val timestamp: Long = -1,
+)

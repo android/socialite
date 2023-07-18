@@ -31,6 +31,7 @@ import com.example.android.social.model.Message
         ChatAttendee::class,
         Message::class,
     ],
+    views = [ChatWithLastMessage::class],
     version = 1,
 )
 abstract class AppDatabase : RoomDatabase() {

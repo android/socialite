@@ -90,7 +90,7 @@ fun Main(
                             }
 
                             MediaType.VIDEO -> {
-                                navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=${chatId}")
+                                navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=$chatId")
                             }
 
                             else -> {
@@ -99,7 +99,7 @@ fun Main(
                             }
                         }
                     },
-                    chatId = chatId
+                    chatId = chatId,
                 )
             }
             composable(
@@ -107,7 +107,7 @@ fun Main(
                 arguments = listOf(
                     navArgument("videoUri") { type = NavType.StringType },
                     navArgument("chatId") { type = NavType.LongType },
-                    ),
+                ),
             ) { backStackEntry ->
                 val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
                 val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
@@ -115,7 +115,7 @@ fun Main(
                     chatId = chatId,
                     uri = videoUri,
                     onCloseButtonClicked = { navController.popBackStack() },
-                    navController = navController
+                    navController = navController,
                 )
             }
         }

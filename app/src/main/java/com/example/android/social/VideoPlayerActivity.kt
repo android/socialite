@@ -16,7 +16,6 @@
 
 package com.example.android.social
 
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -48,7 +47,7 @@ class VideoPlayerActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         if (Build.VERSION.SDK_INT > 23) {
-            initializePlayer(mediaUri);
+            initializePlayer(mediaUri)
             playerView.onResume()
         }
     }
@@ -56,7 +55,7 @@ class VideoPlayerActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         if (Build.VERSION.SDK_INT <= 23 || player == null) {
-            initializePlayer(mediaUri);
+            initializePlayer(mediaUri)
             playerView.onResume()
         }
     }
@@ -68,7 +67,7 @@ class VideoPlayerActivity : ComponentActivity() {
         // More context: https://github.com/google/ExoPlayer/issues/4878#issuecomment-425427583
         if (Build.VERSION.SDK_INT <= 23) {
             playerView.onPause()
-            releasePlayer();
+            releasePlayer()
         }
     }
 
@@ -76,7 +75,7 @@ class VideoPlayerActivity : ComponentActivity() {
         super.onStop()
         if (Build.VERSION.SDK_INT > 23) {
             playerView.onPause()
-            releasePlayer();
+            releasePlayer()
         }
     }
 
@@ -97,5 +96,4 @@ class VideoPlayerActivity : ComponentActivity() {
         player = null
         playerView.player = null
     }
-
 }

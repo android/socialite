@@ -51,7 +51,7 @@ import java.util.Locale
 
 class CameraViewModel @JvmOverloads constructor(
     application: Application,
-    private val repository: ChatRepository = ChatRepository.getInstance(application)
+    private val repository: ChatRepository = ChatRepository.getInstance(application),
 ) : AndroidViewModel(application) {
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
@@ -108,7 +108,7 @@ class CameraViewModel @JvmOverloads constructor(
                 cameraSelector,
                 previewUseCase,
                 imageCaptureUseCase,
-                videoCaptureUseCase
+                videoCaptureUseCase,
             )
             viewFinderState.value.cameraState = CameraState.READY
         }
@@ -159,8 +159,8 @@ class CameraViewModel @JvmOverloads constructor(
 
     fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
         val name = "Socialite-recording-" +
-                SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                    .format(System.currentTimeMillis()) + ".mp4"
+            SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis()) + ".mp4"
         val contentValues = ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
@@ -170,7 +170,7 @@ class CameraViewModel @JvmOverloads constructor(
         }
         val mediaStoreOutput = MediaStoreOutputOptions.Builder(
             context.contentResolver,
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
         )
             .setContentValues(contentValues)
             .build()

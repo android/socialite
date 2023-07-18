@@ -94,7 +94,7 @@ import coil.request.ImageRequest
 import com.example.android.social.R
 import com.example.android.social.VIDEO_URI_EXTRA
 import com.example.android.social.VideoPlayerActivity
-import com.example.android.social.model.Chat
+import com.example.android.social.data.ChatWithLastMessage
 import com.example.android.social.model.ChatDetail
 import com.example.android.social.model.Contact
 import com.example.android.social.ui.SocialTheme
@@ -474,7 +474,7 @@ private fun PreviewInputBar() {
 private fun PreviewChatContent() {
     SocialTheme {
         ChatContent(
-            chat = ChatDetail(Chat(0L), listOf(Contact.CONTACTS[0])),
+            chat = ChatDetail(ChatWithLastMessage(0L), listOf(Contact.CONTACTS[0])),
             messages = listOf(
                 ChatMessage("Hi!", null, null, 0L, false, null),
                 ChatMessage("Hello", null, null, 0L, true, null),

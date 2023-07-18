@@ -86,7 +86,7 @@ fun VideoEditScreen(
     chatId: Long,
     uri: String,
     onCloseButtonClicked: () -> Unit,
-    navController: NavController
+    navController: NavController,
 ) {
     val context = LocalContext.current
 
@@ -95,7 +95,7 @@ fun VideoEditScreen(
 
     val isFinishedEditing = viewModel.isFinishedEditing.collectAsState()
     if (isFinishedEditing.value) {
-        navController.popBackStack("chat/${chatId}", false)
+        navController.popBackStack("chat/$chatId", false)
     }
 
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
@@ -113,12 +113,12 @@ fun VideoEditScreen(
                         removeAudio = removeAudioEnabled,
                         textOverlayText = overlayText,
                         textOverlayRedSelected = redOverlayTextEnabled,
-                        textOverlayLargeSelected = largeOverlayTextEnabled
+                        textOverlayLargeSelected = largeOverlayTextEnabled,
                     )
                 },
-                onCloseButtonClicked = onCloseButtonClicked
+                onCloseButtonClicked = onCloseButtonClicked,
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -138,9 +138,9 @@ fun VideoEditScreen(
                     .padding(15.dp)
                     .background(
                         color = colorResource(R.color.dark_gray),
-                        shape = RoundedCornerShape(size = 28.dp)
+                        shape = RoundedCornerShape(size = 28.dp),
                     )
-                    .padding(15.dp)
+                    .padding(15.dp),
             ) {
                 VideoEditFilterChip(
                     icon = Icons.Filled.VolumeMute,
@@ -164,7 +164,7 @@ fun VideoEditScreen(
                     largeTextCheckedState = largeOverlayTextEnabled,
                     largeTextCheckedStateChange = {
                         largeOverlayTextEnabled = !largeOverlayTextEnabled
-                    }
+                    },
                 )
             }
         }
@@ -175,13 +175,13 @@ fun VideoEditScreen(
 @Composable
 private fun VideoEditTopAppBar(
     onSendButtonClicked: () -> Unit,
-    onCloseButtonClicked: () -> Unit
+    onCloseButtonClicked: () -> Unit,
 ) {
     TopAppBar(
         title = {},
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Black,
-            navigationIconContentColor = Color.White
+            navigationIconContentColor = Color.White,
         ),
         navigationIcon = {
             IconButton(onClick = onCloseButtonClicked) {
@@ -195,14 +195,14 @@ private fun VideoEditTopAppBar(
             Button(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(R.color.aqua),
-                    contentColor = Color.Black
+                    contentColor = Color.Black,
                 ),
                 onClick = onSendButtonClicked,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(8.dp),
             ) {
                 Text(text = stringResource(id = R.string.send))
             }
-        }
+        },
     )
 }
 
@@ -214,7 +214,7 @@ private fun VideoMessagePreview(videoUri: String) {
             modifier = Modifier
                 .width(200.dp)
                 .height(266.dp)
-                .background(color = Color.Yellow)
+                .background(color = Color.Yellow),
         )
         return
     }
@@ -228,7 +228,7 @@ private fun VideoMessagePreview(videoUri: String) {
     if (bitmap != null) {
         Box(
             modifier = Modifier
-                .padding(10.dp)
+                .padding(10.dp),
         ) {
             Image(
                 modifier = Modifier.width(200.dp),
@@ -242,7 +242,7 @@ private fun VideoMessagePreview(videoUri: String) {
                 contentDescription = null,
                 modifier = Modifier
                     .size(60.dp)
-                    .padding(10.dp)
+                    .padding(10.dp),
             )
         }
     } else {
@@ -257,12 +257,11 @@ fun TextOverlayOption(
     redTextCheckedState: Boolean,
     redTextCheckedStateChange: () -> Unit,
     largeTextCheckedState: Boolean,
-    largeTextCheckedStateChange: () -> Unit
+    largeTextCheckedStateChange: () -> Unit,
 ) {
-
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
     ) {
         TextField(
             value = inputtedText,
@@ -271,8 +270,8 @@ fun TextOverlayOption(
             modifier = Modifier.width(200.dp),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = Color.DarkGray,
-                unfocusedPlaceholderColor = Color.LightGray
-            )
+                unfocusedPlaceholderColor = Color.LightGray,
+            ),
         )
         Spacer(modifier = Modifier.padding(5.dp))
         Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
@@ -303,14 +302,14 @@ private fun VideoEditFilterChip(
     onClick: () -> Unit,
     label: String,
     iconColor: Color = Color.White,
-    selectedIconColor: Color = Color.Black
+    selectedIconColor: Color = Color.Black,
 ) {
     FilterChip(
         leadingIcon = {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                modifier = Modifier.size(FilterChipDefaults.IconSize),
             )
         },
         selected = selected,
@@ -321,8 +320,8 @@ private fun VideoEditFilterChip(
             selectedContainerColor = colorResource(id = R.color.light_purple),
             selectedLabelColor = Color.Black,
             iconColor = iconColor,
-            selectedLeadingIconColor = selectedIconColor
-        )
+            selectedLeadingIconColor = selectedIconColor,
+        ),
     )
 }
 
@@ -333,6 +332,6 @@ fun VideoEditScreenPreview() {
         chatId = 0L,
         uri = "",
         onCloseButtonClicked = {},
-        navController = rememberNavController()
+        navController = rememberNavController(),
     )
 }

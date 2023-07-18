@@ -35,7 +35,7 @@ class ChatDaoTest {
         assertThat(chatDetails).hasSize(4)
         for (detail in chatDetails) {
             assertThat(detail.attendees).hasSize(1)
-            val messages = db.message().loadAll(detail.chat.id)
+            val messages = db.message().loadAll(detail.chatWithLastMessage.id)
             assertThat(messages).hasSize(2)
         }
     }

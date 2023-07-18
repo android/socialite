@@ -19,10 +19,11 @@ package com.example.android.social.model
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.example.android.social.data.ChatWithLastMessage
 
 data class ChatDetail(
     @Embedded
-    val chat: Chat,
+    val chatWithLastMessage: ChatWithLastMessage,
 
     @Relation(
         parentColumn = "id",

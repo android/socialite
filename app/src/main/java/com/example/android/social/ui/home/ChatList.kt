@@ -71,7 +71,7 @@ internal fun ChatList(
         items(items = chats) { chat ->
             ChatRow(
                 chat = chat,
-                onClick = { onChatClicked(chat.chat.id) },
+                onClick = { onChatClicked(chat.chatWithLastMessage.id) },
             )
         }
     }

@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.example.android.social.ui.camera
+package com.example.android.social.ui
 
-import android.net.Uri
+import androidx.compose.ui.graphics.Color
 
-data class Media(var uri: Uri, var mediaType: MediaType)
-
-enum class MediaType {
-    PHOTO, VIDEO
-}
+internal val TitleTextColor = Color(0xFF171D1A)
+internal val SubtitleTextColor = Color(0xFF3F4945)

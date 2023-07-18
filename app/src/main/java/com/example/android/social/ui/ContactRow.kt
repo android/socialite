@@ -20,6 +20,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.android.social.data.utils.toReadableString
 import com.example.android.social.model.ChatDetail
 
 @Composable
@@ -61,9 +66,34 @@ fun ChatRow(
                 .clip(CircleShape)
                 .background(Color.LightGray),
         )
-        Text(
-            text = contact.name,
-            style = MaterialTheme.typography.bodyLarge,
-        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
+                text = contact.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 16.sp,
+            )
+            Text(
+                text = chat.chatWithLastMessage.text,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 4.dp),
+                fontWeight = FontWeight.Light,
+                fontSize = 14.sp,
+            )
+        }
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = chat.chatWithLastMessage.timestamp.toReadableString(),
+                fontSize = 14.sp,
+            )
+        }
     }
 }
