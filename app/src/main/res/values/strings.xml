@@ -16,6 +16,10 @@
 <resources>
     <string name="app_name">Social</string>
 
+    <string name="timeline">Timeline</string>
+    <string name="chats">Chats</string>
+    <string name="settings">Settings</string>
+
     <string name="show_as_bubble">Show as Bubble</string>
     <string name="description_icon">Profile icon</string>
     <string name="description_voice_call">Make a voice call (dummy)</string>
