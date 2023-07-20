@@ -16,134 +16,151 @@
 
 package com.example.android.social.ui.home
 
-import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.android.social.R
-import com.example.android.social.model.ChatDetail
-import com.example.android.social.ui.ChatRow
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 
 @Composable
 fun Home(
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var destination by rememberSaveable { mutableStateOf(Destination.Chats) }
     Scaffold(
         modifier = modifier,
-        topBar = { HomeAppBar() },
+        topBar = { HomeAppBar(title = stringResource(destination.label)) },
+        bottomBar = {
+            HomeNavigationBar(
+                currentDestination = destination.route,
+                onDestinationChanged = { destination = it },
+            )
+        },
     ) { innerPadding ->
-        val viewModel: HomeViewModel = viewModel()
-        val chats by viewModel.chats.collectAsState()
-        ChatList(
-            chats = chats,
-            contentPadding = innerPadding,
-            onChatClicked = onChatClicked,
-            modifier = modifier,
-        )
+        val navController = rememberNavController()
+        NavHost(
+            navController = navController,
+            startDestination = destination.route,
+        ) {
+            composable(
+                route = Destination.Timeline.route,
+            ) {
+                // TODO
+                Text(
+                    text = "Timeline",
+                    modifier = Modifier.padding(innerPadding),
+                )
+            }
+            composable(
+                route = Destination.Chats.route,
+            ) {
+                val viewModel: HomeViewModel = viewModel()
+                val chats by viewModel.chats.collectAsState()
+                ChatList(
+                    chats = chats,
+                    contentPadding = innerPadding,
+                    onChatClicked = onChatClicked,
+                )
+            }
+            composable(
+                route = Destination.Settings.route,
+            ) {
+                // TODO
+                Text(
+                    text = "Settings",
+                    modifier = Modifier.padding(innerPadding),
+                )
+            }
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeAppBar(
+    title: String,
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
         modifier = modifier,
         title = {
-            Text(text = stringResource(id = R.string.app_name))
+            Text(text = title)
         },
     )
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-private fun ChatList(
-    chats: List<ChatDetail>,
-    contentPadding: PaddingValues,
-    onChatClicked: (chatId: Long) -> Unit,
-    modifier: Modifier = Modifier,
+private enum class Destination(
+    val route: String,
+    @StringRes val label: Int,
+    val imageVector: ImageVector,
 ) {
-    @SuppressLint("InlinedApi") // Granted at install time on API <33.
-    val notificationPermissionState = rememberPermissionState(
-        android.Manifest.permission.POST_NOTIFICATIONS,
-    )
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = contentPadding,
-    ) {
-        if (!notificationPermissionState.status.isGranted) {
-            item {
-                NotificationPermissionCard(
-                    shouldShowRationale = notificationPermissionState.status.shouldShowRationale,
-                    onGrantClick = {
-                        notificationPermissionState.launchPermissionRequest()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                )
-            }
-        }
-        items(items = chats) { chat ->
-            ChatRow(
-                chat = chat,
-                onClick = { onChatClicked(chat.chat.id) },
-            )
-        }
-    }
+    Timeline(
+        route = "timeline",
+        label = R.string.timeline,
+        imageVector = Icons.Outlined.VideoLibrary,
+    ),
+    Chats(
+        route = "chats",
+        label = R.string.chats,
+        imageVector = Icons.Outlined.ChatBubbleOutline,
+    ),
+    Settings(
+        route = "settings",
+        label = R.string.settings,
+        imageVector = Icons.Outlined.Settings,
+    ),
 }
 
 @Composable
-private fun NotificationPermissionCard(
-    shouldShowRationale: Boolean,
-    onGrantClick: () -> Unit,
+private fun HomeNavigationBar(
+    currentDestination: String,
+    onDestinationChanged: (Destination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    NavigationBar(
         modifier = modifier,
     ) {
-        Text(
-            text = stringResource(R.string.permission_message),
-            modifier = Modifier.padding(16.dp),
-        )
-        if (shouldShowRationale) {
-            Text(
-                text = stringResource(R.string.permission_rationale),
-                modifier = Modifier.padding(horizontal = 16.dp),
+        for (destination in Destination.values()) {
+            val selected = currentDestination == destination.route
+            val label = stringResource(destination.label)
+            NavigationBarItem(
+                selected = selected,
+                onClick = { onDestinationChanged(destination) },
+                icon = {
+                    Icon(
+                        imageVector = destination.imageVector,
+                        contentDescription = label,
+                    )
+                },
+                label = {
+                    if (selected) {
+                        Text(text = label)
+                    }
+                },
             )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            contentAlignment = Alignment.TopEnd,
-        ) {
-            Button(onClick = onGrantClick) {
-                Text(text = stringResource(R.string.permission_grant))
-            }
         }
     }
 }
