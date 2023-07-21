@@ -22,6 +22,7 @@ import android.view.View
 import android.view.WindowManager
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -32,7 +33,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.example.android.social.R
 
 private val Purple80 = Color(0xFFD0BCFF)
 private val PurpleGrey80 = Color(0xFFCCC2DC)
@@ -77,9 +84,24 @@ fun SocialTheme(
         }
     }
 
+    val fontProvider = GoogleFont.Provider(
+        providerAuthority = "com.google.android.gms.fonts",
+        providerPackage = "com.google.android.gms",
+        certificates = R.array.com_google_android_gms_fonts_certs,
+    )
+    val titleFont = FontFamily(
+        Font(googleFont = GoogleFont("Modak"), fontProvider = fontProvider),
+    )
+
     MaterialTheme(
         colorScheme = colorScheme,
         content = content,
+        typography = Typography(
+            titleLarge = TextStyle(
+                fontSize = 24.sp,
+                fontFamily = titleFont,
+            ),
+        ),
     )
 }
 
