@@ -89,9 +89,11 @@ fun Main(
                                 // TODO: Add photo to chat messages.
                                 navController.navigate("chat/$chatId")
                             }
+
                             MediaType.VIDEO -> {
-                                navController.navigate("videoEdit?uri=${capturedMedia.uri}")
+                                navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=${chatId}")
                             }
+
                             else -> {
                                 // No media to use.
                                 navController.navigate("chat/$chatId")
@@ -101,16 +103,20 @@ fun Main(
                 )
             }
             composable(
-                route = "videoEdit?uri={videoUri}",
+                route = "videoEdit?uri={videoUri}&chatId={chatId}",
                 arguments = listOf(
                     navArgument("videoUri") { type = NavType.StringType },
-                ),
+                    navArgument("chatId") { type = NavType.LongType },
+                    ),
             ) { backStackEntry ->
+                val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
                 val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
                 VideoEditScreen(
+                    chatId = chatId,
                     uri = videoUri,
                     onCloseButtonClicked = { navController.popBackStack() },
-                    )
+                    navController = navController
+                )
             }
         }
 
