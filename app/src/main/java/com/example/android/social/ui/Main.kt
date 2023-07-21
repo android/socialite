@@ -109,7 +109,8 @@ fun Main(
                 val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
                 VideoEditScreen(
                     uri = videoUri,
-                )
+                    onCloseButtonClicked = { navController.popBackStack() },
+                    )
             }
         }
 

@@ -19,7 +19,6 @@ package com.example.android.social.ui.media
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.text.ParcelableSpan
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -42,16 +41,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DonutLarge
+import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,17 +71,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.OverlayEffect
-import androidx.media3.effect.OverlaySettings
 import androidx.media3.effect.TextOverlay
 import androidx.media3.effect.TextureOverlay
 import androidx.media3.transformer.Composition
@@ -93,7 +103,7 @@ private const val TAG = "VideoEditScreen"
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun VideoEditScreen(uri: String) {
+fun VideoEditScreen(uri: String, onCloseButtonClicked: () -> Unit) {
     val context = LocalContext.current
 
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
@@ -105,6 +115,7 @@ fun VideoEditScreen(uri: String) {
         object : Transformer.Listener {
             override fun onCompleted(composition: Composition, exportResult: ExportResult) {
                 Toast.makeText(context, "Edited video saved", Toast.LENGTH_LONG).show()
+                // TODO Send transformed video in 1:1 chat
             }
 
             override fun onError(
@@ -117,56 +128,70 @@ fun VideoEditScreen(uri: String) {
             }
         }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 100.dp, bottom = 100.dp)
-            .imePadding()
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        VideoMessagePreview(uri)
-        Spacer(modifier = Modifier.height(20.dp))
-        CheckBoxWithText(
-            text = stringResource(R.string.remove_audio),
-            checkedState = removeAudioEnabled,
-            onCheckChange = { removeAudioEnabled = it },
-            fillRow = true
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        TextOverlayOption(
-            inputtedText = overlayText,
-            inputtedTextChange = {
-                // Limit character count to 20
-                if (it.length <= 20) {
-                    overlayText = it
-                }
-            },
-            redTextCheckedState = redOverlayTextEnabled,
-            redTextCheckedStateChange = { redOverlayTextEnabled = it },
-            largeTextCheckedState = largeOverlayTextEnabled,
-            largeTextCheckedStateChange = { largeOverlayTextEnabled = it }
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Row(verticalAlignment = Alignment.Bottom) {
-            Button(modifier = Modifier.padding(10.dp), onClick = {
-                applyVideoTransformation(
-                    context = context,
-                    videoUri = uri,
-                    removeAudio = removeAudioEnabled,
-                    textOverlayText = overlayText,
-                    textOverlayRedSelected = redOverlayTextEnabled,
-                    textOverlayLargeSelected = largeOverlayTextEnabled,
-                    transformerListener
-                )
-            }) {
-                Text(text = stringResource(R.string.save_edited_video))
-            }
+    Scaffold(
+        topBar = {
+            VideoEditTopAppBar(
+                onSendButtonClicked = {
+                    applyVideoTransformation(
+                        context = context,
+                        videoUri = uri,
+                        removeAudio = removeAudioEnabled,
+                        textOverlayText = overlayText,
+                        textOverlayRedSelected = redOverlayTextEnabled,
+                        textOverlayLargeSelected = largeOverlayTextEnabled,
+                        transformerListener
+                    )
+                },
+                onCloseButtonClicked = onCloseButtonClicked
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .background(Color.Black)
+                .fillMaxSize()
+                .imePadding()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(modifier = Modifier.height(50.dp))
+            VideoMessagePreview(uri)
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Button(modifier = Modifier.padding(10.dp), onClick = {
-                // TODO Implement saving transformed video and sending video in chat
-            }) {
-                Text(text = stringResource(R.string.send_video))
+            Column(
+                modifier = Modifier
+                    .padding(15.dp)
+                    .background(
+                        color = colorResource(R.color.dark_gray),
+                        shape = RoundedCornerShape(size = 28.dp)
+                    )
+                    .padding(15.dp)
+            ) {
+                VideoEditFilterChip(
+                    icon = Icons.Filled.VolumeMute,
+                    selected = removeAudioEnabled,
+                    onClick = { removeAudioEnabled = !removeAudioEnabled },
+                    label = stringResource(id = R.string.remove_audio),
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                TextOverlayOption(
+                    inputtedText = overlayText,
+                    inputtedTextChange = {
+                        // Limit character count to 20
+                        if (it.length <= 20) {
+                            overlayText = it
+                        }
+                    },
+                    redTextCheckedState = redOverlayTextEnabled,
+                    redTextCheckedStateChange = {
+                        redOverlayTextEnabled = !redOverlayTextEnabled
+                    },
+                    largeTextCheckedState = largeOverlayTextEnabled,
+                    largeTextCheckedStateChange = {
+                        largeOverlayTextEnabled = !largeOverlayTextEnabled
+                    }
+                )
             }
         }
     }
@@ -251,6 +276,41 @@ private fun createExternalCacheFile(context: Context, fileName: String): File {
     return file
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun VideoEditTopAppBar(
+    onSendButtonClicked: () -> Unit,
+    onCloseButtonClicked: () -> Unit
+) {
+    TopAppBar(
+        title = {},
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Black,
+            navigationIconContentColor = Color.White
+        ),
+        navigationIcon = {
+            IconButton(onClick = onCloseButtonClicked) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.back),
+                )
+            }
+        },
+        actions = {
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(R.color.aqua),
+                    contentColor = Color.Black
+                ),
+                onClick = onSendButtonClicked,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text(text = stringResource(id = R.string.send))
+            }
+        }
+    )
+}
+
 @Composable
 private fun VideoMessagePreview(videoUri: String) {
     // Render yellow box instead of frame of captured video for Preview purposes
@@ -295,77 +355,85 @@ private fun VideoMessagePreview(videoUri: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextOverlayOption(
     inputtedText: String,
     inputtedTextChange: (String) -> Unit,
     redTextCheckedState: Boolean,
-    redTextCheckedStateChange: (Boolean) -> Unit,
+    redTextCheckedStateChange: () -> Unit,
     largeTextCheckedState: Boolean,
-    largeTextCheckedStateChange: (Boolean) -> Unit
+    largeTextCheckedStateChange: () -> Unit
 ) {
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp)
     ) {
         TextField(
             value = inputtedText,
             onValueChange = inputtedTextChange,
             placeholder = { Text(stringResource(R.string.add_text_overlay_placeholder)) },
-            modifier = Modifier.width(200.dp)
-        )
-        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-            CheckBoxWithText(
-                text = stringResource(R.string.red_text_option),
-                checkedState = redTextCheckedState,
-                onCheckChange = redTextCheckedStateChange,
-                fillRow = false
+            modifier = Modifier.width(200.dp),
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.DarkGray,
+                unfocusedPlaceholderColor = Color.LightGray
             )
-            CheckBoxWithText(
-                text = stringResource(R.string.large_text_option),
-                checkedState = largeTextCheckedState,
-                onCheckChange = largeTextCheckedStateChange,
-                fillRow = false
+        )
+        Spacer(modifier = Modifier.padding(5.dp))
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+            VideoEditFilterChip(
+                icon = Icons.Filled.DonutLarge,
+                selected = redTextCheckedState,
+                onClick = redTextCheckedStateChange,
+                label = stringResource(id = R.string.red_text_option),
+                iconColor = Color.Red,
+            )
+            Spacer(modifier = Modifier.padding(10.dp))
+
+            VideoEditFilterChip(
+                icon = Icons.Filled.FormatSize,
+                selected = largeTextCheckedState,
+                onClick = largeTextCheckedStateChange,
+                label = stringResource(id = R.string.large_text_option),
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheckBoxWithText(
-    text: String,
-    checkedState: Boolean,
-    onCheckChange: (Boolean) -> Unit,
-    fillRow: Boolean
+private fun VideoEditFilterChip(
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: String,
+    iconColor: Color = Color.White,
+    selectedIconColor: Color = Color.Black
 ) {
-    Row(
-        Modifier
-            .then(if (fillRow) Modifier.fillMaxWidth() else Modifier)
-            .height(56.dp)
-            .toggleable(
-                value = checkedState,
-                onValueChange = { onCheckChange(!checkedState) },
-                role = Role.Checkbox
+    FilterChip(
+        leadingIcon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
             )
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = checkedState,
-            onCheckedChange = null // null recommended for accessibility with screenreaders
+        },
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        colors = FilterChipDefaults.filterChipColors(
+            labelColor = Color.White,
+            selectedContainerColor = colorResource(id = R.color.light_purple),
+            selectedLabelColor = Color.Black,
+            iconColor = iconColor,
+            selectedLeadingIconColor = selectedIconColor
         )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 16.dp)
-        )
-    }
+    )
 }
 
 @Composable
 @Preview
 fun VideoEditScreenPreview() {
-    VideoEditScreen(uri = "")
+    VideoEditScreen(uri = "", onCloseButtonClicked = {})
 }
