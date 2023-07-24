@@ -58,6 +58,7 @@ media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "medi
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose_bom" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }

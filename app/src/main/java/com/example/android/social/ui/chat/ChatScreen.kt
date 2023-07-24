@@ -54,7 +54,6 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -176,7 +175,7 @@ private fun ChatContent(
     modifier: Modifier = Modifier,
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     Scaffold(
         modifier = modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -232,46 +231,31 @@ private fun ChatAppBar(
     onBackPressed: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    if (onBackPressed != null) {
-        MediumTopAppBar(
-            title = { ShortChatRow(chat = chat) },
-            navigationIcon = {
+    TopAppBar(
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                // This only supports DM for now.
+                val contact = chat.attendees.first()
+                SmallContactIcon(iconUri = contact.iconUri, size = 32.dp)
+                Text(text = contact.name)
+            }
+        },
+        modifier = modifier,
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
+            if (onBackPressed != null) {
                 IconButton(onClick = onBackPressed) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = stringResource(R.string.back),
                     )
                 }
-            },
-            modifier = modifier,
-            scrollBehavior = scrollBehavior,
-        )
-    } else {
-        TopAppBar(
-            title = { ShortChatRow(chat = chat) },
-            scrollBehavior = scrollBehavior,
-        )
-    }
-}
-
-@Composable
-private fun ShortChatRow(
-    chat: ChatDetail,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        // This only supports DM for now.
-        val contact = chat.attendees.first()
-        SmallContactIcon(iconUri = contact.iconUri, size = 32.dp)
-        Text(
-            text = contact.name,
-            style = MaterialTheme.typography.bodyLarge,
-        )
-    }
+            }
+        },
+    )
 }
 
 @Composable
