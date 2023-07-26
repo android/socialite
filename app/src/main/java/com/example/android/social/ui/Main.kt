@@ -86,7 +86,6 @@ fun Main(
                     onMediaCaptured = { capturedMedia: Media? ->
                         when (capturedMedia?.mediaType) {
                             MediaType.PHOTO -> {
-                                // TODO: Add photo to chat messages.
                                 navController.navigate("chat/$chatId")
                             }
 
@@ -100,6 +99,7 @@ fun Main(
                             }
                         }
                     },
+                    chatId = chatId
                 )
             }
             composable(

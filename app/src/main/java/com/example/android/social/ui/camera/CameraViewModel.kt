@@ -42,6 +42,7 @@ import androidx.core.util.Consumer
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewModelScope
+import com.example.android.social.repository.ChatRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -50,12 +51,15 @@ import java.util.Locale
 
 class CameraViewModel @JvmOverloads constructor(
     application: Application,
+    private val repository: ChatRepository = ChatRepository.getInstance(application)
 ) : AndroidViewModel(application) {
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
     private lateinit var initializeJob: Job
 
     private lateinit var context: Context
+    private var _chatId = MutableStateFlow(0L)
+
     var viewFinderState = MutableStateFlow(ViewFinderState())
 
     private val previewUseCase = Preview.Builder()
@@ -72,7 +76,7 @@ class CameraViewModel @JvmOverloads constructor(
         .build()
 
     private var currentRecording: Recording? = null
-    private lateinit var recordingState:VideoRecordEvent
+    private lateinit var recordingState: VideoRecordEvent
 
     private val videoCaptureUseCase = VideoCapture.Builder(recorder)
         .build()
@@ -82,6 +86,10 @@ class CameraViewModel @JvmOverloads constructor(
             context = getApplication()
             cameraProvider = ProcessCameraProvider.getInstance(context).await()
         }
+    }
+
+    fun setChatId(chatId: Long) {
+        _chatId.value = chatId
     }
 
     fun startPreview(
@@ -136,8 +144,10 @@ class CameraViewModel @JvmOverloads constructor(
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    if (output.savedUri != null) {
-                        onMediaCaptured(Media(output.savedUri!!, MediaType.PHOTO))
+                    val savedUri = output.savedUri
+                    if (savedUri != null) {
+                        sendPhotoMessage(savedUri.toString())
+                        onMediaCaptured(Media(savedUri, MediaType.PHOTO))
                     } else {
                         val msg = "Photo capture failed."
                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -160,7 +170,8 @@ class CameraViewModel @JvmOverloads constructor(
         }
         val mediaStoreOutput = MediaStoreOutputOptions.Builder(
             context.contentResolver,
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        )
             .setContentValues(contentValues)
             .build()
 
@@ -176,6 +187,12 @@ class CameraViewModel @JvmOverloads constructor(
             .prepareRecording(context, mediaStoreOutput)
             .apply { withAudioEnabled() } // TODO Add permission check for RECORD_AUDIO
             .start(ContextCompat.getMainExecutor(context), captureListener)
+    }
+
+    fun sendPhotoMessage(photoUri: String) {
+        viewModelScope.launch {
+            repository.sendMessage(_chatId.value, "", photoUri, "image/jpeg")
+        }
     }
 
     fun saveVideo() {

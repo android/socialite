@@ -54,7 +54,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Camera(onMediaCaptured: (Media?) -> Unit) {
+fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
     // TODO (donovanfm): implement switchable camera (front and back)
     // var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
 
@@ -63,6 +63,7 @@ fun Camera(onMediaCaptured: (Media?) -> Unit) {
     val viewModel: CameraViewModel = viewModel()
 
     viewModel.initialize()
+    viewModel.setChatId(chatId)
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
