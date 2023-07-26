@@ -17,6 +17,7 @@
 package com.example.android.social.ui.home
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -88,10 +89,9 @@ fun Home(
             composable(
                 route = Destination.Settings.route,
             ) {
-                // TODO
-                Text(
-                    text = "Settings",
-                    modifier = Modifier.padding(innerPadding),
+                Settings(
+                    contentPadding = innerPadding,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }

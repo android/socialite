@@ -39,4 +39,7 @@ interface MessageDao {
      */
     @Query("SELECT * FROM Message WHERE chatId = :chatId ORDER BY timestamp DESC")
     suspend fun loadAll(chatId: Long): List<Message>
+
+    @Query("DELETE FROM Message")
+    suspend fun clearAll()
 }
