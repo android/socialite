@@ -27,14 +27,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.android.social.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraPermission(cameraPermissionState: PermissionState) {
+fun CameraAndRecordAudioPermission(permissionsState: MultiplePermissionsState) {
     Column {
-        val textToShow = if (cameraPermissionState.status.shouldShowRationale) {
+        val textToShow = if (permissionsState.shouldShowRationale) {
             stringResource(R.string.camera_permission_rationale)
         } else {
             stringResource(R.string.camera_not_available)
@@ -42,7 +43,7 @@ fun CameraPermission(cameraPermissionState: PermissionState) {
 
         Text(textToShow)
         Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
+        Button(onClick = { permissionsState.launchMultiplePermissionRequest() }) {
             Text(stringResource(R.string.request_permission))
         }
     }

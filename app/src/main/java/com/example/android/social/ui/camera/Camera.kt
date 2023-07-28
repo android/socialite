@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -59,7 +59,12 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
     // var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
 
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
-    val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
+    val cameraAndRecordAudioPermissionState = rememberMultiplePermissionsState(
+        listOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO
+        )
+    )
     val viewModel: CameraViewModel = viewModel()
 
     viewModel.initialize()
@@ -71,7 +76,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
         viewModel.startPreview(lifecycleOwner, it)
     }
 
-    if (permissionState.status.isGranted) {
+    if (cameraAndRecordAudioPermissionState.allPermissionsGranted) {
         Box(modifier = Modifier.background(color = Color.Black)) {
             Column(verticalArrangement = Arrangement.Bottom) {
                 Row(
@@ -110,8 +115,10 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    val activeButtonColor = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    val inactiveButtonColor = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+                    val activeButtonColor =
+                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    val inactiveButtonColor =
+                        ButtonDefaults.buttonColors(containerColor = Color.LightGray)
                     if (captureMode != CaptureMode.VIDEO_RECORDING) {
                         Button(
                             modifier = Modifier.padding(5.dp),
@@ -129,11 +136,12 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         }
                     }
                 }
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp, 5.dp, 0.dp, 20.dp)
-                    .background(Color.Black)
-                    .height(100.dp),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(0.dp, 5.dp, 0.dp, 20.dp)
+                        .background(Color.Black)
+                        .height(100.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -142,7 +150,9 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                             onClick = { viewModel.capturePhoto(onMediaCaptured) },
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                            modifier = Modifier.height(75.dp).width(75.dp)
+                            modifier = Modifier
+                                .height(75.dp)
+                                .width(75.dp)
                         ) {}
                     } else if (captureMode == CaptureMode.VIDEO_READY) {
                         Button(
@@ -153,7 +163,9 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                             },
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            modifier = Modifier.height(75.dp).width(75.dp)
+                            modifier = Modifier
+                                .height(75.dp)
+                                .width(75.dp)
                         ) {}
                     } else if (captureMode == CaptureMode.VIDEO_RECORDING) {
                         Button(
@@ -164,14 +176,16 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                             },
                             shape = RoundedCornerShape(10),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            modifier = Modifier.height(50.dp).width(50.dp)
+                            modifier = Modifier
+                                .height(50.dp)
+                                .width(50.dp)
                         ) {}
                     }
                 }
             }
         }
     } else {
-        CameraPermission(permissionState)
+        CameraAndRecordAudioPermission(cameraAndRecordAudioPermissionState)
     }
 }
 

@@ -185,7 +185,7 @@ class CameraViewModel @JvmOverloads constructor(
         // configure Recorder and Start recording to the mediaStoreOutput.
         currentRecording = videoCaptureUseCase.output
             .prepareRecording(context, mediaStoreOutput)
-            .apply { withAudioEnabled() } // TODO Add permission check for RECORD_AUDIO
+            .apply { withAudioEnabled() }
             .start(ContextCompat.getMainExecutor(context), captureListener)
     }
 
