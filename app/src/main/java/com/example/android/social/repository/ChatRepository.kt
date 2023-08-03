@@ -112,6 +112,10 @@ class ChatRepository internal constructor(
         }
     }
 
+    suspend fun clearMessages() {
+        database.message().clearAll()
+    }
+
     suspend fun updateNotification(chatId: Long) {
         val detail = database.chat().loadDetailById(chatId) ?: return
         val messages = database.message().loadAll(chatId)

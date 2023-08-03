@@ -47,6 +47,10 @@
     <string name="back">Back</string>
     <string name="message">Message</string>
 
+    <!-- Settings -->
+    <eat-comment />
+    <string name="clear_message_history">Clear message history</string>
+
     <!-- Video Edit Screen -->
     <string name="remove_audio">Remove audio</string>
     <string name="send">Send</string>

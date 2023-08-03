@@ -88,10 +88,9 @@ fun Home(
             composable(
                 route = Destination.Settings.route,
             ) {
-                // TODO
-                Text(
-                    text = "Settings",
-                    modifier = Modifier.padding(innerPadding),
+                Settings(
+                    contentPadding = innerPadding,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
