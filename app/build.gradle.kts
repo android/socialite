@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -58,7 +59,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.4"
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -81,6 +82,7 @@ dependencies {
     implementation(libs.compose.ui.text.google.fonts)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons)
     androidTestImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manisfest)
@@ -111,8 +113,6 @@ dependencies {
     implementation (libs.media3.exoplayer)
     implementation (libs.media3.transformer)
     implementation (libs.media3.ui)
-
-    implementation("androidx.compose.material:material-icons-extended")
 
     androidTestImplementation(libs.turbine)
 
