@@ -20,6 +20,11 @@
     <string name="chats">Chats</string>
     <string name="settings">Settings</string>
 
+    <!-- Timeline -->
+    <eat-comment/>
+    <string name="timeline_empty_title">No photos or video.</string>
+    <string name="timeline_empty_message">Videos and photos from messages will display here. Add a message or refine your search.</string>
+
     <string name="show_as_bubble">Show as Bubble</string>
     <string name="description_icon">Profile icon</string>
     <string name="description_voice_call">Make a voice call (dummy)</string>
