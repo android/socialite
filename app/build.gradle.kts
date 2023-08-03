@@ -93,6 +93,8 @@ dependencies {
     implementation(libs.accompanist.painter)
     implementation(libs.accompanist.permissions)
 
+    implementation(libs.graphics.shapes)
+
     implementation(libs.lifecycle.ktx)
     implementation(libs.lifecycle.compose)
 
