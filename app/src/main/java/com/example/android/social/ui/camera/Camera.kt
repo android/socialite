@@ -51,12 +51,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
+
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
     // TODO (donovanfm): implement switchable camera (front and back)
     // var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
 
+    var surfaceProvider = remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
     val cameraAndRecordAudioPermissionState = rememberMultiplePermissionsState(
         listOf(
@@ -72,7 +75,15 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val onPreviewSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {
-        viewModel.startPreview(lifecycleOwner, it)
+        surfaceProvider.value = it
+        viewModel.startPreview(lifecycleOwner, it, captureMode)
+    }
+
+    fun setCaptureMode(mode: CaptureMode) {
+        captureMode = mode
+        if (surfaceProvider.value != null) {
+            viewModel.startPreview(lifecycleOwner, surfaceProvider.value!!, captureMode)
+        }
     }
 
     if (cameraAndRecordAudioPermissionState.allPermissionsGranted) {
@@ -121,15 +132,15 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                     if (captureMode != CaptureMode.VIDEO_RECORDING) {
                         Button(
                             modifier = Modifier.padding(5.dp),
-                            onClick = { captureMode = CaptureMode.PHOTO },
-                            colors = if (captureMode == CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
+                            onClick = { setCaptureMode(CaptureMode.PHOTO) },
+                            colors = if (captureMode == CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor
                         ) {
                             Text("Photo")
                         }
                         Button(
                             modifier = Modifier.padding(5.dp),
-                            onClick = { captureMode = CaptureMode.VIDEO_READY },
-                            colors = if (captureMode != CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
+                            onClick = { setCaptureMode(CaptureMode.VIDEO_READY) },
+                            colors = if (captureMode != CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor
                         ) {
                             Text("Video")
                         }
@@ -186,8 +197,4 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
     } else {
         CameraAndRecordAudioPermission(cameraAndRecordAudioPermissionState)
     }
-}
-
-enum class CaptureMode {
-    PHOTO, VIDEO_READY, VIDEO_RECORDING
 }

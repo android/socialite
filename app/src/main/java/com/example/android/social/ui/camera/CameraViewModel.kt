@@ -28,6 +28,9 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
+import androidx.camera.core.UseCaseGroup
+import androidx.camera.extensions.ExtensionMode
+import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Quality
@@ -56,6 +59,7 @@ class CameraViewModel @JvmOverloads constructor(
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
     private lateinit var initializeJob: Job
+    private lateinit var extensionsManager: ExtensionsManager
 
     private lateinit var context: Context
     private var _chatId = MutableStateFlow(0L)
@@ -75,11 +79,11 @@ class CameraViewModel @JvmOverloads constructor(
         .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
         .build()
 
-    private var currentRecording: Recording? = null
-    private lateinit var recordingState: VideoRecordEvent
-
     private val videoCaptureUseCase = VideoCapture.Builder(recorder)
         .build()
+
+    private var currentRecording: Recording? = null
+    private lateinit var recordingState: VideoRecordEvent
 
     fun initialize() {
         initializeJob = viewModelScope.launch {
@@ -95,20 +99,47 @@ class CameraViewModel @JvmOverloads constructor(
     fun startPreview(
         lifecycleOwner: LifecycleOwner,
         surfaceProvider: Preview.SurfaceProvider,
+        captureMode: CaptureMode
     ) {
         viewModelScope.launch {
             initializeJob.join()
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            var extensionManagerJob = viewModelScope.launch {
+                extensionsManager = ExtensionsManager.getInstanceAsync(context, cameraProvider).await()
+            }
+            var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            var extensionsCameraSelector: CameraSelector? = null
+            var useCaseGroupBuilder = UseCaseGroup.Builder()
 
             previewUseCase.setSurfaceProvider(surfaceProvider)
+            useCaseGroupBuilder.addUseCase(previewUseCase)
+
+            if (captureMode == CaptureMode.PHOTO) {
+                try {
+                    extensionManagerJob.join()
+
+                    // Query if extension is available.
+                    if (extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.NIGHT)) {
+                        // Retrieve extension enabled camera selector
+                        extensionsCameraSelector = extensionsManager.getExtensionEnabledCameraSelector(
+                            cameraSelector, ExtensionMode.NIGHT
+                        );
+                    }
+                } catch (e: InterruptedException) {
+                    // This should not happen unless the future is cancelled or the thread is
+                    // interrupted by applications.
+                }
+
+                useCaseGroupBuilder.addUseCase(imageCaptureUseCase)
+            } else if (captureMode == CaptureMode.VIDEO_READY || captureMode == CaptureMode.VIDEO_RECORDING) {
+                useCaseGroupBuilder.addUseCase(videoCaptureUseCase)
+            }
 
             cameraProvider.unbindAll()
+            val activeCameraSelector = extensionsCameraSelector ?: cameraSelector
             camera = cameraProvider.bindToLifecycle(
                 lifecycleOwner,
-                cameraSelector,
-                previewUseCase,
-                imageCaptureUseCase,
-                videoCaptureUseCase,
+                activeCameraSelector,
+                useCaseGroupBuilder.build()
             )
             viewFinderState.value.cameraState = CameraState.READY
         }
@@ -235,4 +266,8 @@ enum class CameraState {
      * Camera is initialized but the preview has been stopped.
      */
     PREVIEW_STOPPED,
+}
+
+enum class CaptureMode {
+    PHOTO, VIDEO_READY, VIDEO_RECORDING
 }
