@@ -39,9 +39,6 @@
         android:theme="@style/Theme.Social"
         tools:targetApi="31">
         <activity
-            android:name=".VideoPlayerActivity"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Social.SplashScreen"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.social.ui.media
+package com.example.android.social.ui.videoedit
 
 import android.app.Application
 import android.content.Context

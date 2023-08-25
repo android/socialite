@@ -16,7 +16,6 @@
 
 package com.example.android.social.ui.chat
 
-import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
@@ -94,8 +93,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.android.social.R
-import com.example.android.social.VIDEO_URI_EXTRA
-import com.example.android.social.VideoPlayerActivity
 import com.example.android.social.data.ChatWithLastMessage
 import com.example.android.social.model.ChatDetail
 import com.example.android.social.model.Contact
@@ -111,6 +108,7 @@ fun ChatScreen(
     modifier: Modifier = Modifier,
     onBackPressed: (() -> Unit)?,
     onCameraClick: () -> Unit,
+    onVideoClick: (uri: String) -> Unit,
     prefilledText: String? = null,
 ) {
     val viewModel: ChatViewModel = viewModel()
@@ -134,6 +132,7 @@ fun ChatScreen(
             onInputChanged = { viewModel.updateInput(it) },
             onSendClick = { viewModel.send() },
             onCameraClick = onCameraClick,
+            onVideoClick = onVideoClick,
             modifier = modifier,
         )
     }
@@ -177,6 +176,7 @@ private fun ChatContent(
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
+    onVideoClick: (uri: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val topAppBarState = rememberTopAppBarState()
@@ -200,6 +200,7 @@ private fun ChatContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
+                onVideoClick = onVideoClick,
             )
             InputBar(
                 input = input,
@@ -281,6 +282,7 @@ private fun MessageList(
     messages: List<ChatMessage>,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    onVideoClick: (uri: String) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier,
@@ -305,7 +307,10 @@ private fun MessageList(
                 } else {
                     Spacer(modifier = Modifier.size(iconSize))
                 }
-                MessageBubble(message = message)
+                MessageBubble(
+                    message = message,
+                    onVideoClick = { message.mediaUri?.let { onVideoClick(it) } },
+                )
             }
         }
     }
@@ -315,8 +320,8 @@ private fun MessageList(
 private fun MessageBubble(
     message: ChatMessage,
     modifier: Modifier = Modifier,
+    onVideoClick: () -> Unit = {},
 ) {
-    val context = LocalContext.current
     Surface(
         modifier = modifier,
         color = if (message.isIncoming) {
@@ -346,11 +351,7 @@ private fun MessageBubble(
                     } else if (mimeType.contains("video")) {
                         VideoMessagePreview(
                             videoUri = message.mediaUri,
-                            onClick = {
-                                val intent = Intent(context, VideoPlayerActivity::class.java)
-                                intent.putExtra(VIDEO_URI_EXTRA, message.mediaUri)
-                                context.startActivity(intent)
-                            },
+                            onClick = onVideoClick,
                         )
                     } else {
                         Log.e(TAG, "Unrecognized media type")
@@ -497,6 +498,7 @@ private fun PreviewChatContent() {
             onInputChanged = {},
             onSendClick = {},
             onCameraClick = {},
+            onVideoClick = {},
         )
     }
 }

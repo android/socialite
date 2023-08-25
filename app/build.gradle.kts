@@ -98,6 +98,7 @@ dependencies {
 
     implementation(libs.lifecycle.ktx)
     implementation(libs.lifecycle.compose)
+    implementation(libs.lifecycle.runtime.compose)
 
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)

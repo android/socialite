@@ -32,7 +32,8 @@ import com.example.android.social.ui.camera.Media
 import com.example.android.social.ui.camera.MediaType
 import com.example.android.social.ui.chat.ChatScreen
 import com.example.android.social.ui.home.Home
-import com.example.android.social.ui.media.VideoEditScreen
+import com.example.android.social.ui.player.VideoPlayerScreen
+import com.example.android.social.ui.videoedit.VideoEditScreen
 
 @Composable
 fun Main(
@@ -72,6 +73,7 @@ fun Main(
                     foreground = true,
                     onBackPressed = { navController.popBackStack() },
                     onCameraClick = { navController.navigate("chat/$chatId/camera") },
+                    onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                     prefilledText = text,
                 )
             }
@@ -116,6 +118,18 @@ fun Main(
                     uri = videoUri,
                     onCloseButtonClicked = { navController.popBackStack() },
                     navController = navController,
+                )
+            }
+            composable(
+                route = "videoPlayer?uri={videoUri}",
+                arguments = listOf(
+                    navArgument("videoUri") { type = NavType.StringType },
+                ),
+            ) { backStackEntry ->
+                val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
+                VideoPlayerScreen(
+                    uri = videoUri,
+                    onCloseButtonClicked = { navController.popBackStack() },
                 )
             }
         }
