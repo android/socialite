@@ -21,6 +21,7 @@ import android.graphics.PointF
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,57 +53,68 @@ data class StarSpec(
     val blurRadius: Dp,
 )
 
-private object StarColor {
-    val Yellow = Color(0xFF, 0xF3, 0xE1)
-    val Blue = Color(0xE5, 0xE7, 0xFE)
-    val Green = Color(0xDD, 0xF9, 0xF2)
+class StarColors (
+    val firstColor: Color,
+    val secondColor: Color,
+    val thirdColor: Color,
+) {
+    companion object {
+        @Composable
+        fun defaults() = StarColors(
+            firstColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+            secondColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+            thirdColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+        )
+    }
 }
 
-private val starSpecs = listOf(
+private fun createStarSpecs(colors: StarColors) = listOf(
     StarSpec(
         numVertices = 8,
         size = 1.5f,
         offset = Offset(-0.2f, 0.2f),
-        color = StarColor.Green,
+        color = colors.firstColor,
         blurRadius = 8.dp,
     ),
     StarSpec(
         numVertices = 10,
         size = 1.2f,
         offset = Offset(0.2f, 0.2f),
-        color = StarColor.Blue,
+        color = colors.secondColor,
         blurRadius = 24.dp,
     ),
     StarSpec(
         numVertices = 6,
         size = 0.7f,
         offset = Offset(-0.5f, 0.5f),
-        color = StarColor.Yellow,
+        color = colors.thirdColor,
         blurRadius = 32.dp,
     ),
     StarSpec(
         numVertices = 6,
         size = 0.7f,
         offset = Offset(0.3f, 0.2f),
-        color = StarColor.Yellow,
+        color = colors.thirdColor,
         blurRadius = 40.dp,
     ),
     StarSpec(
         numVertices = 12,
         size = 0.5f,
         offset = Offset(0f, 0.5f),
-        color = StarColor.Green,
+        color = colors.firstColor,
         blurRadius = 48.dp,
     ),
 )
 
 @Composable
 fun HomeBackground(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    colors: StarColors = StarColors.defaults(),
 ) {
     val paint = remember { Paint() }
+    val specs = remember(colors) { createStarSpecs(colors) }
     Box(modifier = modifier) {
-        for (spec in starSpecs) {
+        for (spec in specs) {
             Star(
                 spec = spec,
                 paint = paint,
