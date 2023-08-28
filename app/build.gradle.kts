@@ -68,6 +68,7 @@ android {
 
 dependencies {
     implementation(libs.core.ktx)
+    implementation("androidx.camera:camera-extensions:1.2.3")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
