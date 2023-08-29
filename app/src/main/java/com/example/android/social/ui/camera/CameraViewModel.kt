@@ -240,6 +240,7 @@ class CameraViewModel @JvmOverloads constructor(
 
     companion object {
         const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        val aspectRatios = mapOf(AspectRatio.RATIO_16_9 to (9.0 / 16.0).toFloat())
     }
 }
 

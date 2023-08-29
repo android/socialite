@@ -16,29 +16,56 @@
 
 package com.example.android.social.ui.camera
 
+import android.view.View
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.Preview
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import com.example.android.social.ui.camera.viewfinder.CameraPreview
 
 @Composable
 fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {}) {
-    val context = LocalContext.current
+    lateinit var viewInfo: View
+
 
 //    if (cameraState == CameraState.NOT_READY) {
 //        Text(text = stringResource(R.string.camera_not_ready))
 //    } else if (cameraState == CameraState.READY) {
-    Box {
-        CameraPreview(
-            modifier = Modifier.fillMaxSize(),
-            onSurfaceProviderReady = onSurfaceProviderReady,
-            onRequestBitmapReady = {
-                val bitmap = it.invoke()
-            },
-        )
+    BoxWithConstraints(
+        Modifier.background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        val maxAspectRatio: Float = maxWidth / maxHeight
+        val aspectRatio: Float = CameraViewModel.aspectRatios.getValue(AspectRatio.RATIO_16_9)
+        val shouldUseMaxWidth = maxAspectRatio >= aspectRatio
+        val width = if (shouldUseMaxWidth) maxWidth else maxHeight * aspectRatio
+        val height = if (!shouldUseMaxWidth) maxHeight else maxWidth / aspectRatio
+        Box(
+            modifier = Modifier
+                .width(width)
+                .height(height)
+        ) {
+            CameraPreview(
+                modifier = Modifier.fillMaxSize(),
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE,
+                onSurfaceProviderReady = onSurfaceProviderReady,
+                onRequestBitmapReady = {
+                    val bitmap = it.invoke()
+                },
+                setSurfaceView = { s: View ->
+                    viewInfo = s
+                }
+            )
+        }
     }
+    // }
 }
-// }

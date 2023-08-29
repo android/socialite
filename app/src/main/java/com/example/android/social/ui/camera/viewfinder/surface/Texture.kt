@@ -20,6 +20,7 @@ import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.util.Log
 import android.view.TextureView
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.runtime.Composable
@@ -35,7 +36,8 @@ private const val TAG = "Texture"
 fun Texture(
     onSurfaceTextureEvent: (SurfaceTextureEvent) -> Boolean = { _ -> true },
     onRequestBitmapReady: (() -> Bitmap?) -> Unit,
-) {
+    setView: (View) -> Unit,
+    ) {
     Log.d(TAG, "Texture")
 
     var textureView: TextureView? by remember { mutableStateOf(null) }
@@ -45,42 +47,42 @@ fun Texture(
             TextureView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 surfaceTextureListener = object : TextureView.SurfaceTextureListener {
                     override fun onSurfaceTextureAvailable(
                         surface: SurfaceTexture,
                         width: Int,
-                        height: Int,
+                        height: Int
                     ) {
                         onSurfaceTextureEvent(
                             SurfaceTextureEvent.SurfaceTextureAvailable(
                                 surface,
                                 width,
-                                height,
-                            ),
+                                height
+                            )
                         )
                     }
 
                     override fun onSurfaceTextureSizeChanged(
                         surface: SurfaceTexture,
                         width: Int,
-                        height: Int,
+                        height: Int
                     ) {
                         onSurfaceTextureEvent(
                             SurfaceTextureEvent.SurfaceTextureSizeChanged(
                                 surface,
                                 width,
-                                height,
-                            ),
+                                height
+                            )
                         )
                     }
 
                     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
                         return onSurfaceTextureEvent(
                             SurfaceTextureEvent.SurfaceTextureDestroyed(
-                                surface,
-                            ),
+                                surface
+                            )
                         )
                     }
 
@@ -89,32 +91,33 @@ fun Texture(
                     }
                 }
             }
-        },
-        update = {
+        }, update = {
             textureView = it
+            setView(it)
             onRequestBitmapReady { -> it.bitmap }
-        },
+        }
     )
+
 }
 
 sealed interface SurfaceTextureEvent {
     data class SurfaceTextureAvailable(
         val surface: SurfaceTexture,
         val width: Int,
-        val height: Int,
+        val height: Int
     ) : SurfaceTextureEvent
 
     data class SurfaceTextureSizeChanged(
         val surface: SurfaceTexture,
         val width: Int,
-        val height: Int,
+        val height: Int
     ) : SurfaceTextureEvent
 
     data class SurfaceTextureDestroyed(
-        val surface: SurfaceTexture,
+        val surface: SurfaceTexture
     ) : SurfaceTextureEvent
 
     data class SurfaceTextureUpdated(
-        val surface: SurfaceTexture,
+        val surface: SurfaceTexture
     ) : SurfaceTextureEvent
 }
