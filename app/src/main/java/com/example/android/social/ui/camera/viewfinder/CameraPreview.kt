@@ -19,6 +19,7 @@ package com.example.android.social.ui.camera.viewfinder
 import android.graphics.Bitmap
 import android.util.Log
 import android.view.Surface
+import android.view.View
 import androidx.camera.core.Preview.SurfaceProvider
 import androidx.camera.core.SurfaceRequest
 import androidx.camera.view.PreviewView.ImplementationMode
@@ -46,21 +47,22 @@ fun CameraPreview(
     implementationMode: ImplementationMode = ImplementationMode.COMPATIBLE,
     onSurfaceProviderReady: (SurfaceProvider) -> Unit = {},
     onRequestBitmapReady: (() -> Bitmap?) -> Unit,
+    setSurfaceView: (View) -> Unit
 ) {
     Log.d(TAG, "CameraPreview")
 
     val surfaceRequest by produceState<SurfaceRequest?>(initialValue = null) {
-        onSurfaceProviderReady(
-            SurfaceProvider { request ->
-                value?.willNotProvideSurface()
-                value = request
-            },
-        )
+        onSurfaceProviderReady(SurfaceProvider { request ->
+            value?.willNotProvideSurface()
+            value = request
+        })
     }
 
     PreviewSurface(
         surfaceRequest = surfaceRequest,
+        setView = setSurfaceView
     )
+
 }
 
 @Composable
@@ -69,6 +71,7 @@ fun PreviewSurface(
 //    onRequestBitmapReady: (() -> Bitmap?) -> Unit,
     type: SurfaceType = SurfaceType.TEXTURE_VIEW,
     implementationMode: ImplementationMode = ImplementationMode.COMPATIBLE,
+    setView: (View) -> Unit
 ) {
     Log.d(TAG, "PreviewSurface")
 
@@ -77,11 +80,8 @@ fun PreviewSurface(
     LaunchedEffect(surfaceRequest, surface) {
         Log.d(TAG, "LaunchedEffect")
         snapshotFlow {
-            if (surfaceRequest == null || surface == null) {
-                null
-            } else {
-                Pair(surfaceRequest, surface)
-            }
+            if (surfaceRequest == null || surface == null) null
+            else Pair(surfaceRequest, surface)
         }.mapNotNull { it }
             .collect { (request, surface) ->
                 Log.d(TAG, "Collect: Providing surface")
@@ -93,6 +93,7 @@ fun PreviewSurface(
     when (implementationMode) {
         ImplementationMode.PERFORMANCE -> TODO()
         ImplementationMode.COMPATIBLE -> CombinedSurface(
+            setView = setView,
             onSurfaceEvent = { event ->
                 surface = when (event) {
                     is CombinedSurfaceEvent.SurfaceAvailable -> {
@@ -103,7 +104,7 @@ fun PreviewSurface(
                         null
                     }
                 }
-            },
+            }
         )
     }
 }
