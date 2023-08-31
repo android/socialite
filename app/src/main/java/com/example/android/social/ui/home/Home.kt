@@ -110,7 +110,7 @@ private fun HomeAppBar(
         title = { Text(text = title) },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent,
-        )
+        ),
     )
 }
 

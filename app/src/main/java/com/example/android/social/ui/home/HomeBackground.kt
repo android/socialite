@@ -53,7 +53,7 @@ data class StarSpec(
     val blurRadius: Dp,
 )
 
-class StarColors (
+class StarColors(
     val firstColor: Color,
     val secondColor: Color,
     val thirdColor: Color,
@@ -132,20 +132,20 @@ private fun Star(
 ) {
     var starCache: RoundedPolygon? by remember { mutableStateOf(null) }
     Canvas(
-        modifier = modifier.blur(spec.blurRadius)
+        modifier = modifier.blur(spec.blurRadius),
     ) {
         val width = size.width
         drawIntoCanvas { canvas ->
             canvas.translate(
                 dx = width * spec.offset.x,
-                dy = width * spec.offset.y
+                dy = width * spec.offset.y,
             )
             val star = starCache ?: RoundedPolygon.star(
                 numVerticesPerRadius = spec.numVertices,
                 radius = width * spec.size / 2,
                 innerRadius = width * spec.size * 0.7f / 2,
                 rounding = CornerRounding(width * 0.05f),
-                center = PointF(width / 2, width / 2)
+                center = PointF(width / 2, width / 2),
             ).also { starCache = it }
             paint.color = spec.color.toArgb()
             canvas.nativeCanvas.drawPolygon(star, paint)
