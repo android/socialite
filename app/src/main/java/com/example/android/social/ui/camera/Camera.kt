@@ -17,20 +17,25 @@
 package com.example.android.social.ui.camera
 
 import android.Manifest
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Autorenew
+import androidx.compose.material.icons.filled.ChangeCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -56,10 +61,8 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
-    // TODO (donovanfm): implement switchable camera (front and back)
-    // var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
-
     var surfaceProvider = remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
+    var cameraSelector by remember { mutableStateOf(CameraSelector.DEFAULT_BACK_CAMERA) }
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
     val cameraAndRecordAudioPermissionState = rememberMultiplePermissionsState(
         listOf(
@@ -76,13 +79,20 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
 
     val onPreviewSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {
         surfaceProvider.value = it
-        viewModel.startPreview(lifecycleOwner, it, captureMode)
+        viewModel.startPreview(lifecycleOwner, it, captureMode, cameraSelector)
     }
 
     fun setCaptureMode(mode: CaptureMode) {
         captureMode = mode
         if (surfaceProvider.value != null) {
-            viewModel.startPreview(lifecycleOwner, surfaceProvider.value!!, captureMode)
+            viewModel.startPreview(lifecycleOwner, surfaceProvider.value!!, captureMode, cameraSelector)
+        }
+    }
+
+    fun setCameraSelector(selector: CameraSelector) {
+        cameraSelector = selector
+        if (surfaceProvider.value != null) {
+            viewModel.startPreview(lifecycleOwner, surfaceProvider.value!!, captureMode, cameraSelector)
         }
     }
 
@@ -102,7 +112,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = Color.White,
                         )
                     }
                 }
@@ -119,7 +129,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp, 5.dp, 0.dp, 20.dp)
+                        .padding(0.dp, 5.dp, 0.dp, 5.dp)
                         .background(Color.Black)
                         .height(100.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -149,47 +159,66 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp, 5.dp, 0.dp, 20.dp)
+                        .padding(0.dp, 5.dp, 0.dp, 50.dp)
                         .background(Color.Black)
                         .height(100.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    if (captureMode == CaptureMode.PHOTO) {
-                        Button(
-                            onClick = { viewModel.capturePhoto(onMediaCaptured) },
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    Spacer(modifier = Modifier.size(50.dp))
+                    Box(modifier = Modifier.padding(25.dp, 0.dp)) {
+                        if (captureMode == CaptureMode.PHOTO) {
+                            Button(
+                                onClick = { viewModel.capturePhoto(onMediaCaptured) },
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                                modifier = Modifier
+                                    .height(75.dp)
+                                    .width(75.dp)
+                            ) {}
+                        } else if (captureMode == CaptureMode.VIDEO_READY) {
+                            Button(
+                                onClick =
+                                {
+                                    captureMode = CaptureMode.VIDEO_RECORDING
+                                    viewModel.startVideoCapture(onMediaCaptured)
+                                },
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                modifier = Modifier
+                                    .height(75.dp)
+                                    .width(75.dp),
+                            ) {}
+                        } else if (captureMode == CaptureMode.VIDEO_RECORDING) {
+                            Button(
+                                onClick =
+                                {
+                                    captureMode = CaptureMode.VIDEO_READY
+                                    viewModel.saveVideo()
+                                },
+                                shape = RoundedCornerShape(10),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                modifier = Modifier
+                                    .height(50.dp)
+                                    .width(50.dp),
+                            ) {}
+                        }
+                    }
+                    IconButton(onClick = {
+                        if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                            setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
+                        } else {
+                            setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Autorenew,
+                            contentDescription = null,
+                            tint = Color.White,
                             modifier = Modifier
                                 .height(75.dp)
                                 .width(75.dp),
-                        ) {}
-                    } else if (captureMode == CaptureMode.VIDEO_READY) {
-                        Button(
-                            onClick =
-                            {
-                                captureMode = CaptureMode.VIDEO_RECORDING
-                                viewModel.startVideoCapture(onMediaCaptured)
-                            },
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            modifier = Modifier
-                                .height(75.dp)
-                                .width(75.dp),
-                        ) {}
-                    } else if (captureMode == CaptureMode.VIDEO_RECORDING) {
-                        Button(
-                            onClick =
-                            {
-                                captureMode = CaptureMode.VIDEO_READY
-                                viewModel.saveVideo()
-                            },
-                            shape = RoundedCornerShape(10),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            modifier = Modifier
-                                .height(50.dp)
-                                .width(50.dp),
-                        ) {}
+                        )
                     }
                 }
             }

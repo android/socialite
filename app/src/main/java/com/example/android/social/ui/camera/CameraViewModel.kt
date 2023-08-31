@@ -99,14 +99,14 @@ class CameraViewModel @JvmOverloads constructor(
     fun startPreview(
         lifecycleOwner: LifecycleOwner,
         surfaceProvider: Preview.SurfaceProvider,
-        captureMode: CaptureMode
+        captureMode: CaptureMode,
+        cameraSelector: CameraSelector
     ) {
         viewModelScope.launch {
             initializeJob.join()
             var extensionManagerJob = viewModelScope.launch {
                 extensionsManager = ExtensionsManager.getInstanceAsync(context, cameraProvider).await()
             }
-            var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
             var extensionsCameraSelector: CameraSelector? = null
             var useCaseGroupBuilder = UseCaseGroup.Builder()
 
