@@ -72,6 +72,7 @@ class ChatViewModel @JvmOverloads constructor(
 
     private val _input = MutableStateFlow("")
     val input: StateFlow<String> = _input
+    private var inputPrefilled = false
 
     /**
      * We want to update the notification when the corresponding chat screen is open. Setting this
@@ -95,6 +96,12 @@ class ChatViewModel @JvmOverloads constructor(
 
     fun updateInput(input: String) {
         _input.value = input
+    }
+
+    fun prefillInput(input: String) {
+        if (inputPrefilled) return
+        inputPrefilled = true
+        updateInput(input)
     }
 
     fun send() {

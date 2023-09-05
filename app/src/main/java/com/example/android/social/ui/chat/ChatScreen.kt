@@ -114,10 +114,10 @@ fun ChatScreen(
     prefilledText: String? = null,
 ) {
     val viewModel: ChatViewModel = viewModel()
-    viewModel.setChatId(chatId)
-    prefilledText?.let { text ->
-        LaunchedEffect(text) {
-            viewModel.updateInput(prefilledText)
+    LaunchedEffect(chatId) {
+        viewModel.setChatId(chatId)
+        if (prefilledText != null) {
+            viewModel.prefillInput(prefilledText)
         }
     }
     val chat by viewModel.chat.collectAsState()
