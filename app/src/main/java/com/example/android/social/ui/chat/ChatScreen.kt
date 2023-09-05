@@ -68,7 +68,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,6 +89,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -120,10 +120,10 @@ fun ChatScreen(
             viewModel.prefillInput(prefilledText)
         }
     }
-    val chat by viewModel.chat.collectAsState()
-    val messages by viewModel.messages.collectAsState()
-    val input by viewModel.input.collectAsState()
-    val sendEnabled by viewModel.sendEnabled.collectAsState()
+    val chat by viewModel.chat.collectAsStateWithLifecycle()
+    val messages by viewModel.messages.collectAsStateWithLifecycle()
+    val input by viewModel.input.collectAsStateWithLifecycle()
+    val sendEnabled by viewModel.sendEnabled.collectAsStateWithLifecycle()
     chat?.let { c ->
         ChatContent(
             chat = c,
