@@ -115,6 +115,8 @@
             android:authorities="com.example.android.social"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
+
+        <receiver android:name=".ReplyReceiver" />
     </application>
 
 </manifest>

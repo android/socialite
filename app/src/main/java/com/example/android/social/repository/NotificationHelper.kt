@@ -174,7 +174,7 @@ class NotificationHelper(context: Context) {
         // notification.
         val messagingStyle = NotificationCompat.MessagingStyle(user)
         val firstId = messages.first().id
-        for (message in messages) {
+        for (message in messages.reversed()) {
             val m = NotificationCompat.MessagingStyle.Message(
                 message.text,
                 message.timestamp,
