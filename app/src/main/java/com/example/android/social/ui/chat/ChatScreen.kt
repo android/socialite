@@ -123,11 +123,13 @@ fun ChatScreen(
     val chat by viewModel.chat.collectAsState()
     val messages by viewModel.messages.collectAsState()
     val input by viewModel.input.collectAsState()
+    val sendEnabled by viewModel.sendEnabled.collectAsState()
     chat?.let { c ->
         ChatContent(
             chat = c,
             messages = messages,
             input = input,
+            sendEnabled = sendEnabled,
             onBackPressed = onBackPressed,
             onInputChanged = { viewModel.updateInput(it) },
             onSendClick = { viewModel.send() },
@@ -170,6 +172,7 @@ private fun ChatContent(
     chat: ChatDetail,
     messages: List<ChatMessage>,
     input: String,
+    sendEnabled: Boolean,
     onBackPressed: (() -> Unit)?,
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
@@ -204,6 +207,7 @@ private fun ChatContent(
                 onSendClick = onSendClick,
                 onCameraClick = onCameraClick,
                 contentPadding = innerPadding.copy(layoutDirection, top = 0.dp),
+                sendEnabled = sendEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.ime.exclude(WindowInsets.navigationBars)),
@@ -400,6 +404,7 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
 private fun InputBar(
     input: String,
     contentPadding: PaddingValues,
+    sendEnabled: Boolean,
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
@@ -447,6 +452,7 @@ private fun InputBar(
             FilledIconButton(
                 onClick = onSendClick,
                 modifier = Modifier.size(56.dp),
+                enabled = sendEnabled,
             ) {
                 Icon(
                     imageVector = Icons.Default.Send,
@@ -467,6 +473,7 @@ private fun PreviewInputBar() {
             onInputChanged = {},
             onSendClick = {},
             onCameraClick = {},
+            sendEnabled = true,
         )
     }
 }
@@ -485,6 +492,7 @@ private fun PreviewChatContent() {
                 ChatMessage("Hello, world!", null, null, 0L, true, null),
             ),
             input = "Hello",
+            sendEnabled = true,
             onBackPressed = {},
             onInputChanged = {},
             onSendClick = {},

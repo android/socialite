@@ -54,7 +54,7 @@ class ChatViewModel @JvmOverloads constructor(
                 // Show the contact icon only at the first message if the same sender has multiple
                 // messages in a row.
                 val showIcon = i + 1 >= messages.size ||
-                    messages[i + 1].senderId != message.senderId
+                        messages[i + 1].senderId != message.senderId
                 val iconUri = if (showIcon) attendees[message.senderId]?.iconUri else null
                 add(
                     ChatMessage(
@@ -73,6 +73,8 @@ class ChatViewModel @JvmOverloads constructor(
     private val _input = MutableStateFlow("")
     val input: StateFlow<String> = _input
     private var inputPrefilled = false
+
+    val sendEnabled = _input.map { it.isNotEmpty() }.stateInUi(false)
 
     /**
      * We want to update the notification when the corresponding chat screen is open. Setting this
@@ -105,8 +107,12 @@ class ChatViewModel @JvmOverloads constructor(
     }
 
     fun send() {
+        val chatId = _chatId.value
+        if (chatId <= 0) return
+        val input = _input.value
+        if (input.isEmpty()) return
         viewModelScope.launch {
-            repository.sendMessage(_chatId.value, _input.value, null, null)
+            repository.sendMessage(chatId, input, null, null)
             _input.value = ""
         }
     }
