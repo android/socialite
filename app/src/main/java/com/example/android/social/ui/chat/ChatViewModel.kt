@@ -74,7 +74,7 @@ class ChatViewModel @JvmOverloads constructor(
     val input: StateFlow<String> = _input
     private var inputPrefilled = false
 
-    val sendEnabled = _input.map { it.isNotEmpty() }.stateInUi(false)
+    val sendEnabled = _input.map(::isInputValid).stateInUi(false)
 
     /**
      * We want to update the notification when the corresponding chat screen is open. Setting this
@@ -110,10 +110,12 @@ class ChatViewModel @JvmOverloads constructor(
         val chatId = _chatId.value
         if (chatId <= 0) return
         val input = _input.value
-        if (input.isEmpty()) return
+        if (!isInputValid(input)) return
         viewModelScope.launch {
             repository.sendMessage(chatId, input, null, null)
             _input.value = ""
         }
     }
 }
+
+private fun isInputValid(input: String): Boolean = input.isNotBlank()
