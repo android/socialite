@@ -47,22 +47,23 @@ fun CameraPreview(
     implementationMode: ImplementationMode = ImplementationMode.COMPATIBLE,
     onSurfaceProviderReady: (SurfaceProvider) -> Unit = {},
     onRequestBitmapReady: (() -> Bitmap?) -> Unit,
-    setSurfaceView: (View) -> Unit
+    setSurfaceView: (View) -> Unit,
 ) {
     Log.d(TAG, "CameraPreview")
 
     val surfaceRequest by produceState<SurfaceRequest?>(initialValue = null) {
-        onSurfaceProviderReady(SurfaceProvider { request ->
-            value?.willNotProvideSurface()
-            value = request
-        })
+        onSurfaceProviderReady(
+            SurfaceProvider { request ->
+                value?.willNotProvideSurface()
+                value = request
+            },
+        )
     }
 
     PreviewSurface(
         surfaceRequest = surfaceRequest,
-        setView = setSurfaceView
+        setView = setSurfaceView,
     )
-
 }
 
 @Composable
@@ -71,7 +72,7 @@ fun PreviewSurface(
 //    onRequestBitmapReady: (() -> Bitmap?) -> Unit,
     type: SurfaceType = SurfaceType.TEXTURE_VIEW,
     implementationMode: ImplementationMode = ImplementationMode.COMPATIBLE,
-    setView: (View) -> Unit
+    setView: (View) -> Unit,
 ) {
     Log.d(TAG, "PreviewSurface")
 
@@ -80,8 +81,11 @@ fun PreviewSurface(
     LaunchedEffect(surfaceRequest, surface) {
         Log.d(TAG, "LaunchedEffect")
         snapshotFlow {
-            if (surfaceRequest == null || surface == null) null
-            else Pair(surfaceRequest, surface)
+            if (surfaceRequest == null || surface == null) {
+                null
+            } else {
+                Pair(surfaceRequest, surface)
+            }
         }.mapNotNull { it }
             .collect { (request, surface) ->
                 Log.d(TAG, "Collect: Providing surface")
@@ -104,7 +108,7 @@ fun PreviewSurface(
                         null
                     }
                 }
-            }
+            },
         )
     }
 }

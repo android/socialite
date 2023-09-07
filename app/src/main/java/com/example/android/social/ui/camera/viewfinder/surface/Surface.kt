@@ -23,13 +23,15 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.android.social.ui.camera.viewfinder.surface.SurfaceHolderEvent.*
+import com.example.android.social.ui.camera.viewfinder.surface.SurfaceHolderEvent.SurfaceChanged
+import com.example.android.social.ui.camera.viewfinder.surface.SurfaceHolderEvent.SurfaceCreated
+import com.example.android.social.ui.camera.viewfinder.surface.SurfaceHolderEvent.SurfaceDestroyed
 
 private const val TAG = "Surface"
 
 @Composable
 fun Surface(
-    onSurfaceHolderEvent: (SurfaceHolderEvent) -> Unit = { _ -> }
+    onSurfaceHolderEvent: (SurfaceHolderEvent) -> Unit = { _ -> },
 ) {
     Log.d(TAG, "Surface")
 
@@ -37,7 +39,7 @@ fun Surface(
         SurfaceView(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+                ViewGroup.LayoutParams.MATCH_PARENT,
             )
             holder.addCallback(
                 object : SurfaceHolder.Callback {
@@ -49,7 +51,7 @@ fun Surface(
                         holder: SurfaceHolder,
                         format: Int,
                         width: Int,
-                        height: Int
+                        height: Int,
                     ) {
                         onSurfaceHolderEvent(SurfaceChanged(holder, width, height))
                     }
@@ -57,25 +59,24 @@ fun Surface(
                     override fun surfaceDestroyed(holder: SurfaceHolder) {
                         onSurfaceHolderEvent(SurfaceDestroyed(holder))
                     }
-                }
+                },
             )
         }
     })
 }
 
-
 sealed interface SurfaceHolderEvent {
     data class SurfaceCreated(
-        val holder: SurfaceHolder
+        val holder: SurfaceHolder,
     ) : SurfaceHolderEvent
 
     data class SurfaceChanged(
         val holder: SurfaceHolder,
         val width: Int,
-        val height: Int
+        val height: Int,
     ) : SurfaceHolderEvent
 
     data class SurfaceDestroyed(
-        val holder: SurfaceHolder
+        val holder: SurfaceHolder,
     ) : SurfaceHolderEvent
 }

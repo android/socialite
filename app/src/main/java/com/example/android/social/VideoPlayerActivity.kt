@@ -19,6 +19,8 @@ package com.example.android.social
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
@@ -42,41 +44,43 @@ class VideoPlayerActivity : ComponentActivity() {
                 mediaUri = mediaUriFromBundle
             }
         }
-    }
 
-    override fun onStart() {
-        super.onStart()
-        if (Build.VERSION.SDK_INT > 23) {
-            initializePlayer(mediaUri)
-            playerView.onResume()
-        }
-    }
+        lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) {
+                super.onStart(owner)
+                if (Build.VERSION.SDK_INT > 23) {
+                    initializePlayer(mediaUri)
+                    playerView.onResume()
+                }
+            }
 
-    override fun onResume() {
-        super.onResume()
-        if (Build.VERSION.SDK_INT <= 23 || player == null) {
-            initializePlayer(mediaUri)
-            playerView.onResume()
-        }
-    }
+            override fun onResume(owner: LifecycleOwner) {
+                super.onResume(owner)
+                if (Build.VERSION.SDK_INT <= 23 || player == null) {
+                    initializePlayer(mediaUri)
+                    playerView.onResume()
+                }
+            }
 
-    override fun onPause() {
-        super.onPause()
-        // API 24 introduces multi-window mode, so on API >= 24 it's important to stop playback in
-        // onStop and not onPause
-        // More context: https://github.com/google/ExoPlayer/issues/4878#issuecomment-425427583
-        if (Build.VERSION.SDK_INT <= 23) {
-            playerView.onPause()
-            releasePlayer()
-        }
-    }
+            override fun onPause(owner: LifecycleOwner) {
+                super.onPause(owner)
+                // API 24 introduces multi-window mode, so on API >= 24 it's important to stop
+                // playback in onStop and not onPause
+                // More context: https://github.com/google/ExoPlayer/issues/4878#issuecomment-425427583
+                if (Build.VERSION.SDK_INT <= 23) {
+                    playerView.onPause()
+                    releasePlayer()
+                }
+            }
 
-    override fun onStop() {
-        super.onStop()
-        if (Build.VERSION.SDK_INT > 23) {
-            playerView.onPause()
-            releasePlayer()
-        }
+            override fun onStop(owner: LifecycleOwner) {
+                super.onStop(owner)
+                if (Build.VERSION.SDK_INT > 23) {
+                    playerView.onPause()
+                    releasePlayer()
+                }
+            }
+        })
     }
 
     private fun initializePlayer(mediaUri: String) {
@@ -86,6 +90,8 @@ class VideoPlayerActivity : ComponentActivity() {
             playerView.player = this
             // Set the media item to be played.
             setMediaItem(MediaItem.fromUri(mediaUri))
+            // Start playback as soon as the player is ready
+            playWhenReady = true
             // Prepare the player.
             prepare()
         }

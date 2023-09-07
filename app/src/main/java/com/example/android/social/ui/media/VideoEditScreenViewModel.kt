@@ -62,6 +62,9 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
     private val _isFinishedEditing = MutableStateFlow(false)
     val isFinishedEditing: StateFlow<Boolean> = _isFinishedEditing
 
+    private val _isProcessing = MutableStateFlow(false)
+    val isProcessing: StateFlow<Boolean> = _isProcessing
+
     fun setChatId(chatId: Long) {
         _chatId.value = chatId
     }
@@ -74,6 +77,7 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
                 sendVideo()
 
                 _isFinishedEditing.value = true
+                _isProcessing.value = false
             }
 
             override fun onError(
@@ -84,6 +88,7 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
                 exportException.printStackTrace()
                 Toast.makeText(application, "Error applying edits on video", Toast.LENGTH_LONG)
                     .show()
+                _isProcessing.value = false
             }
         }
 
@@ -157,6 +162,7 @@ class VideoEditScreenViewModel @JvmOverloads constructor(
         // TODO: Investigate using MediaStoreOutputOptions instead of external cache file for saving
         //  edited video https://github.com/androidx/media/issues/504
         transformer.start(editedMediaItem, transformedVideoFilePath)
+        _isProcessing.value = true
     }
 
     private fun createNewVideoFilePath(context: Context, fileName: String): String {

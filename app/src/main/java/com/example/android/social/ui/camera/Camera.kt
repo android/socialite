@@ -35,7 +35,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Autorenew
-import androidx.compose.material.icons.filled.ChangeCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -55,8 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-
-
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -143,14 +140,14 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         Button(
                             modifier = Modifier.padding(5.dp),
                             onClick = { setCaptureMode(CaptureMode.PHOTO) },
-                            colors = if (captureMode == CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor
+                            colors = if (captureMode == CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
                         ) {
                             Text("Photo")
                         }
                         Button(
                             modifier = Modifier.padding(5.dp),
                             onClick = { setCaptureMode(CaptureMode.VIDEO_READY) },
-                            colors = if (captureMode != CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor
+                            colors = if (captureMode != CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
                         ) {
                             Text("Video")
                         }
@@ -174,7 +171,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                                 modifier = Modifier
                                     .height(75.dp)
-                                    .width(75.dp)
+                                    .width(75.dp),
                             ) {}
                         } else if (captureMode == CaptureMode.VIDEO_READY) {
                             Button(

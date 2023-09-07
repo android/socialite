@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -44,11 +45,13 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -98,6 +101,8 @@ fun VideoEditScreen(
         navController.popBackStack("chat/$chatId", false)
     }
 
+    val isProcessing = viewModel.isProcessing.collectAsState()
+
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
@@ -130,7 +135,7 @@ fun VideoEditScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(50.dp))
-            VideoMessagePreview(uri)
+            VideoMessagePreview(uri, isProcessing.value)
             Spacer(modifier = Modifier.height(20.dp))
 
             Column(
@@ -207,7 +212,7 @@ private fun VideoEditTopAppBar(
 }
 
 @Composable
-private fun VideoMessagePreview(videoUri: String) {
+private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean) {
     // Render yellow box instead of frame of captured video for Preview purposes
     if (LocalInspectionMode.current) {
         Box(
@@ -244,6 +249,14 @@ private fun VideoMessagePreview(videoUri: String) {
                     .size(60.dp)
                     .padding(10.dp),
             )
+
+            if (isProcessing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                        .padding(8.dp),
+                )
+            }
         }
     } else {
         Log.e(TAG, "Error rendering preview of video")

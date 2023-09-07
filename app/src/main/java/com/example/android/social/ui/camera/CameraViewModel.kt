@@ -100,7 +100,7 @@ class CameraViewModel @JvmOverloads constructor(
         lifecycleOwner: LifecycleOwner,
         surfaceProvider: Preview.SurfaceProvider,
         captureMode: CaptureMode,
-        cameraSelector: CameraSelector
+        cameraSelector: CameraSelector,
     ) {
         viewModelScope.launch {
             initializeJob.join()
@@ -121,8 +121,9 @@ class CameraViewModel @JvmOverloads constructor(
                     if (extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.NIGHT)) {
                         // Retrieve extension enabled camera selector
                         extensionsCameraSelector = extensionsManager.getExtensionEnabledCameraSelector(
-                            cameraSelector, ExtensionMode.NIGHT
-                        );
+                            cameraSelector,
+                            ExtensionMode.NIGHT,
+                        )
                     }
                 } catch (e: InterruptedException) {
                     // This should not happen unless the future is cancelled or the thread is
@@ -139,7 +140,7 @@ class CameraViewModel @JvmOverloads constructor(
             camera = cameraProvider.bindToLifecycle(
                 lifecycleOwner,
                 activeCameraSelector,
-                useCaseGroupBuilder.build()
+                useCaseGroupBuilder.build(),
             )
             viewFinderState.value.cameraState = CameraState.READY
         }

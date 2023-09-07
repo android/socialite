@@ -36,13 +36,12 @@ import com.example.android.social.ui.camera.viewfinder.CameraPreview
 fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {}) {
     lateinit var viewInfo: View
 
-
 //    if (cameraState == CameraState.NOT_READY) {
 //        Text(text = stringResource(R.string.camera_not_ready))
 //    } else if (cameraState == CameraState.READY) {
     BoxWithConstraints(
         Modifier.background(Color.Black),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         val maxAspectRatio: Float = maxWidth / maxHeight
         val aspectRatio: Float = CameraViewModel.aspectRatios.getValue(AspectRatio.RATIO_16_9)
@@ -52,7 +51,7 @@ fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.Surfac
         Box(
             modifier = Modifier
                 .width(width)
-                .height(height)
+                .height(height),
         ) {
             CameraPreview(
                 modifier = Modifier.fillMaxSize(),
@@ -63,7 +62,7 @@ fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.Surfac
                 },
                 setSurfaceView = { s: View ->
                     viewInfo = s
-                }
+                },
             )
         }
     }
