@@ -26,7 +26,7 @@ subprojects {
     configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         kotlin {
             target("**/*.kt")
-            ktlint("0.48.2")
+            ktlint(libs.versions.ktlint.get())
         }
     }
 }

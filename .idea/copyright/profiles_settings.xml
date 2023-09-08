@@ -15,5 +15,9 @@
   ~ limitations under the License.
 -->
 <component name="CopyrightManager">
-  <settings default="AOSP" />
+  <settings default="AOSP">
+    <module2copyright>
+      <element module="All" copyright="AOSP" />
+    </module2copyright>
+  </settings>
 </component>

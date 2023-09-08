@@ -27,12 +27,12 @@ kotlin {
 
 android {
     namespace = "com.example.android.social"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.android.social"
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -57,7 +57,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.4"
+        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
     packaging {
         resources {
@@ -68,7 +68,7 @@ android {
 
 dependencies {
     implementation(libs.core.ktx)
-    implementation("androidx.camera:camera-extensions:1.2.3")
+    implementation(libs.camera.extensions)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)

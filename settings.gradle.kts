@@ -20,10 +20,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    plugins {
-        id("com.google.devtools.ksp") version "1.8.10-1.0.9"
-    }
 }
+
+@Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -31,5 +30,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Social"
+
+rootProject.name = "social"
 include(":app")
