@@ -54,7 +54,7 @@ class ChatViewModel @JvmOverloads constructor(
                 // Show the contact icon only at the first message if the same sender has multiple
                 // messages in a row.
                 val showIcon = i + 1 >= messages.size ||
-                        messages[i + 1].senderId != message.senderId
+                    messages[i + 1].senderId != message.senderId
                 val iconUri = if (showIcon) attendees[message.senderId]?.iconUri else null
                 add(
                     ChatMessage(

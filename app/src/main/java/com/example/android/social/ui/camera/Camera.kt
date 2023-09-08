@@ -17,6 +17,7 @@
 package com.example.android.social.ui.camera
 
 import android.Manifest
+import android.annotation.SuppressLint
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.compose.foundation.background
@@ -51,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -82,14 +84,24 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
     fun setCaptureMode(mode: CaptureMode) {
         captureMode = mode
         if (surfaceProvider.value != null) {
-            viewModel.startPreview(lifecycleOwner, surfaceProvider.value!!, captureMode, cameraSelector)
+            viewModel.startPreview(
+                lifecycleOwner,
+                surfaceProvider.value!!,
+                captureMode,
+                cameraSelector,
+            )
         }
     }
 
     fun setCameraSelector(selector: CameraSelector) {
         cameraSelector = selector
         if (surfaceProvider.value != null) {
-            viewModel.startPreview(lifecycleOwner, surfaceProvider.value!!, captureMode, cameraSelector)
+            viewModel.startPreview(
+                lifecycleOwner,
+                surfaceProvider.value!!,
+                captureMode,
+                cameraSelector,
+            )
         }
     }
 
@@ -118,8 +130,9 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         .fillMaxWidth()
                         .weight(1f),
                 ) {
+                    val viewFinderState by viewModel.viewFinderState.collectAsStateWithLifecycle()
                     ViewFinder(
-                        viewModel.viewFinderState.value.cameraState,
+                        viewFinderState.cameraState,
                         onPreviewSurfaceProviderReady,
                     )
                 }
@@ -176,7 +189,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         } else if (captureMode == CaptureMode.VIDEO_READY) {
                             Button(
                                 onClick =
-                                {
+                                @SuppressLint("MissingPermission") {
                                     captureMode = CaptureMode.VIDEO_RECORDING
                                     viewModel.startVideoCapture(onMediaCaptured)
                                 },

@@ -16,12 +16,14 @@
 
 package com.example.android.social.ui.camera
 
+import android.Manifest
 import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -61,7 +63,6 @@ class CameraViewModel @JvmOverloads constructor(
     private lateinit var initializeJob: Job
     private lateinit var extensionsManager: ExtensionsManager
 
-    private lateinit var context: Context
     private var _chatId = MutableStateFlow(0L)
 
     var viewFinderState = MutableStateFlow(ViewFinderState())
@@ -87,8 +88,7 @@ class CameraViewModel @JvmOverloads constructor(
 
     fun initialize() {
         initializeJob = viewModelScope.launch {
-            context = getApplication()
-            cameraProvider = ProcessCameraProvider.getInstance(context).await()
+            cameraProvider = ProcessCameraProvider.getInstance(getApplication()).await()
         }
     }
 
@@ -104,11 +104,14 @@ class CameraViewModel @JvmOverloads constructor(
     ) {
         viewModelScope.launch {
             initializeJob.join()
-            var extensionManagerJob = viewModelScope.launch {
-                extensionsManager = ExtensionsManager.getInstanceAsync(context, cameraProvider).await()
+            val extensionManagerJob = viewModelScope.launch {
+                extensionsManager = ExtensionsManager.getInstanceAsync(
+                    getApplication(),
+                    cameraProvider,
+                ).await()
             }
             var extensionsCameraSelector: CameraSelector? = null
-            var useCaseGroupBuilder = UseCaseGroup.Builder()
+            val useCaseGroupBuilder = UseCaseGroup.Builder()
 
             previewUseCase.setSurfaceProvider(surfaceProvider)
             useCaseGroupBuilder.addUseCase(previewUseCase)
@@ -158,6 +161,7 @@ class CameraViewModel @JvmOverloads constructor(
             }
         }
 
+        val context: Context = getApplication()
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions
             .Builder(
@@ -189,6 +193,7 @@ class CameraViewModel @JvmOverloads constructor(
         )
     }
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
         val name = "Socialite-recording-" +
             SimpleDateFormat(FILENAME_FORMAT, Locale.US)
@@ -200,6 +205,7 @@ class CameraViewModel @JvmOverloads constructor(
                 put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/SociaLite")
             }
         }
+        val context: Context = getApplication()
         val mediaStoreOutput = MediaStoreOutputOptions.Builder(
             context.contentResolver,
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
