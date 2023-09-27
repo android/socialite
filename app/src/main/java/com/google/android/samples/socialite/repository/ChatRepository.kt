@@ -93,6 +93,9 @@ class ChatRepository internal constructor(
             ),
         )
         notificationHelper.pushShortcut(detail.firstContact, PushReason.OutgoingMessage)
+        // Simulate a response from the peer.
+        // The code here is just for demonstration purpose in this sample.
+        // Real apps will use their server backend and Firebase Cloud Messaging to deliver messages.
         CoroutineScope(executor.asCoroutineDispatcher()).launch {
             // The person is typing...
             delay(5000L)
