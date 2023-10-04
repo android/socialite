@@ -14,7 +14,7 @@
   ~ limitations under the License.
 -->
 <resources>
-    <string name="app_name">Social</string>
+    <string name="app_name">SociaLite</string>
 
     <string name="timeline">Timeline</string>
     <string name="chats">Chats</string>

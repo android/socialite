@@ -60,7 +60,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="android.example.com"
+                    android:host="socialite.google.com"
                     android:pathPattern="/chat/*"
                     android:scheme="https" />
             </intent-filter>
@@ -101,19 +101,19 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="android.example.com"
+                    android:host="socialite.google.com"
                     android:pathPattern="/chat/*"
                     android:scheme="https" />
             </intent-filter>
         </activity>
 
         <provider
-            android:name=".AssetFileProvider"
-            android:authorities="com.example.android.social"
+            android:name="com.google.android.samples.socialite.AssetFileProvider"
+            android:authorities="com.google.android.samples.socialite"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
 
-        <receiver android:name=".ReplyReceiver" />
+        <receiver android:name="com.google.android.samples.socialite.ReplyReceiver" />
     </application>
 
 </manifest>

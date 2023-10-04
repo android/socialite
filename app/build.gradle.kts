@@ -26,11 +26,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.android.social"
+    namespace = "com.google.android.samples.socialite"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.android.social"
+        applicationId = "com.google.android.samples.socialite"
         minSdk = 21
         targetSdk = 34
         versionCode = 1
