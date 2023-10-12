@@ -88,7 +88,7 @@ fun Main(
                     onMediaCaptured = { capturedMedia: Media? ->
                         when (capturedMedia?.mediaType) {
                             MediaType.PHOTO -> {
-                                navController.navigate("chat/$chatId")
+                                navController.popBackStack()
                             }
 
                             MediaType.VIDEO -> {
@@ -97,7 +97,7 @@ fun Main(
 
                             else -> {
                                 // No media to use.
-                                navController.navigate("chat/$chatId")
+                                navController.popBackStack()
                             }
                         }
                     },
