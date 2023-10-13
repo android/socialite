@@ -234,6 +234,8 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
             }
         }
     } else {
-        CameraAndRecordAudioPermission(cameraAndRecordAudioPermissionState)
+        CameraAndRecordAudioPermission(cameraAndRecordAudioPermissionState) {
+            onMediaCaptured(null)
+        }
     }
 }

@@ -16,12 +16,29 @@
 
 package com.google.android.samples.socialite.ui.camera
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,18 +48,63 @@ import com.google.android.samples.socialite.R
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraAndRecordAudioPermission(permissionsState: MultiplePermissionsState) {
-    Column {
-        val textToShow = if (permissionsState.shouldShowRationale) {
-            stringResource(R.string.camera_permission_rationale)
-        } else {
-            stringResource(R.string.camera_not_available)
-        }
+fun CameraAndRecordAudioPermission(permissionsState: MultiplePermissionsState, onBackClicked: () -> Unit) {
+    var alreadyRequestedCameraPermissions by remember { mutableStateOf(false) }
+    fun onRequestPermissionsClicked(): Unit {
+        permissionsState.launchMultiplePermissionRequest()
+        alreadyRequestedCameraPermissions = true
+    }
 
-        Text(textToShow)
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = { permissionsState.launchMultiplePermissionRequest() }) {
-            Text(stringResource(R.string.request_permission))
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column (
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ){
+            Row {
+                Icon(
+                    imageVector = Icons.Default.PhotoCamera,
+                    contentDescription = "Camera Icon",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(45.dp)
+                )
+                Icon(
+                    imageVector = Icons.Default.Mic,
+                    contentDescription = "Microphone Icon",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(45.dp)
+                )
+            }
+
+            Row {
+                Text(stringResource(R.string.camera_permission_rationale))
+            }
+
+            if (alreadyRequestedCameraPermissions) {
+                Row {
+                    Text(stringResource(R.string.camera_permission_settings))
+                }
+            } else {
+                if (permissionsState.shouldShowRationale) {
+                    Row {
+                        Button(onClick = { onRequestPermissionsClicked() }) {
+                            Text(stringResource(R.string.grant_permission))
+                        }
+                    }
+                } else {
+                    LaunchedEffect(permissionsState) {
+                        permissionsState.launchMultiplePermissionRequest()
+                    }
+                    alreadyRequestedCameraPermissions = true
+                }
+            }
+
+            Button(onClick = { onBackClicked() }) {
+                Text(stringResource(R.string.back))
+            }
         }
     }
 }
