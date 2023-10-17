@@ -20,18 +20,21 @@ import android.graphics.Bitmap
 import android.util.Log
 import android.view.Surface
 import android.view.View
+import androidx.camera.core.SurfaceRequest
 import androidx.compose.runtime.Composable
-import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceType.SURFACE_VIEW
-import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceType.TEXTURE_VIEW
+import androidx.compose.ui.Modifier
+import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceType.*
 
 private const val TAG = "CombinedSurface"
 
 @Composable
 fun CombinedSurface(
+    modifier: Modifier,
     onSurfaceEvent: (CombinedSurfaceEvent) -> Unit,
     onRequestBitmapReady: (() -> Bitmap?) -> Unit = {},
     type: SurfaceType = TEXTURE_VIEW,
     setView: (View) -> Unit,
+    surfaceRequest: SurfaceRequest?
 ) {
     Log.d(TAG, "PreviewTexture")
 
@@ -49,12 +52,13 @@ fun CombinedSurface(
                 is SurfaceHolderEvent.SurfaceChanged -> {
                     // TODO(yasith@)
                 }
+
             }
         }
 
         TEXTURE_VIEW -> Texture(
-
-            {
+            modifier = modifier,
+            onSurfaceTextureEvent = {
                 when (it) {
                     is SurfaceTextureEvent.SurfaceTextureAvailable -> {
                         onSurfaceEvent(CombinedSurfaceEvent.SurfaceAvailable(Surface(it.surface)))
@@ -76,13 +80,14 @@ fun CombinedSurface(
             },
             onRequestBitmapReady,
             setView = setView,
+            surfaceRequest = surfaceRequest
         )
     }
 }
 
 sealed interface CombinedSurfaceEvent {
     data class SurfaceAvailable(
-        val surface: Surface,
+        val surface: Surface
     ) : CombinedSurfaceEvent
 
     object SurfaceDestroyed : CombinedSurfaceEvent
@@ -91,3 +96,4 @@ sealed interface CombinedSurfaceEvent {
 enum class SurfaceType {
     SURFACE_VIEW, TEXTURE_VIEW
 }
+

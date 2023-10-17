@@ -18,8 +18,10 @@ package com.google.android.samples.socialite.ui.camera
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.view.Surface
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
+import androidx.camera.view.RotationProvider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +45,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,17 +53,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
-    var surfaceProvider = remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
+    var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
     var cameraSelector by remember { mutableStateOf(CameraSelector.DEFAULT_BACK_CAMERA) }
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
     val cameraAndRecordAudioPermissionState = rememberMultiplePermissionsState(
@@ -69,38 +75,62 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
             Manifest.permission.RECORD_AUDIO,
         ),
     )
+
     val viewModel: CameraViewModel = viewModel()
 
     viewModel.initialize()
     viewModel.setChatId(chatId)
 
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+
+    var rotation by remember { mutableStateOf(Surface.ROTATION_0) }
+
+    DisposableEffect(lifecycleOwner, context) {
+        val rotationProvider = RotationProvider(context)
+        val rotationListener: (Int) -> Unit = { rotationValue: Int ->
+            if (rotationValue != rotation) {
+                surfaceProvider?.let { provider ->
+                    viewModel.startPreview(lifecycleOwner, provider, captureMode, cameraSelector, rotationValue)
+                }
+            }
+            rotation = rotationValue
+        }
+
+        rotationProvider.addListener(Dispatchers.Main.asExecutor(), rotationListener)
+
+        onDispose {
+            rotationProvider.removeListener(rotationListener)
+        }
+    }
 
     val onPreviewSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {
-        surfaceProvider.value = it
-        viewModel.startPreview(lifecycleOwner, it, captureMode, cameraSelector)
+        surfaceProvider = it
+        viewModel.startPreview(lifecycleOwner, it, captureMode, cameraSelector, rotation)
     }
 
     fun setCaptureMode(mode: CaptureMode) {
         captureMode = mode
-        if (surfaceProvider.value != null) {
+        surfaceProvider?.let { provider ->
             viewModel.startPreview(
                 lifecycleOwner,
-                surfaceProvider.value!!,
+                provider,
                 captureMode,
                 cameraSelector,
+                rotation
             )
         }
     }
 
     fun setCameraSelector(selector: CameraSelector) {
         cameraSelector = selector
-        if (surfaceProvider.value != null) {
+        surfaceProvider?.let { provider ->
             viewModel.startPreview(
                 lifecycleOwner,
-                surfaceProvider.value!!,
+                provider,
                 captureMode,
                 cameraSelector,
+                rotation
             )
         }
     }
@@ -141,7 +171,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         .fillMaxWidth()
                         .padding(0.dp, 5.dp, 0.dp, 5.dp)
                         .background(Color.Black)
-                        .height(100.dp),
+                        .height(50.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {

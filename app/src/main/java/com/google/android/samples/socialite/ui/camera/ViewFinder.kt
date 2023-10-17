@@ -40,12 +40,12 @@ fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.Surfac
 //        Text(text = stringResource(R.string.camera_not_ready))
 //    } else if (cameraState == CameraState.READY) {
     BoxWithConstraints(
-        Modifier.background(Color.Black),
+        Modifier.background(Color.Black).fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         val maxAspectRatio: Float = maxWidth / maxHeight
         val aspectRatio: Float = CameraViewModel.aspectRatios.getValue(AspectRatio.RATIO_16_9)
-        val shouldUseMaxWidth = maxAspectRatio >= aspectRatio
+        val shouldUseMaxWidth = maxAspectRatio <= aspectRatio
         val width = if (shouldUseMaxWidth) maxWidth else maxHeight * aspectRatio
         val height = if (!shouldUseMaxWidth) maxHeight else maxWidth / aspectRatio
         Box(

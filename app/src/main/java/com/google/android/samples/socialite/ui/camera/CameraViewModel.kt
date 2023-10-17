@@ -31,6 +31,8 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.core.UseCaseGroup
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.extensions.ExtensionMode
 import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -67,12 +69,17 @@ class CameraViewModel @JvmOverloads constructor(
 
     var viewFinderState = MutableStateFlow(ViewFinderState())
 
+    val aspectRatioStrategy = AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
+    var resolutionSelector = ResolutionSelector.Builder()
+        .setAspectRatioStrategy(aspectRatioStrategy)
+        .build()
+
     private val previewUseCase = Preview.Builder()
-        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+        .setResolutionSelector(resolutionSelector)
         .build()
 
     private val imageCaptureUseCase = ImageCapture.Builder()
-        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+        .setResolutionSelector(resolutionSelector)
         .build()
 
     private val recorder = Recorder.Builder()
@@ -101,6 +108,7 @@ class CameraViewModel @JvmOverloads constructor(
         surfaceProvider: Preview.SurfaceProvider,
         captureMode: CaptureMode,
         cameraSelector: CameraSelector,
+        rotation: Int
     ) {
         viewModelScope.launch {
             initializeJob.join()
@@ -133,8 +141,10 @@ class CameraViewModel @JvmOverloads constructor(
                     // interrupted by applications.
                 }
 
+                imageCaptureUseCase.targetRotation = rotation
                 useCaseGroupBuilder.addUseCase(imageCaptureUseCase)
             } else if (captureMode == CaptureMode.VIDEO_READY || captureMode == CaptureMode.VIDEO_RECORDING) {
+                videoCaptureUseCase.targetRotation = rotation
                 useCaseGroupBuilder.addUseCase(videoCaptureUseCase)
             }
 
