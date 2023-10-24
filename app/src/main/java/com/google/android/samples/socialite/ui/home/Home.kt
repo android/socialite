@@ -45,6 +45,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
+import com.google.android.samples.socialite.ui.AnimationConstants
 
 @Composable
 fun Home(
@@ -67,17 +68,22 @@ fun Home(
         NavHost(
             navController = navController,
             startDestination = destination.route,
+            modifier = modifier
         ) {
             composable(
                 route = Destination.Timeline.route,
+                enterTransition = { AnimationConstants.enterTransition },
+                exitTransition = { AnimationConstants.exitTransition }
             ) {
                 Timeline(
                     contentPadding = innerPadding,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = modifier,
                 )
             }
             composable(
                 route = Destination.Chats.route,
+                enterTransition = { AnimationConstants.enterTransition },
+                exitTransition = { AnimationConstants.exitTransition }
             ) {
                 val viewModel: HomeViewModel = viewModel()
                 val chats by viewModel.chats.collectAsStateWithLifecycle()
@@ -85,10 +91,13 @@ fun Home(
                     chats = chats,
                     contentPadding = innerPadding,
                     onChatClicked = onChatClicked,
+                    modifier = modifier
                 )
             }
             composable(
                 route = Destination.Settings.route,
+                enterTransition = { AnimationConstants.enterTransition },
+                exitTransition = { AnimationConstants.exitTransition }
             ) {
                 Settings(
                     contentPadding = innerPadding,
