@@ -16,10 +16,7 @@
 
 package com.google.android.samples.socialite.ui
 
-import android.app.Activity
 import android.os.Build
-import android.view.View
-import android.view.WindowManager
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -28,17 +25,13 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import com.google.android.samples.socialite.R
 
 private val Purple80 = Color(0xFFD0BCFF)
@@ -77,12 +70,6 @@ fun SocialTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            setUpEdgeToEdge(view, darkTheme)
-        }
-    }
 
     val fontProvider = GoogleFont.Provider(
         providerAuthority = "com.google.android.gms.fonts",
@@ -103,33 +90,4 @@ fun SocialTheme(
             ),
         ),
     )
-}
-
-/**
- * Sets up edge-to-edge for the window of this [view]. The system icon colors are set to either
- * light or dark depending on whether the [darkTheme] is enabled or not.
- */
-private fun setUpEdgeToEdge(view: View, darkTheme: Boolean) {
-    val window = (view.context as Activity).window
-    WindowCompat.setDecorFitsSystemWindows(window, false)
-    window.statusBarColor = Color.Transparent.toArgb()
-    if (Build.VERSION.SDK_INT >= 29) {
-        window.statusBarColor = Color.Transparent.toArgb()
-        window.navigationBarColor = Color.Transparent.toArgb()
-    } else if (Build.VERSION.SDK_INT >= 26) {
-        window.statusBarColor = Color.Transparent.toArgb()
-        window.navigationBarColor = Color(0xFF, 0xFF, 0xFF, 0x63).toArgb()
-    } else if (Build.VERSION.SDK_INT >= 23) {
-        window.statusBarColor = Color.Transparent.toArgb()
-        @Suppress("DEPRECATION")
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
-    } else {
-        @Suppress("DEPRECATION")
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        @Suppress("DEPRECATION")
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
-    }
-    val controller = WindowCompat.getInsetsController(window, view)
-    controller.isAppearanceLightStatusBars = !darkTheme
-    controller.isAppearanceLightNavigationBars = !darkTheme
 }
