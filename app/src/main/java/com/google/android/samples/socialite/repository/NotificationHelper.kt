@@ -25,6 +25,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.WorkerThread
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
@@ -279,6 +280,16 @@ class NotificationHelper(context: Context) {
             CHANNEL_NEW_MESSAGES,
             contact.shortcutId,
         )
-        return notificationManager.areBubblesAllowed() || channel?.canBubble() == true
+        return notificationManager.areBubblesEnabledCompat() || channel?.canBubble() == true
+    }
+
+    @RequiresApi(29)
+    private fun NotificationManager.areBubblesEnabledCompat() : Boolean {
+        return if (Build.VERSION.SDK_INT >= 31) {
+            areBubblesEnabled()
+        } else {
+            @Suppress("DEPRECATION")
+            areBubblesAllowed()
+        }
     }
 }
