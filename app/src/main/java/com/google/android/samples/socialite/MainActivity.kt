@@ -27,13 +27,14 @@ import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.ui.ShortcutParams
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            Main(shortcutParams = extractShortcutParams(intent))
+            Main(
+                shortcutParams = extractShortcutParams(intent),
+            )
         }
     }
 

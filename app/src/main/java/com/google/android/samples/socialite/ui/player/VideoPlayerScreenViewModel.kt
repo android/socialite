@@ -17,6 +17,9 @@
 package com.google.android.samples.socialite.ui.player
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -28,18 +31,29 @@ class VideoPlayerScreenViewModel : ViewModel() {
 
     private val _player = MutableStateFlow<Player?>(null)
     val player = _player.asStateFlow()
+    var shouldEnterPipMode by mutableStateOf(false)
 
     fun initializePlayer(uri: String, context: Context) {
-        _player.value = ExoPlayer.Builder(context.applicationContext)
+        val player = ExoPlayer.Builder(context.applicationContext)
             .build().apply {
                 setMediaItem(MediaItem.fromUri(uri))
                 prepare()
                 playWhenReady = true
             }
+
+        player.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                shouldEnterPipMode = isPlaying
+            }
+        })
+
+        _player.value = player
+        shouldEnterPipMode = true
     }
 
     fun releasePlayer() {
         _player.value?.release()
         _player.value = null
+        shouldEnterPipMode = false
     }
 }

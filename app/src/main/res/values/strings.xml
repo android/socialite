@@ -59,4 +59,10 @@
     <string name="red_text_option">Red</string>
     <string name="large_text_option">Large</string>
 
+    <!--Control Button strings-->
+    <string name="play_title">Play</string>
+    <string name="pause_title">Pause</string>
+    <string name="ff_title">Fast forward</string>
+    <string name="rw_title">Rewind</string>
+
 </resources>
