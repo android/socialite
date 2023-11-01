@@ -16,31 +16,65 @@
 
 package com.google.android.samples.socialite.ui.camera
 
+import android.view.Display
 import android.view.View
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import com.google.android.samples.socialite.ui.camera.viewfinder.CameraPreview
 
 @Composable
-fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {}) {
-    lateinit var viewInfo: View
+fun ViewFinder(cameraState: CameraState,
+               onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
+               onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
+               onZoomChange: (Float) -> Unit) {
+    var viewInfo: View? by remember { mutableStateOf(null) }
 
 //    if (cameraState == CameraState.NOT_READY) {
 //        Text(text = stringResource(R.string.camera_not_ready))
 //    } else if (cameraState == CameraState.READY) {
+    val transformableState = rememberTransformableState(
+        onTransformation = { zoomChange, _, _ ->
+            onZoomChange(zoomChange)
+        }
+    )
     BoxWithConstraints(
-        Modifier.background(Color.Black).fillMaxSize(),
+        Modifier
+            .background(Color.Black)
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        viewInfo?.let { view ->
+                            onTapToFocus(
+                                view.display,
+                                view.width,
+                                view.height,
+                                offset.x,
+                                offset.y
+                            )
+                        }
+                    }
+                )
+            },
         contentAlignment = Alignment.Center,
     ) {
         val maxAspectRatio: Float = maxWidth / maxHeight
@@ -51,7 +85,8 @@ fun ViewFinder(cameraState: CameraState, onSurfaceProviderReady: (Preview.Surfac
         Box(
             modifier = Modifier
                 .width(width)
-                .height(height),
+                .height(height)
+                .transformable(state = transformableState)
         ) {
             CameraPreview(
                 modifier = Modifier.fillMaxSize(),

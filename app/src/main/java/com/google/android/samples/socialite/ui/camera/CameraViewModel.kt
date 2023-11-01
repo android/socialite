@@ -22,11 +22,14 @@ import android.content.ContentValues
 import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
+import android.view.Display
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.DisplayOrientedMeteringPointFactory
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -258,6 +261,39 @@ class CameraViewModel @JvmOverloads constructor(
     companion object {
         const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         val aspectRatios = mapOf(AspectRatio.RATIO_16_9 to (9.0 / 16.0).toFloat())
+    }
+
+    fun tapToFocus(
+        display: Display,
+        surfaceWidth: Int,
+        surfaceHeight: Int,
+        x: Float,
+        y: Float
+    ) {
+        camera?.let {camera ->
+            val meteringPoint =
+                DisplayOrientedMeteringPointFactory(
+                    display,
+                    camera.cameraInfo,
+                    surfaceWidth.toFloat(),
+                    surfaceHeight.toFloat()
+                ).createPoint(x, y)
+
+            val action = FocusMeteringAction.Builder(meteringPoint).build()
+
+            camera.cameraControl.startFocusAndMetering(action)
+        }
+    }
+
+    fun setZoomScale(scale: Float) {
+        val zoomState = camera?.cameraInfo?.zoomState?.value
+        if (zoomState == null) return
+        val finalScale =
+            (zoomState.zoomRatio * scale).coerceIn(
+                zoomState.minZoomRatio,
+                zoomState.maxZoomRatio
+            )
+        camera?.cameraControl?.setZoomRatio(finalScale)
     }
 }
 

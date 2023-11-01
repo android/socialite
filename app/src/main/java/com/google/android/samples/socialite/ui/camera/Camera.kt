@@ -164,6 +164,8 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                     ViewFinder(
                         viewFinderState.cameraState,
                         onPreviewSurfaceProviderReady,
+                        viewModel::tapToFocus,
+                        viewModel::setZoomScale
                     )
                 }
                 Row(
