@@ -244,23 +244,26 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                                     .height(50.dp)
                                     .width(50.dp),
                             ) {}
+                            Spacer(modifier = Modifier.width(100.dp))
                         }
                     }
-                    IconButton(onClick = {
-                        if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                            setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
-                        } else {
-                            setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
+                    if (captureMode != CaptureMode.VIDEO_RECORDING) {
+                        IconButton(onClick = {
+                            if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                                setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
+                            } else {
+                                setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Autorenew,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .height(75.dp)
+                                    .width(75.dp),
+                            )
                         }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Autorenew,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier
-                                .height(75.dp)
-                                .width(75.dp),
-                        )
                     }
                 }
             }
