@@ -48,6 +48,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -86,6 +87,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -108,8 +110,10 @@ fun ChatScreen(
     modifier: Modifier = Modifier,
     onBackPressed: (() -> Unit)?,
     onCameraClick: () -> Unit,
+    onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
     prefilledText: String? = null,
+    viewModel: ChatViewModel = hiltViewModel()
 ) {
     val viewModel: ChatViewModel = viewModel()
     LaunchedEffect(chatId) {
@@ -132,6 +136,7 @@ fun ChatScreen(
             onInputChanged = { viewModel.updateInput(it) },
             onSendClick = { viewModel.send() },
             onCameraClick = onCameraClick,
+            onPhotoPickerClick = onPhotoPickerClick,
             onVideoClick = onVideoClick,
             modifier = modifier,
         )
@@ -176,6 +181,7 @@ private fun ChatContent(
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
+    onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -207,6 +213,7 @@ private fun ChatContent(
                 onInputChanged = onInputChanged,
                 onSendClick = onSendClick,
                 onCameraClick = onCameraClick,
+                onPhotoPickerClick = onPhotoPickerClick,
                 contentPadding = innerPadding.copy(layoutDirection, top = 0.dp),
                 sendEnabled = sendEnabled,
                 modifier = Modifier
@@ -409,6 +416,7 @@ private fun InputBar(
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
+    onPhotoPickerClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -426,6 +434,13 @@ private fun InputBar(
                 Icon(
                     imageVector = Icons.Default.PhotoCamera,
                     contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            IconButton(onClick = onPhotoPickerClick) {
+                Icon(
+                    imageVector = Icons.Default.PhotoLibrary,
+                    contentDescription = "Select Photo or video",
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -474,6 +489,7 @@ private fun PreviewInputBar() {
             onInputChanged = {},
             onSendClick = {},
             onCameraClick = {},
+            onPhotoPickerClick = {},
             sendEnabled = true,
         )
     }
@@ -498,6 +514,7 @@ private fun PreviewChatContent() {
             onInputChanged = {},
             onSendClick = {},
             onCameraClick = {},
+            onPhotoPickerClick = {},
             onVideoClick = {},
         )
     }

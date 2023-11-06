@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.google.android.samples.socialite.dispatch.di
 
-package com.google.android.samples.socialite.repository
+import javax.inject.Qualifier
 
-import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.samples.socialite.data.createTestDatabase
+@Retention(AnnotationRetention.RUNTIME)
+@Qualifier
+annotation class DefaultDispatcher
 
-fun createTestRepository(): ChatRepository {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val database = createTestDatabase()
-    return ChatRepository(
-       chatDao = database.chatDao(),
-        contactDao = database.contactDao(),
-        messageDao = database.messageDao(),
-        notificationHelper = NotificationHelper(context)
-    )
-}
+@Retention(AnnotationRetention.RUNTIME)
+@Qualifier
+annotation class IoDispatcher
+
+@Retention(AnnotationRetention.RUNTIME)
+@Qualifier
+annotation class MainDispatcher
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class MainImmediateDispatcher

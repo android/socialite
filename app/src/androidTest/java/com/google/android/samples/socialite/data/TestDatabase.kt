@@ -17,9 +17,17 @@
 package com.google.android.samples.socialite.data
 
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.test.platform.app.InstrumentationRegistry
 
 fun createTestDatabase(): AppDatabase {
     val context = InstrumentationRegistry.getInstrumentation().targetContext
-    return Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+    return Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
+        .addCallback(object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                db.populateInitialData()
+            }
+        }).build()
 }

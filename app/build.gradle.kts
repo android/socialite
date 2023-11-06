@@ -19,6 +19,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 kotlin {
@@ -118,7 +119,14 @@ dependencies {
     implementation (libs.media3.transformer)
     implementation (libs.media3.ui)
 
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
+
     androidTestImplementation(libs.turbine)
+
+    //For photopicker feature
+    implementation(libs.activity)
 
     implementation(libs.coil)
     implementation(libs.coil.compose)

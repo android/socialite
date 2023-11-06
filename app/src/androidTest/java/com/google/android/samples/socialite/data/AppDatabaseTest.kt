@@ -37,29 +37,19 @@ class AppDatabaseTest {
 
     @Test
     fun populateInitialData_AssureDataIsInitialized() = runBlocking {
-        // Act
-        _db.populateInitialData()
-        val contacts = _db.contact().loadAll()
-        val chatDetails = _db.chat().loadAllDetails()
+
+        val contacts = _db.contactDao().loadAll()
+        val chatDetails = _db.chatDao().loadAllDetails()
 
         // Assert
         assertThat(contacts).hasSize(_contactsSize)
         assertThat(chatDetails).hasSize(4)
         for (detail in chatDetails) {
             assertThat(detail.attendees).hasSize(1)
-            val messages = _db.message().loadAll(detail.chatWithLastMessage.id)
+            val messages = _db.messageDao().loadAll(detail.chatWithLastMessage.id)
             assertThat(messages).hasSize(2)
         }
     }
 
-    @Test
-    fun populateInitialData_AssureContactsDoNotIncreaseWhenReset() = runBlocking {
-        // Act
-        _db.populateInitialData()
-        _db.populateInitialData(reset = true)
 
-        // Assert
-        val contacts = _db.contact().loadAll()
-        assertThat(contacts).hasSize(_contactsSize)
-    }
 }

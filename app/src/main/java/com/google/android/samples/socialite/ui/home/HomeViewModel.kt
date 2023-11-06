@@ -17,24 +17,19 @@
 package com.google.android.samples.socialite.ui.home
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.ViewModel
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.stateInUi
-import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class HomeViewModel @JvmOverloads constructor(
-    application: Application,
-    repository: ChatRepository = ChatRepository.getInstance(application),
-) : AndroidViewModel(application) {
+@HiltViewModel
+class HomeViewModel @JvmOverloads @Inject constructor(
+    repository: ChatRepository
+) : ViewModel() {
 
     val chats = repository
         .getChats()
         .stateInUi(emptyList())
-
-    init {
-        viewModelScope.launch {
-            repository.initialize()
-        }
-    }
 }

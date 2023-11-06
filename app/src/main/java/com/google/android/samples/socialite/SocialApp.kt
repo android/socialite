@@ -13,19 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.google.android.samples.socialite
 
-package com.google.android.samples.socialite.repository
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.samples.socialite.data.createTestDatabase
-
-fun createTestRepository(): ChatRepository {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val database = createTestDatabase()
-    return ChatRepository(
-       chatDao = database.chatDao(),
-        contactDao = database.contactDao(),
-        messageDao = database.messageDao(),
-        notificationHelper = NotificationHelper(context)
-    )
-}
+@HiltAndroidApp
+class SocialApp : Application()

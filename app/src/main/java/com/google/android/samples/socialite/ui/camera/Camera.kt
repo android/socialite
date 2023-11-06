@@ -94,7 +94,13 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
         val rotationListener: (Int) -> Unit = { rotationValue: Int ->
             if (rotationValue != rotation) {
                 surfaceProvider?.let { provider ->
-                    viewModel.startPreview(lifecycleOwner, provider, captureMode, cameraSelector, rotationValue)
+                    viewModel.startPreview(
+                        lifecycleOwner,
+                        provider,
+                        captureMode,
+                        cameraSelector,
+                        rotationValue
+                    )
                 }
             }
             rotation = rotationValue

@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.samples.socialite.R
 
@@ -38,7 +39,7 @@ fun Settings(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel: SettingsViewModel = viewModel()
+    val viewModel: SettingsViewModel = hiltViewModel()
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,

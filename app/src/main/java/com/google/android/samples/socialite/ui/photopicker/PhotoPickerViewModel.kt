@@ -13,34 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.google.android.samples.socialite.ui.photopicker
 
-package com.google.android.samples.socialite.ui.home
-
-import android.app.Application
-import android.content.Context
-import android.widget.Toast
+import android.content.ContentResolver
+import android.net.Uri
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @JvmOverloads @Inject constructor(
-    @ApplicationContext private val application: Context,
-    private val repository: ChatRepository,
+class PhotoPickerViewModel @Inject constructor(
+    private val chatRepository: ChatRepository,
+    private val contentResolver: ContentResolver,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    private val chatIdArg: Long by lazy {
+        savedStateHandle.get<Long?>("chatId") ?: throw IllegalArgumentException("chatId is null")
+    }
 
-    fun clearMessages() {
+    fun onPhotoPicked(imageUri: Uri) {
         viewModelScope.launch {
-            repository.clearMessages()
-            Toast.makeText(
-                application.applicationContext,
-                "Messages have been reset",
-                Toast.LENGTH_SHORT
-            ).show()
+            chatRepository.sendMessage(
+                chatId = chatIdArg,
+                mediaUri = imageUri.toString(),
+                mediaMimeType = contentResolver.getType(imageUri),
+                text = ""
+            )
         }
     }
 }

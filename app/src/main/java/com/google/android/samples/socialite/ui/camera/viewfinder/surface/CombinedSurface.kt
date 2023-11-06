@@ -23,7 +23,8 @@ import android.view.View
 import androidx.camera.core.SurfaceRequest
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceType.*
+import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceType.SURFACE_VIEW
+import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceType.TEXTURE_VIEW
 
 private const val TAG = "CombinedSurface"
 

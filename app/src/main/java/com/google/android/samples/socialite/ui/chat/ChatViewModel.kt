@@ -16,11 +16,11 @@
 
 package com.google.android.samples.socialite.ui.chat
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.stateInUi
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,11 +28,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ChatViewModel @JvmOverloads constructor(
-    application: Application,
-    private val repository: ChatRepository = ChatRepository.getInstance(application),
-) : AndroidViewModel(application) {
+@HiltViewModel
+class ChatViewModel @JvmOverloads @Inject constructor(
+    private val repository: ChatRepository
+) : ViewModel() {
+
 
     private val _chatId = MutableStateFlow(0L)
 
@@ -54,7 +56,7 @@ class ChatViewModel @JvmOverloads constructor(
                 // Show the contact icon only at the first message if the same sender has multiple
                 // messages in a row.
                 val showIcon = i + 1 >= messages.size ||
-                    messages[i + 1].senderId != message.senderId
+                        messages[i + 1].senderId != message.senderId
                 val iconUri = if (showIcon) attendees[message.senderId]?.iconUri else null
                 add(
                     ChatMessage(

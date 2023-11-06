@@ -38,8 +38,7 @@ class ChatViewModelTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val application = context.applicationContext as Application
         val repository = createTestRepository()
-        repository.initialize()
-        val viewModel = ChatViewModel(application, repository)
+        val viewModel = ChatViewModel(repository)
         viewModel.setChatId(1L)
         viewModel.chat.test {
             assertThat(awaitNotNull().firstContact.name).isEqualTo("Cat")

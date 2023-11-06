@@ -42,6 +42,9 @@ import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ReplyReceiver
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.model.Message
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Represents a reason why a shortcut should be pushed.
@@ -54,7 +57,8 @@ enum class PushReason {
 /**
  * Handles all operations related to [Notification].
  */
-class NotificationHelper(context: Context) {
+@Singleton
+class NotificationHelper @Inject constructor(@ApplicationContext context: Context) {
 
     companion object {
         /**
