@@ -26,6 +26,7 @@ subprojects {
     configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         kotlin {
             target("**/*.kt")
+            targetExclude("**/camera/viewfinder/**")
             ktlint(libs.versions.ktlint.get())
         }
     }

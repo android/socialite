@@ -62,7 +62,7 @@ fun Main(
 @Composable
 fun MainNavigation(
     modifier: Modifier,
-    shortcutParams: ShortcutParams?
+    shortcutParams: ShortcutParams?,
 ) {
     val activity = LocalContext.current as Activity
     val navController = rememberNavController()
@@ -84,7 +84,7 @@ fun MainNavigation(
         enterTransition = { AnimationConstants.enterTransition },
         popEnterTransition = { AnimationConstants.enterTransition },
         exitTransition = { AnimationConstants.exitTransition },
-        popExitTransition = { AnimationConstants.exitTransition }
+        popExitTransition = { AnimationConstants.exitTransition },
     ) {
         composable(
             route = "home",
@@ -116,7 +116,7 @@ fun MainNavigation(
                 onCameraClick = { navController.navigate("chat/$chatId/camera") },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
-                modifier = modifier
+                modifier = modifier,
             )
         }
         composable(
@@ -159,7 +159,7 @@ fun MainNavigation(
                 chatId = chatId,
                 uri = videoUri,
                 onCloseButtonClicked = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
             )
         }
         composable(
@@ -195,14 +195,14 @@ object AnimationConstants {
     val enterTransition = fadeIn(
         animationSpec = tween(
             durationMillis = enterMillis,
-            easing = FastOutLinearInEasing
+            easing = FastOutLinearInEasing,
         ),
     )
 
     val exitTransition = fadeOut(
         animationSpec = tween(
             durationMillis = exitMillis,
-            easing = FastOutSlowInEasing
+            easing = FastOutSlowInEasing,
         ),
     )
 }

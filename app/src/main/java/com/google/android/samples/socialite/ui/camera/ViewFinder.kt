@@ -42,10 +42,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import com.google.android.samples.socialite.ui.camera.viewfinder.CameraPreview
 
 @Composable
-fun ViewFinder(cameraState: CameraState,
-               onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
-               onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
-               onZoomChange: (Float) -> Unit) {
+fun ViewFinder(
+    cameraState: CameraState,
+    onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
+    onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
+    onZoomChange: (Float) -> Unit,
+) {
     var viewInfo: View? by remember { mutableStateOf(null) }
 
 //    if (cameraState == CameraState.NOT_READY) {
@@ -54,7 +56,7 @@ fun ViewFinder(cameraState: CameraState,
     val transformableState = rememberTransformableState(
         onTransformation = { zoomChange, _, _ ->
             onZoomChange(zoomChange)
-        }
+        },
     )
     BoxWithConstraints(
         Modifier
@@ -69,10 +71,10 @@ fun ViewFinder(cameraState: CameraState,
                                 view.width,
                                 view.height,
                                 offset.x,
-                                offset.y
+                                offset.y,
                             )
                         }
-                    }
+                    },
                 )
             },
         contentAlignment = Alignment.Center,
@@ -86,7 +88,7 @@ fun ViewFinder(cameraState: CameraState,
             modifier = Modifier
                 .width(width)
                 .height(height)
-                .transformable(state = transformableState)
+                .transformable(state = transformableState),
         ) {
             CameraPreview(
                 modifier = Modifier.fillMaxSize(),
