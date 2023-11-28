@@ -111,7 +111,7 @@ class CameraViewModel @JvmOverloads constructor(
         surfaceProvider: Preview.SurfaceProvider,
         captureMode: CaptureMode,
         cameraSelector: CameraSelector,
-        rotation: Int
+        rotation: Int,
     ) {
         viewModelScope.launch {
             initializeJob.join()
@@ -268,15 +268,15 @@ class CameraViewModel @JvmOverloads constructor(
         surfaceWidth: Int,
         surfaceHeight: Int,
         x: Float,
-        y: Float
+        y: Float,
     ) {
-        camera?.let {camera ->
+        camera?.let { camera ->
             val meteringPoint =
                 DisplayOrientedMeteringPointFactory(
                     display,
                     camera.cameraInfo,
                     surfaceWidth.toFloat(),
-                    surfaceHeight.toFloat()
+                    surfaceHeight.toFloat(),
                 ).createPoint(x, y)
 
             val action = FocusMeteringAction.Builder(meteringPoint).build()
@@ -291,7 +291,7 @@ class CameraViewModel @JvmOverloads constructor(
         val finalScale =
             (zoomState.zoomRatio * scale).coerceIn(
                 zoomState.minZoomRatio,
-                zoomState.maxZoomRatio
+                zoomState.maxZoomRatio,
             )
         camera?.cameraControl?.setZoomRatio(finalScale)
     }

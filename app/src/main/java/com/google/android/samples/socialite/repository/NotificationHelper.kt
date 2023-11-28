@@ -284,7 +284,7 @@ class NotificationHelper(context: Context) {
     }
 
     @RequiresApi(29)
-    private fun NotificationManager.areBubblesEnabledCompat() : Boolean {
+    private fun NotificationManager.areBubblesEnabledCompat(): Boolean {
         return if (Build.VERSION.SDK_INT >= 31) {
             areBubblesEnabled()
         } else {

@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
     private fun extractShortcutParams(intent: Intent?): ShortcutParams? {
         if (intent == null || intent.action != Intent.ACTION_SEND) return null
         val shortcutId = intent.getStringExtra(
-            ShortcutManagerCompat.EXTRA_SHORTCUT_ID
+            ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
         ) ?: return null
         val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
         return ShortcutParams(shortcutId, text)

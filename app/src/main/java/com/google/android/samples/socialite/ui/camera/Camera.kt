@@ -117,7 +117,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                 provider,
                 captureMode,
                 cameraSelector,
-                rotation
+                rotation,
             )
         }
     }
@@ -130,7 +130,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                 provider,
                 captureMode,
                 cameraSelector,
-                rotation
+                rotation,
             )
         }
     }
@@ -165,7 +165,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         viewFinderState.cameraState,
                         onPreviewSurfaceProviderReady,
                         viewModel::tapToFocus,
-                        viewModel::setZoomScale
+                        viewModel::setZoomScale,
                     )
                 }
                 Row(

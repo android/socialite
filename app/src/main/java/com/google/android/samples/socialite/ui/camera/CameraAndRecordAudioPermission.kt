@@ -20,9 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -50,32 +48,32 @@ import com.google.android.samples.socialite.R
 @Composable
 fun CameraAndRecordAudioPermission(permissionsState: MultiplePermissionsState, onBackClicked: () -> Unit) {
     var alreadyRequestedCameraPermissions by remember { mutableStateOf(false) }
-    fun onRequestPermissionsClicked(): Unit {
+    fun onRequestPermissionsClicked() {
         permissionsState.launchMultiplePermissionRequest()
         alreadyRequestedCameraPermissions = true
     }
 
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
-        Column (
+        Column(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ){
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
             Row {
                 Icon(
                     imageVector = Icons.Default.PhotoCamera,
                     contentDescription = "Camera Icon",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(45.dp)
+                    modifier = Modifier.size(45.dp),
                 )
                 Icon(
                     imageVector = Icons.Default.Mic,
                     contentDescription = "Microphone Icon",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(45.dp)
+                    modifier = Modifier.size(45.dp),
                 )
             }
 

@@ -68,12 +68,12 @@ fun Home(
         NavHost(
             navController = navController,
             startDestination = destination.route,
-            modifier = modifier
+            modifier = modifier,
         ) {
             composable(
                 route = Destination.Timeline.route,
                 enterTransition = { AnimationConstants.enterTransition },
-                exitTransition = { AnimationConstants.exitTransition }
+                exitTransition = { AnimationConstants.exitTransition },
             ) {
                 Timeline(
                     contentPadding = innerPadding,
@@ -83,7 +83,7 @@ fun Home(
             composable(
                 route = Destination.Chats.route,
                 enterTransition = { AnimationConstants.enterTransition },
-                exitTransition = { AnimationConstants.exitTransition }
+                exitTransition = { AnimationConstants.exitTransition },
             ) {
                 val viewModel: HomeViewModel = viewModel()
                 val chats by viewModel.chats.collectAsStateWithLifecycle()
@@ -91,13 +91,13 @@ fun Home(
                     chats = chats,
                     contentPadding = innerPadding,
                     onChatClicked = onChatClicked,
-                    modifier = modifier
+                    modifier = modifier,
                 )
             }
             composable(
                 route = Destination.Settings.route,
                 enterTransition = { AnimationConstants.enterTransition },
-                exitTransition = { AnimationConstants.exitTransition }
+                exitTransition = { AnimationConstants.exitTransition },
             ) {
                 Settings(
                     contentPadding = innerPadding,
