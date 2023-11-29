@@ -46,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -78,8 +79,10 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
 
     val viewModel: CameraViewModel = viewModel()
 
-    viewModel.initialize()
-    viewModel.setChatId(chatId)
+    LaunchedEffect(chatId) {
+        viewModel.initialize()
+        viewModel.setChatId(chatId)
+    }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
