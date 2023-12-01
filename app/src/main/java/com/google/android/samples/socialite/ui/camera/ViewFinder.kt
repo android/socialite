@@ -50,9 +50,6 @@ fun ViewFinder(
 ) {
     var viewInfo: View? by remember { mutableStateOf(null) }
 
-//    if (cameraState == CameraState.NOT_READY) {
-//        Text(text = stringResource(R.string.camera_not_ready))
-//    } else if (cameraState == CameraState.READY) {
     val transformableState = rememberTransformableState(
         onTransformation = { zoomChange, _, _ ->
             onZoomChange(zoomChange)
@@ -103,5 +100,4 @@ fun ViewFinder(
             )
         }
     }
-    // }
 }
