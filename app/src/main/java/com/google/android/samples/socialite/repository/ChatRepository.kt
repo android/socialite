@@ -58,8 +58,8 @@ class ChatRepository internal constructor(
         notificationHelper.setUpNotificationChannels()
     }
 
-    suspend fun initialize() {
-        database.populateInitialData()
+    suspend fun initialize(reset: Boolean = false) {
+        database.populateInitialData(reset)
     }
 
     fun getChats(): Flow<List<ChatDetail>> {

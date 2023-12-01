@@ -40,38 +40,44 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun chat(): ChatDao
     abstract fun message(): MessageDao
 
-    suspend fun populateInitialData() {
+    suspend fun populateInitialData(reset: Boolean = false) {
         withTransaction {
-            if (contact().count() != 0) return@withTransaction
             val contacts = Contact.CONTACTS
-            val currentTimeMillis = System.currentTimeMillis()
-            contact().insert(Contact(0L, "You", "you.jpg", ""))
-            for (contact in contacts) {
-                contact().insert(contact)
-                val chatId = chat().createDirectChat(contact.id)
-                message().insert(
-                    Message(
-                        id = 0L,
-                        chatId = chatId,
-                        senderId = contact.id,
-                        text = "Send me a message",
-                        mediaUri = null,
-                        mediaMimeType = null,
-                        timestamp = currentTimeMillis,
-                    ),
-                )
-                message().insert(
-                    Message(
-                        id = 0L,
-                        chatId = chatId,
-                        senderId = contact.id,
-                        text = "I will reply in 5 seconds",
-                        mediaUri = null,
-                        mediaMimeType = null,
-                        timestamp = currentTimeMillis + 1L,
-                    ),
-                )
+            if (!reset) {
+                if (contact().count() != 0) return@withTransaction
+                contact().insert(Contact(0L, "You", "you.jpg", ""))
+                contacts.forEach { contact().insert(it) }
             }
+            populateInitialMessages(contacts)
+        }
+    }
+
+    private suspend fun populateInitialMessages(contacts: List<Contact>) {
+        for (contact in contacts) {
+            val chatId = chat().createDirectChat(contact.id)
+            val currentTimeMillis = System.currentTimeMillis()
+            message().insert(
+                Message(
+                    id = 0L,
+                    chatId = chatId,
+                    senderId = contact.id,
+                    text = "Send me a message",
+                    mediaUri = null,
+                    mediaMimeType = null,
+                    timestamp = currentTimeMillis,
+                ),
+            )
+            message().insert(
+                Message(
+                    id = 0L,
+                    chatId = chatId,
+                    senderId = contact.id,
+                    text = "I will reply in 5 seconds",
+                    mediaUri = null,
+                    mediaMimeType = null,
+                    timestamp = currentTimeMillis + 1L,
+                ),
+            )
         }
     }
 }
