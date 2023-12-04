@@ -17,19 +17,26 @@
 package com.google.android.samples.socialite.ui.home
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
 import kotlinx.coroutines.launch
 
 class SettingsViewModel @JvmOverloads constructor(
-    application: Application,
+    private val application: Application,
     private val repository: ChatRepository = ChatRepository.getInstance(application),
 ) : AndroidViewModel(application) {
 
     fun clearMessages() {
         viewModelScope.launch {
             repository.clearMessages()
+            repository.initialize(reset = true)
+            Toast.makeText(
+                application.applicationContext,
+                "Messages have been reset",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
