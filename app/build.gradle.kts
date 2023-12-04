@@ -17,9 +17,10 @@
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt)
 }
 
 kotlin {
@@ -70,11 +71,13 @@ android {
 dependencies {
     implementation(libs.core.ktx)
     implementation(libs.camera.extensions)
+    implementation(libs.profileinstaller)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    baselineProfile(project(":baselineprofile"))
 
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)

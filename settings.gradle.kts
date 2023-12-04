@@ -33,3 +33,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "social"
 include(":app")
+include(":baselineprofile")
