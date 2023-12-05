@@ -16,6 +16,7 @@
 
 package com.google.android.samples.socialite.ui.chat
 
+import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
@@ -68,6 +69,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,6 +100,8 @@ import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.ui.SocialTheme
 import com.google.android.samples.socialite.ui.rememberIconPainter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private const val TAG = "ChatUI"
 
@@ -366,18 +370,20 @@ private fun MessageBubble(
 
 @Composable
 private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
-    val mediaMetadataRetriever = MediaMetadataRetriever()
-    mediaMetadataRetriever.setDataSource(LocalContext.current, Uri.parse(videoUri))
+    val context = LocalContext.current.applicationContext
+    val bitmapState = produceState<Bitmap?>(initialValue = null) {
+        withContext(Dispatchers.IO) {
+            val mediaMetadataRetriever = MediaMetadataRetriever()
+            mediaMetadataRetriever.setDataSource(context, Uri.parse(videoUri))
+            // Return any frame that the framework considers representative of a valid frame
+            value = mediaMetadataRetriever.frameAtTime
+        }
+    }
 
-    // Return any frame that the framework considers representative of a valid frame
-    val bitmap = mediaMetadataRetriever.frameAtTime
-
-    if (bitmap != null) {
+    bitmapState.value?.let { bitmap ->
         Box(
             modifier = Modifier
-                .clickable {
-                    onClick()
-                }
+                .clickable(onClick = onClick)
                 .padding(10.dp),
         ) {
             Image(
@@ -396,8 +402,6 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
                     .border(3.dp, Color.White, shape = CircleShape),
             )
         }
-    } else {
-        Log.e(TAG, "Error rendering preview of video")
     }
 }
 
