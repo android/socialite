@@ -99,7 +99,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
                         provider,
                         captureMode,
                         cameraSelector,
-                        rotationValue
+                        rotationValue,
                     )
                 }
             }

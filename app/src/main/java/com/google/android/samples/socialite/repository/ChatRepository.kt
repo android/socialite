@@ -39,7 +39,6 @@ class ChatRepository @Inject internal constructor(
         notificationHelper.setUpNotificationChannels()
     }
 
-
     fun getChats(): Flow<List<ChatDetail>> {
         return chatDao.allDetails()
     }

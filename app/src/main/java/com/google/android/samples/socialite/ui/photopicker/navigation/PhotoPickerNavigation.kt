@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.android.samples.socialite.ui.photopicker.navigation
 
 import androidx.navigation.NavController
@@ -21,14 +22,13 @@ import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.google.android.samples.socialite.ui.photopicker.PhotoPickerRoute
 
 fun NavController.navigateToPhotoPicker(chatId: Long, navOptions: NavOptions? = null) {
     this.navigate("chat/$chatId/photoPicker", navOptions)
 }
 
 fun NavGraphBuilder.photoPickerScreen(
-    onPhotoPicked: () -> Unit
+    onPhotoPicked: () -> Unit,
 ) {
     composable(
         route = "chat/{chatId}/photoPicker",
@@ -37,7 +37,7 @@ fun NavGraphBuilder.photoPickerScreen(
         ),
     ) {
         PhotoPickerRoute(
-            onPhotoPicked = onPhotoPicked
+            onPhotoPicked = onPhotoPicked,
         )
     }
 }

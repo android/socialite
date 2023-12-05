@@ -23,9 +23,9 @@ fun createTestRepository(): ChatRepository {
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     val database = createTestDatabase()
     return ChatRepository(
-       chatDao = database.chatDao(),
+        chatDao = database.chatDao(),
         contactDao = database.contactDao(),
         messageDao = database.messageDao(),
-        notificationHelper = NotificationHelper(context)
+        notificationHelper = NotificationHelper(context),
     )
 }

@@ -37,7 +37,6 @@ class AppDatabaseTest {
 
     @Test
     fun populateInitialData_AssureDataIsInitialized() = runBlocking {
-
         val contacts = _db.contactDao().loadAll()
         val chatDetails = _db.chatDao().loadAllDetails()
 
@@ -50,6 +49,4 @@ class AppDatabaseTest {
             assertThat(messages).hasSize(2)
         }
     }
-
-
 }

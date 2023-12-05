@@ -16,17 +16,15 @@
 
 package com.google.android.samples.socialite.ui.home
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.stateInUi
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @JvmOverloads @Inject constructor(
-    repository: ChatRepository
+class HomeViewModel @Inject constructor(
+    repository: ChatRepository,
 ) : ViewModel() {
 
     val chats = repository

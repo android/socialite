@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.android.samples.socialite.ui.photopicker
+
+package com.google.android.samples.socialite.ui.photopicker.navigation
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,22 +23,26 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.samples.socialite.ui.photopicker.PhotoPickerViewModel
 
 @Composable
 fun PhotoPickerRoute(
-    viewModel: PhotoPickerViewModel = hiltViewModel(), onPhotoPicked: () -> Unit
+    viewModel: PhotoPickerViewModel = hiltViewModel(),
+    onPhotoPicked: () -> Unit,
 ) {
     val photoPickerLauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia(),
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.PickVisualMedia(),
             onResult = { uri: Uri? ->
                 if (uri != null) {
                     viewModel.onPhotoPicked(uri)
                 }
                 onPhotoPicked()
-            })
+            },
+        )
     LaunchedEffect(Unit) {
         photoPickerLauncher.launch(
-            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo),
         )
     }
 }

@@ -35,7 +35,7 @@ fun listOfRemoteActions(isPlaying: Boolean, context: Context): List<RemoteAction
             R.string.rw_title,
             REQUEST_RW,
             EXTRA_CONTROL_RW,
-            context = context
+            context = context,
         ),
         if (isPlaying) {
             buildRemoteAction(
@@ -43,7 +43,7 @@ fun listOfRemoteActions(isPlaying: Boolean, context: Context): List<RemoteAction
                 R.string.pause_title,
                 REQUEST_PAUSE,
                 EXTRA_CONTROL_PAUSE,
-                context = context
+                context = context,
             )
         } else {
             buildRemoteAction(
@@ -51,7 +51,7 @@ fun listOfRemoteActions(isPlaying: Boolean, context: Context): List<RemoteAction
                 R.string.play_title,
                 REQUEST_PLAY,
                 EXTRA_CONTROL_PLAY,
-                context = context
+                context = context,
             )
         },
         buildRemoteAction(
@@ -59,8 +59,8 @@ fun listOfRemoteActions(isPlaying: Boolean, context: Context): List<RemoteAction
             R.string.ff_title,
             REQUEST_FF,
             EXTRA_CONTROL_FF,
-            context = context
-        )
+            context = context,
+        ),
     )
 }
 
@@ -70,7 +70,7 @@ private fun buildRemoteAction(
     @StringRes titleResId: Int,
     requestCode: Int,
     controlType: Int,
-    context: Context
+    context: Context,
 ): RemoteAction {
     return RemoteAction(
         Icon.createWithResource(context, iconResId),
@@ -82,7 +82,7 @@ private fun buildRemoteAction(
             Intent(ACTION_BROADCAST_CONTROL)
                 .setPackage(context.packageName)
                 .putExtra(EXTRA_CONTROL_TYPE, controlType),
-            PendingIntent.FLAG_IMMUTABLE
-        )
+            PendingIntent.FLAG_IMMUTABLE,
+        ),
     )
 }

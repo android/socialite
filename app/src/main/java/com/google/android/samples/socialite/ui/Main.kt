@@ -117,7 +117,7 @@ fun MainNavigation(
                 onBackPressed = { navController.popBackStack() },
                 onCameraClick = { navController.navigate("chat/$chatId/camera") },
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
-                onVideoClick = {  uri -> navController.navigate("videoPlayer?uri=$uri") },
+                onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
                 modifier = modifier,
             )
@@ -150,9 +150,10 @@ fun MainNavigation(
             )
         }
 
-        //Invoke PhotoPicker to select photo or video from device gallery
+        // Invoke PhotoPicker to select photo or video from device gallery
         photoPickerScreen(
-            onPhotoPicked = navController::popBackStack)
+            onPhotoPicked = navController::popBackStack,
+        )
 
         composable(
             route = "videoEdit?uri={videoUri}&chatId={chatId}",

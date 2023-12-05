@@ -43,9 +43,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun messageDao(): MessageDao
 }
 
-//Initialization for pre-populating the database
+// Initialization for pre-populating the database
 fun SupportSQLiteDatabase.populateInitialData() {
-
     // Insert self as contact
     insert(
         table = "contact",
@@ -61,12 +60,12 @@ fun SupportSQLiteDatabase.populateInitialData() {
     // Populate data for other contacts
 
     val contacts = Contact.CONTACTS
-    val chatIds = List(contacts.size, Int::toLong)
+    val chatIds = contacts.map { it.id }
 
     contacts.forEachIndexed { index, contact ->
         // Insert contact
         insert(
-            table = "contact",
+            table = "Contact",
             conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
             values = ContentValues().apply {
                 put("id", contact.id)
@@ -78,7 +77,7 @@ fun SupportSQLiteDatabase.populateInitialData() {
 
         // Insert chat id
         insert(
-            table = "chat",
+            table = "Chat",
             conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
             values = ContentValues().apply {
                 put("id", chatIds[index])
@@ -87,7 +86,7 @@ fun SupportSQLiteDatabase.populateInitialData() {
 
         // Insert chat attendee
         insert(
-            table = "chatattendee",
+            table = "ChatAttendee",
             conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
             values = ContentValues().apply {
                 put("chatId", chatIds[index])
@@ -98,7 +97,8 @@ fun SupportSQLiteDatabase.populateInitialData() {
         val now = System.currentTimeMillis()
 
         // Add first message
-        insert(table = "message",
+        insert(
+            table = "Message",
             conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
             values = ContentValues().apply {
                 // Use index * 2, since per contact two chats are prepopulated
@@ -107,10 +107,12 @@ fun SupportSQLiteDatabase.populateInitialData() {
                 put("senderId", contact.id)
                 put("text", "Send me a message")
                 put("timestamp", now + chatIds[index])
-            })
+            },
+        )
 
         // Add second message
-        insert(table = "message",
+        insert(
+            table = "Message",
             conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
             values = ContentValues().apply {
                 put("id", (index * 2).toLong() + 1L)
@@ -118,12 +120,7 @@ fun SupportSQLiteDatabase.populateInitialData() {
                 put("senderId", contact.id)
                 put("text", "I will reply in 5 seconds")
                 put("timestamp", now + chatIds[index])
-            })
+            },
+        )
     }
 }
-
-
-
-
-
-

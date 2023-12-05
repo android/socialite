@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.android.samples.socialite.ui.photopicker
 
 import android.content.ContentResolver
@@ -29,7 +30,7 @@ import javax.inject.Inject
 class PhotoPickerViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val contentResolver: ContentResolver,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val chatIdArg: Long by lazy {
         savedStateHandle.get<Long?>("chatId") ?: throw IllegalArgumentException("chatId is null")
@@ -41,7 +42,7 @@ class PhotoPickerViewModel @Inject constructor(
                 chatId = chatIdArg,
                 mediaUri = imageUri.toString(),
                 mediaMimeType = contentResolver.getType(imageUri),
-                text = ""
+                text = "",
             )
         }
     }

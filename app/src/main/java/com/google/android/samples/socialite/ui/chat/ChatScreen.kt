@@ -117,9 +117,8 @@ fun ChatScreen(
     onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
     prefilledText: String? = null,
-    viewModel: ChatViewModel = hiltViewModel()
+    viewModel: ChatViewModel = hiltViewModel(),
 ) {
-    val viewModel: ChatViewModel = viewModel()
     LaunchedEffect(chatId) {
         viewModel.setChatId(chatId)
         if (prefilledText != null) {

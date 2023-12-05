@@ -17,7 +17,6 @@
 package com.google.android.samples.socialite.ui.camera
 
 import android.Manifest
-import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.os.Build
@@ -49,12 +48,10 @@ import androidx.camera.video.VideoRecordEvent
 import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -65,7 +62,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class CameraViewModel @JvmOverloads @Inject constructor(
+class CameraViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
     private val repository: ChatRepository,
 ) : ViewModel() {
@@ -141,7 +138,7 @@ class CameraViewModel @JvmOverloads @Inject constructor(
                     // Query if extension is available.
                     if (extensionsManager.isExtensionAvailable(
                             cameraSelector,
-                            ExtensionMode.NIGHT
+                            ExtensionMode.NIGHT,
                         )
                     ) {
                         // Retrieve extension enabled camera selector
@@ -221,8 +218,8 @@ class CameraViewModel @JvmOverloads @Inject constructor(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
         val name = "Socialite-recording-" +
-                SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                    .format(System.currentTimeMillis()) + ".mp4"
+            SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis()) + ".mp4"
         val contentValues = ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")

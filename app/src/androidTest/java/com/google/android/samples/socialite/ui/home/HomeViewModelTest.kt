@@ -16,27 +16,21 @@
 
 package com.google.android.samples.socialite.ui.home
 
-import android.app.Application
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
 import com.google.android.samples.socialite.awaitNotEmpty
 import com.google.android.samples.socialite.repository.createTestRepository
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class HomeViewModelTest {
 
     @Test
     fun initialize() = runTest {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val application = context.applicationContext as Application
-        val viewModel = HomeViewModel( createTestRepository())
+        val viewModel = HomeViewModel(createTestRepository())
         viewModel.chats.test {
             assertThat(awaitNotEmpty()).hasSize(4)
         }

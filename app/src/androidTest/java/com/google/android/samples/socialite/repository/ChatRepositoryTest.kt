@@ -19,12 +19,10 @@ package com.google.android.samples.socialite.repository
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class ChatRepositoryTest {
 
@@ -32,7 +30,6 @@ class ChatRepositoryTest {
     fun getChats() = runTest {
         val repository = createTestRepository()
         repository.getChats().test {
-            assertThat(awaitItem()).isEmpty()
             assertThat(awaitItem()).isNotEmpty()
         }
     }
@@ -41,7 +38,6 @@ class ChatRepositoryTest {
     fun findChat() = runTest {
         val repository = createTestRepository()
         repository.findChat(1L).test {
-            assertThat(awaitItem()).isNull()
             assertThat(awaitItem()!!.firstContact.name).isEqualTo("Cat")
         }
     }
@@ -50,7 +46,6 @@ class ChatRepositoryTest {
     fun findMessages() = runTest {
         val repository = createTestRepository()
         repository.findMessages(1L).test {
-            assertThat(awaitItem()).isEmpty()
             assertThat(awaitItem()).hasSize(2)
         }
     }

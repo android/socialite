@@ -16,7 +16,6 @@
 
 package com.google.android.samples.socialite.ui.videoedit
 
-import android.app.Application
 import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
@@ -25,7 +24,6 @@ import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.widget.Toast
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -56,8 +54,8 @@ import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class VideoEditScreenViewModel @JvmOverloads @Inject constructor(
-    @ApplicationContext private val application : Context,
+class VideoEditScreenViewModel @Inject constructor(
+    @ApplicationContext private val application: Context,
     private val repository: ChatRepository,
 ) : ViewModel() {
 

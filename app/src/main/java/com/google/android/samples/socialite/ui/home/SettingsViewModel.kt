@@ -16,7 +16,6 @@
 
 package com.google.android.samples.socialite.ui.home
 
-import android.app.Application
 import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -28,7 +27,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @JvmOverloads @Inject constructor(
+class SettingsViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
     private val repository: ChatRepository,
 ) : ViewModel() {
@@ -39,7 +38,7 @@ class SettingsViewModel @JvmOverloads @Inject constructor(
             Toast.makeText(
                 application.applicationContext,
                 "Messages have been reset",
-                Toast.LENGTH_SHORT
+                Toast.LENGTH_SHORT,
             ).show()
         }
     }

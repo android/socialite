@@ -90,7 +90,7 @@ fun VideoPlayerScreen(
     uri: String,
     modifier: Modifier = Modifier,
     viewModel: VideoPlayerScreenViewModel = viewModel(),
-    onCloseButtonClicked: () -> Unit
+    onCloseButtonClicked: () -> Unit,
 ) {
     val player = viewModel.player.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -117,9 +117,9 @@ private fun VideoPlayerScreen(
         initialize = initializePlayer,
         release = releasePlayer,
     )
-    
+
     PipListenerPreAPI12(shouldEnterPipMode = shouldEnterPipMode)
-    
+
     if (isInPipMode()) {
         VideoPlayer(player, shouldEnterPipMode, Modifier.fillMaxSize())
     } else {
@@ -175,7 +175,7 @@ private fun VideoPlayer(
         val pipModifier = modifier.onGloballyPositioned { layoutCoordinates ->
             val builder = PictureInPictureParams.Builder()
 
-            if(shouldEnterPipMode) {
+            if (shouldEnterPipMode) {
                 // set source rect hint, aspect ratio and remote actions
                 val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
                 builder.setSourceRectHint(sourceRect)
@@ -183,7 +183,7 @@ private fun VideoPlayer(
             }
 
             builder.setActions(
-                listOfRemoteActions(shouldEnterPipMode, context)
+                listOfRemoteActions(shouldEnterPipMode, context),
             )
 
             // Add autoEnterEnabled for versions S and up
@@ -269,18 +269,17 @@ private fun PlayerLifecycle(
 
 @Composable
 fun isInPipMode(): Boolean {
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val activity = LocalContext.current.findActivity()
         var pipMode by remember { mutableStateOf(activity.isInPictureInPictureMode) }
 
         // Uses Disposable Effect to add a pip observer to check when app enters pip mode
         DisposableEffect(activity) {
-
             val observer = Consumer<PictureInPictureModeChangedInfo> { info ->
                 pipMode = info.isInPictureInPictureMode
             }
             activity.addOnPictureInPictureModeChangedListener(
-                observer
+                observer,
             )
             onDispose { activity.removeOnPictureInPictureModeChangedListener(observer) }
         }
@@ -311,11 +310,11 @@ fun PipListenerPreAPI12(shouldEnterPipMode: Boolean) {
                 }
             }
             activity.addOnUserLeaveHintListener(
-                onUserLeaveBehavior
+                onUserLeaveBehavior,
             )
             onDispose {
                 activity.removeOnUserLeaveHintListener(
-                    onUserLeaveBehavior
+                    onUserLeaveBehavior,
                 )
             }
         }
@@ -349,7 +348,7 @@ fun BroadcastReceiver(player: Player?) {
                 context,
                 broadcastReceiver,
                 IntentFilter(ACTION_BROADCAST_CONTROL),
-                RECEIVER_NOT_EXPORTED
+                RECEIVER_NOT_EXPORTED,
             )
             onDispose {
                 context.unregisterReceiver(broadcastReceiver)

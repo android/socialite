@@ -28,7 +28,6 @@ class ChatDaoTest {
     @Test
     fun initialData() = runBlocking {
         val db = createTestDatabase()
-       // db.populateInitialData()
         val contacts = db.contactDao().loadAll()
         assertThat(contacts).hasSize(5)
         val chatDetails = db.chatDao().loadAllDetails()
