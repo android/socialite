@@ -33,7 +33,6 @@ class ChatRepositoryTest {
         val repository = createTestRepository()
         repository.getChats().test {
             assertThat(awaitItem()).isEmpty()
-            repository.initialize()
             assertThat(awaitItem()).isNotEmpty()
         }
     }
@@ -43,7 +42,6 @@ class ChatRepositoryTest {
         val repository = createTestRepository()
         repository.findChat(1L).test {
             assertThat(awaitItem()).isNull()
-            repository.initialize()
             assertThat(awaitItem()!!.firstContact.name).isEqualTo("Cat")
         }
     }
@@ -53,7 +51,6 @@ class ChatRepositoryTest {
         val repository = createTestRepository()
         repository.findMessages(1L).test {
             assertThat(awaitItem()).isEmpty()
-            repository.initialize()
             assertThat(awaitItem()).hasSize(2)
         }
     }

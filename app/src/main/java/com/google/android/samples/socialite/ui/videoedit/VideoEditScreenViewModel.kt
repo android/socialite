@@ -26,6 +26,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
@@ -43,6 +44,8 @@ import androidx.media3.transformer.Transformer
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.camera.CameraViewModel
 import com.google.common.collect.ImmutableList
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -50,11 +53,13 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
+import javax.inject.Inject
 
-class VideoEditScreenViewModel @JvmOverloads constructor(
-    application: Application,
-    private val repository: ChatRepository = ChatRepository.getInstance(application),
-) : AndroidViewModel(application) {
+@HiltViewModel
+class VideoEditScreenViewModel @JvmOverloads @Inject constructor(
+    @ApplicationContext private val application : Context,
+    private val repository: ChatRepository,
+) : ViewModel() {
 
     private val _chatId = MutableStateFlow(0L)
     private var transformedVideoFilePath = ""

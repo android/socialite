@@ -28,7 +28,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.camera.core.SurfaceRequest
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +49,7 @@ fun Texture(
     onRequestBitmapReady: (() -> Bitmap?) -> Unit,
     setView: (View) -> Unit,
     surfaceRequest: SurfaceRequest?,
-    ) {
+) {
     Log.d(TAG, "Texture")
 
     val resolution = surfaceRequest?.resolution

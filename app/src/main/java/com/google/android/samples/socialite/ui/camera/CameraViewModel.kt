@@ -51,18 +51,24 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
+import dagger.hilt.android.internal.Contexts.getApplication
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
+import javax.inject.Inject
 
-class CameraViewModel @JvmOverloads constructor(
-    application: Application,
-    private val repository: ChatRepository = ChatRepository.getInstance(application),
-) : AndroidViewModel(application) {
+@HiltViewModel
+class CameraViewModel @JvmOverloads @Inject constructor(
+    @ApplicationContext private val application: Context,
+    private val repository: ChatRepository,
+) : ViewModel() {
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
     private lateinit var initializeJob: Job
@@ -72,7 +78,8 @@ class CameraViewModel @JvmOverloads constructor(
 
     var viewFinderState = MutableStateFlow(ViewFinderState())
 
-    val aspectRatioStrategy = AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
+    val aspectRatioStrategy =
+        AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
     var resolutionSelector = ResolutionSelector.Builder()
         .setAspectRatioStrategy(aspectRatioStrategy)
         .build()
@@ -98,7 +105,7 @@ class CameraViewModel @JvmOverloads constructor(
 
     fun initialize() {
         initializeJob = viewModelScope.launch {
-            cameraProvider = ProcessCameraProvider.getInstance(getApplication()).await()
+            cameraProvider = ProcessCameraProvider.getInstance(application).await()
         }
     }
 
@@ -117,7 +124,7 @@ class CameraViewModel @JvmOverloads constructor(
             initializeJob.join()
             val extensionManagerJob = viewModelScope.launch {
                 extensionsManager = ExtensionsManager.getInstanceAsync(
-                    getApplication(),
+                    application,
                     cameraProvider,
                 ).await()
             }
@@ -132,12 +139,17 @@ class CameraViewModel @JvmOverloads constructor(
                     extensionManagerJob.join()
 
                     // Query if extension is available.
-                    if (extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.NIGHT)) {
-                        // Retrieve extension enabled camera selector
-                        extensionsCameraSelector = extensionsManager.getExtensionEnabledCameraSelector(
+                    if (extensionsManager.isExtensionAvailable(
                             cameraSelector,
-                            ExtensionMode.NIGHT,
+                            ExtensionMode.NIGHT
                         )
+                    ) {
+                        // Retrieve extension enabled camera selector
+                        extensionsCameraSelector =
+                            extensionsManager.getExtensionEnabledCameraSelector(
+                                cameraSelector,
+                                ExtensionMode.NIGHT,
+                            )
                     }
                 } catch (e: InterruptedException) {
                     // This should not happen unless the future is cancelled or the thread is
@@ -174,7 +186,7 @@ class CameraViewModel @JvmOverloads constructor(
             }
         }
 
-        val context: Context = getApplication()
+        val context: Context = application
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions
             .Builder(
@@ -209,8 +221,8 @@ class CameraViewModel @JvmOverloads constructor(
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
         val name = "Socialite-recording-" +
-            SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis()) + ".mp4"
+                SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                    .format(System.currentTimeMillis()) + ".mp4"
         val contentValues = ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
@@ -218,7 +230,7 @@ class CameraViewModel @JvmOverloads constructor(
                 put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/SociaLite")
             }
         }
-        val context: Context = getApplication()
+        val context: Context = application
         val mediaStoreOutput = MediaStoreOutputOptions.Builder(
             context.contentResolver,
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI,

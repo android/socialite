@@ -28,14 +28,14 @@ class ChatDaoTest {
     @Test
     fun initialData() = runBlocking {
         val db = createTestDatabase()
-        db.populateInitialData()
-        val contacts = db.contact().loadAll()
+       // db.populateInitialData()
+        val contacts = db.contactDao().loadAll()
         assertThat(contacts).hasSize(5)
-        val chatDetails = db.chat().loadAllDetails()
+        val chatDetails = db.chatDao().loadAllDetails()
         assertThat(chatDetails).hasSize(4)
         for (detail in chatDetails) {
             assertThat(detail.attendees).hasSize(1)
-            val messages = db.message().loadAll(detail.chatWithLastMessage.id)
+            val messages = db.messageDao().loadAll(detail.chatWithLastMessage.id)
             assertThat(messages).hasSize(2)
         }
     }

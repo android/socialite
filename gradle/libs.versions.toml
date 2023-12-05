@@ -25,6 +25,8 @@ core = "1.12.0"
 core-splashscreen = "1.0.1"
 espresso = "3.5.1"
 graphics = "1.0.0-alpha03"
+hilt = "2.48.1"
+hiltNavigationCompose = "1.1.0"
 junit = "4.13.2"
 kotlin = "1.9.10"
 ksp = "1.9.10-1.0.13"
@@ -80,9 +82,14 @@ room-testing = { group = "androidx.room", name = "room-testing", version.ref = "
 splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+activity = { group = "androidx.activity", name = "activity", version = "1.8.0" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }

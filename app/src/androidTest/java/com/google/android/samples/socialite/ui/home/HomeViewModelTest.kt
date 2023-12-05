@@ -36,7 +36,7 @@ class HomeViewModelTest {
     fun initialize() = runTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val application = context.applicationContext as Application
-        val viewModel = HomeViewModel(application, createTestRepository())
+        val viewModel = HomeViewModel( createTestRepository())
         viewModel.chats.test {
             assertThat(awaitNotEmpty()).hasSize(4)
         }

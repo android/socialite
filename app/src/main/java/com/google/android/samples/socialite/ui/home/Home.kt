@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -85,7 +86,7 @@ fun Home(
                 enterTransition = { AnimationConstants.enterTransition },
                 exitTransition = { AnimationConstants.exitTransition },
             ) {
-                val viewModel: HomeViewModel = viewModel()
+                val viewModel: HomeViewModel = hiltViewModel()
                 val chats by viewModel.chats.collectAsStateWithLifecycle()
                 ChatList(
                     chats = chats,

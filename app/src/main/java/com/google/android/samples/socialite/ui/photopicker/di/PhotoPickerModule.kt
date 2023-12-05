@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.google.android.samples.socialite.ui.photopicker.di
 
-package com.google.android.samples.socialite.repository
+import android.content.ContentResolver
+import android.content.Context
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
-import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.samples.socialite.data.createTestDatabase
-
-fun createTestRepository(): ChatRepository {
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val database = createTestDatabase()
-    return ChatRepository(
-       chatDao = database.chatDao(),
-        contactDao = database.contactDao(),
-        messageDao = database.messageDao(),
-        notificationHelper = NotificationHelper(context)
-    )
+@InstallIn(SingletonComponent::class)
+@Module
+object PhotoPickerModule {
+    @Singleton
+    @Provides
+    fun provideContentResolver(@ApplicationContext context: Context): ContentResolver =
+        context.contentResolver
 }

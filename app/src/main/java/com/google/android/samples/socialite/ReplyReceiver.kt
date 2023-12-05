@@ -21,21 +21,25 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.google.android.samples.socialite.repository.ChatRepository
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Handles the "Reply" action in the chat notification.
  */
+@AndroidEntryPoint
 class ReplyReceiver : BroadcastReceiver() {
 
+    @Inject
+    lateinit var repository: ChatRepository
     companion object {
         const val KEY_TEXT_REPLY = "reply"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val repository = ChatRepository.getInstance(context)
         val results = RemoteInput.getResultsFromIntent(intent) ?: return
         // The message typed in the notification reply.
         val input = results.getCharSequence(KEY_TEXT_REPLY)?.toString()

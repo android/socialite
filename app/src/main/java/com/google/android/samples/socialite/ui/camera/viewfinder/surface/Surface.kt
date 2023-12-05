@@ -23,7 +23,9 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceHolderEvent.*
+import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceHolderEvent.SurfaceChanged
+import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceHolderEvent.SurfaceCreated
+import com.google.android.samples.socialite.ui.camera.viewfinder.surface.SurfaceHolderEvent.SurfaceDestroyed
 
 private const val TAG = "Surface"
 
