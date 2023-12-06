@@ -126,6 +126,8 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
 
+    implementation(libs.window)
+
     androidTestImplementation(libs.turbine)
 
     //For photopicker feature
