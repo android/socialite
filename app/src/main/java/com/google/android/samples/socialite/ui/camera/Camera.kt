@@ -57,8 +57,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.Dispatchers
@@ -77,7 +77,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
         ),
     )
 
-    val viewModel: CameraViewModel = viewModel()
+    val viewModel: CameraViewModel = hiltViewModel()
 
     LaunchedEffect(chatId) {
         viewModel.initialize()
