@@ -28,6 +28,7 @@ import com.google.android.samples.socialite.data.RoomDatabaseManager
 import com.google.android.samples.socialite.data.populateInitialData
 import com.google.android.samples.socialite.data.wipeAndReinitializeData
 import dagger.Binds
+import com.google.android.samples.socialite.repository.ApplicationCoroutineScope
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,6 +58,10 @@ object DatabaseModule {
 
     @Provides
     fun providesContactDao(database: AppDatabase): ContactDao = database.contactDao()
+
+    @Provides
+    @Singleton
+    fun providesApplicationCoroutineScope(): ApplicationCoroutineScope = ApplicationCoroutineScope()
 }
 
 @Module

@@ -23,6 +23,7 @@ import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,6 +33,7 @@ class ChatRepository @Inject internal constructor(
     private val messageDao: MessageDao,
     private val contactDao: ContactDao,
     private val notificationHelper: NotificationHelper,
+    private val applicationCoroutineScope: ApplicationCoroutineScope,
 ) {
     private var currentChat: Long = 0L
 
@@ -73,21 +75,22 @@ class ChatRepository @Inject internal constructor(
         // Simulate a response from the peer.
         // The code here is just for demonstration purpose in this sample.
         // Real apps will use their server backend and Firebase Cloud Messaging to deliver messages.
-
-        // The person is typing...
-        delay(5000L)
-        // Receive a reply.
-        messageDao.insert(
-            detail.firstContact.reply(text).apply { this.chatId = chatId }.build(),
-        )
-        notificationHelper.pushShortcut(detail.firstContact, PushReason.IncomingMessage)
-        // Show notification if the chat is not on the foreground.
-        if (chatId != currentChat) {
-            notificationHelper.showNotification(
-                detail.firstContact,
-                messageDao.loadAll(chatId),
-                false,
+        applicationCoroutineScope.launch {
+            // The person is typing...
+            delay(5000L)
+            // Receive a reply.
+            messageDao.insert(
+                detail.firstContact.reply(text).apply { this.chatId = chatId }.build(),
             )
+            notificationHelper.pushShortcut(detail.firstContact, PushReason.IncomingMessage)
+            // Show notification if the chat is not on the foreground.
+            if (chatId != currentChat) {
+                notificationHelper.showNotification(
+                    detail.firstContact,
+                    messageDao.loadAll(chatId),
+                    false,
+                )
+            }
         }
     }
 
