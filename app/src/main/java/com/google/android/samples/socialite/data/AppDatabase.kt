@@ -43,6 +43,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun messageDao(): MessageDao
 }
 
+fun RoomDatabase.wipeAndReinitializeData() = runInTransaction {
+    clearAllTables()
+    openHelper.writableDatabase.populateInitialData()
+}
+
 // Initialization for pre-populating the database
 fun SupportSQLiteDatabase.populateInitialData() {
     // Insert self as contact

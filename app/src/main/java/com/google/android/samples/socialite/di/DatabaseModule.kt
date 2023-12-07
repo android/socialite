@@ -22,8 +22,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.android.samples.socialite.data.AppDatabase
 import com.google.android.samples.socialite.data.ChatDao
 import com.google.android.samples.socialite.data.ContactDao
+import com.google.android.samples.socialite.data.DatabaseManager
 import com.google.android.samples.socialite.data.MessageDao
+import com.google.android.samples.socialite.data.RoomDatabaseManager
 import com.google.android.samples.socialite.data.populateInitialData
+import com.google.android.samples.socialite.data.wipeAndReinitializeData
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -53,4 +57,12 @@ object DatabaseModule {
 
     @Provides
     fun providesContactDao(database: AppDatabase): ContactDao = database.contactDao()
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface DatabaseBindingModule {
+
+    @Binds
+    fun bindDatabaseManager(manager: RoomDatabaseManager) : DatabaseManager
 }
