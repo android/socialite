@@ -15,7 +15,9 @@
 [versions]
 accompanist = "0.32.0"
 activity = "1.9.0-alpha01"
-agp = "8.1.4"
+agp = "8.2.0"
+benchmarkMacroJunit4 = "1.2.2"
+baselineprofile = "1.2.2"
 camera = "1.3.0"
 coil = "2.4.0"
 compose_bom = "2023.10.01"
@@ -34,16 +36,20 @@ ktlint = "0.50.0" # Used in build.gradle.kts
 lifecycle = "2.7.0-rc01"
 media3 = "1.1.1"
 navigation = "2.7.5"
+profileinstaller = "1.3.1"
 room = "2.6.0"
 spotless = "6.21.0"
 test = "1.1.5"
 truth = "1.1.3"
 turbine = "1.0.0"
+uiautomator = "2.2.0"
 
 [libraries]
 accompanist-painter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+activity = { group = "androidx.activity", name = "activity", version = "1.8.0" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacroJunit4" }
 camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camera" }
 camera-extensions = { group = "androidx.camera", name = "camera-extensions", version.ref = "camera" }
 camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camera" }
@@ -66,6 +72,9 @@ core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "test" }
 graphics-shapes = { group = "androidx.graphics", name = "graphics-shapes", version.ref = "graphics" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 lifecycle-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
@@ -76,20 +85,20 @@ media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", versi
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
-activity = { group = "androidx.activity", name = "activity", version = "1.8.0" }
-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidTest = { id = "com.android.test", version.ref = "agp" }
+baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
