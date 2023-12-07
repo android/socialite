@@ -66,7 +66,10 @@ import kotlinx.coroutines.asExecutor
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
+fun Camera(chatId: Long,
+           onMediaCaptured: (Media?) -> Unit,
+           viewModel: CameraViewModel = hiltViewModel(),
+           ) {
     var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
     var cameraSelector by remember { mutableStateOf(CameraSelector.DEFAULT_BACK_CAMERA) }
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
@@ -77,12 +80,7 @@ fun Camera(chatId: Long, onMediaCaptured: (Media?) -> Unit) {
         ),
     )
 
-    val viewModel: CameraViewModel = hiltViewModel()
-
-    LaunchedEffect(chatId) {
-        viewModel.initialize()
-        viewModel.setChatId(chatId)
-    }
+    viewModel.setChatId(chatId)
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
