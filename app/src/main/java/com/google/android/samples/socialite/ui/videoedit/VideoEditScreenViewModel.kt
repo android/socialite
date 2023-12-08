@@ -37,7 +37,6 @@ import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
-import androidx.media3.transformer.TransformationRequest
 import androidx.media3.transformer.Transformer
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.camera.CameraViewModel
@@ -105,13 +104,7 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayLargeSelected: Boolean,
     ) {
         val transformer = Transformer.Builder(context)
-            .setTransformationRequest(
-                // TODO In a future release of media3-transformer, we will be able to call
-                //  setVideoMimeType on Transformer directly.
-                TransformationRequest.Builder()
-                    .setVideoMimeType(MimeTypes.VIDEO_H264)
-                    .build(),
-            )
+            .setVideoMimeType(MimeTypes.VIDEO_H264)
             .addListener(transformerListener)
             .build()
 
