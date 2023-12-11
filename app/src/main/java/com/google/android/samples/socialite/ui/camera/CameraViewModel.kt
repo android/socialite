@@ -49,12 +49,13 @@ import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
+import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -64,15 +65,14 @@ import javax.inject.Inject
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
+    private val cameraProviderManager: CameraXProcessCameraProviderManager,
     private val repository: ChatRepository,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
-    private lateinit var initializeJob: Job
     private lateinit var extensionsManager: ExtensionsManager
 
-    private var _chatId = MutableStateFlow(0L)
-
+    val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
 
     val aspectRatioStrategy =
@@ -100,14 +100,8 @@ class CameraViewModel @Inject constructor(
     private var currentRecording: Recording? = null
     private lateinit var recordingState: VideoRecordEvent
 
-    fun initialize() {
-        initializeJob = viewModelScope.launch {
-            cameraProvider = ProcessCameraProvider.getInstance(application).await()
-        }
-    }
-
     fun setChatId(chatId: Long) {
-        _chatId.value = chatId
+        savedStateHandle.set("chatId", chatId)
     }
 
     fun startPreview(
@@ -118,7 +112,7 @@ class CameraViewModel @Inject constructor(
         rotation: Int,
     ) {
         viewModelScope.launch {
-            initializeJob.join()
+            val cameraProvider = cameraProviderManager.getCameraProvider()
             val extensionManagerJob = viewModelScope.launch {
                 extensionsManager = ExtensionsManager.getInstanceAsync(
                     application,
@@ -251,7 +245,14 @@ class CameraViewModel @Inject constructor(
 
     fun sendPhotoMessage(photoUri: String) {
         viewModelScope.launch {
-            repository.sendMessage(_chatId.value, "", photoUri, "image/jpeg")
+            if (chatId != null) {
+                repository.sendMessage(
+                    chatId = chatId,
+                    text = "",
+                    mediaUri = photoUri,
+                    mediaMimeType = "image/jpeg"
+                )
+            }
         }
     }
 
