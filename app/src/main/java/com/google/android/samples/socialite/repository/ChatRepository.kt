@@ -19,8 +19,10 @@ package com.google.android.samples.socialite.repository
 import com.google.android.samples.socialite.data.ChatDao
 import com.google.android.samples.socialite.data.ContactDao
 import com.google.android.samples.socialite.data.MessageDao
+import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -33,7 +35,8 @@ class ChatRepository @Inject internal constructor(
     private val messageDao: MessageDao,
     private val contactDao: ContactDao,
     private val notificationHelper: NotificationHelper,
-    private val applicationCoroutineScope: ApplicationCoroutineScope,
+    @AppCoroutineScope
+    private val coroutineScope: CoroutineScope,
 ) {
     private var currentChat: Long = 0L
 
@@ -75,7 +78,7 @@ class ChatRepository @Inject internal constructor(
         // Simulate a response from the peer.
         // The code here is just for demonstration purpose in this sample.
         // Real apps will use their server backend and Firebase Cloud Messaging to deliver messages.
-        applicationCoroutineScope.launch {
+        coroutineScope.launch {
             // The person is typing...
             delay(5000L)
             // Receive a reply.
