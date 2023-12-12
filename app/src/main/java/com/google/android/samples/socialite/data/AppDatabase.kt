@@ -37,7 +37,6 @@ import com.google.android.samples.socialite.model.Message
     version = 1,
 )
 abstract class AppDatabase : RoomDatabase() {
-
     abstract fun contactDao(): ContactDao
     abstract fun chatDao(): ChatDao
     abstract fun messageDao(): MessageDao
@@ -63,7 +62,6 @@ fun SupportSQLiteDatabase.populateInitialData() {
     )
 
     // Populate data for other contacts
-
     val contacts = Contact.CONTACTS
     val chatIds = contacts.map { it.id }
 
@@ -71,7 +69,7 @@ fun SupportSQLiteDatabase.populateInitialData() {
         // Insert contact
         insert(
             table = "Contact",
-            conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
+            conflictAlgorithm = SQLiteDatabase.CONFLICT_IGNORE,
             values = ContentValues().apply {
                 put("id", contact.id)
                 put("icon", contact.icon)
@@ -83,7 +81,7 @@ fun SupportSQLiteDatabase.populateInitialData() {
         // Insert chat id
         insert(
             table = "Chat",
-            conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
+            conflictAlgorithm = SQLiteDatabase.CONFLICT_IGNORE,
             values = ContentValues().apply {
                 put("id", chatIds[index])
             },
@@ -92,7 +90,7 @@ fun SupportSQLiteDatabase.populateInitialData() {
         // Insert chat attendee
         insert(
             table = "ChatAttendee",
-            conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
+            conflictAlgorithm = SQLiteDatabase.CONFLICT_IGNORE,
             values = ContentValues().apply {
                 put("chatId", chatIds[index])
                 put("attendeeId", contact.id)
@@ -106,7 +104,7 @@ fun SupportSQLiteDatabase.populateInitialData() {
             table = "Message",
             conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
             values = ContentValues().apply {
-                // Use index * 2, since per contact two chats are prepopulated
+                // Use index * 2, since per contact two chats are pre populated
                 put("id", (index * 2).toLong())
                 put("chatId", chatIds[index])
                 put("senderId", contact.id)
