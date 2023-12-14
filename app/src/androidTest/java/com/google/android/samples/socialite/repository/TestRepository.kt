@@ -18,6 +18,9 @@ package com.google.android.samples.socialite.repository
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.samples.socialite.data.createTestDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 fun createTestRepository(): ChatRepository {
     val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -27,5 +30,6 @@ fun createTestRepository(): ChatRepository {
         contactDao = database.contactDao(),
         messageDao = database.messageDao(),
         notificationHelper = NotificationHelper(context),
+        coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     )
 }
