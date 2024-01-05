@@ -16,31 +16,25 @@
 
 package com.google.android.samples.socialite.ui.home
 
-import android.graphics.Paint
-import android.graphics.PointF
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
-import androidx.graphics.shapes.drawPolygon
 import androidx.graphics.shapes.star
+import androidx.graphics.shapes.toPath
 import com.google.android.samples.socialite.ui.SocialTheme
 
 data class StarSpec(
@@ -111,13 +105,11 @@ fun HomeBackground(
     modifier: Modifier = Modifier,
     colors: StarColors = StarColors.defaults(),
 ) {
-    val paint = remember { Paint() }
     val specs = remember(colors) { createStarSpecs(colors) }
     Box(modifier = modifier) {
         for (spec in specs) {
             Star(
                 spec = spec,
-                paint = paint,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -127,30 +119,29 @@ fun HomeBackground(
 @Composable
 private fun Star(
     spec: StarSpec,
-    paint: Paint,
     modifier: Modifier = Modifier,
 ) {
-    var starCache: RoundedPolygon? by remember { mutableStateOf(null) }
-    Canvas(
-        modifier = modifier.blur(spec.blurRadius),
-    ) {
-        val width = size.width
-        drawIntoCanvas { canvas ->
-            canvas.translate(
-                dx = width * spec.offset.x,
-                dy = width * spec.offset.y,
-            )
-            val star = starCache ?: RoundedPolygon.star(
+    Box(modifier = modifier.blur(spec.blurRadius)
+        .drawWithCache {
+            val width = size.width
+            val star = RoundedPolygon.star(
                 numVerticesPerRadius = spec.numVertices,
                 radius = width * spec.size / 2,
                 innerRadius = width * spec.size * 0.7f / 2,
                 rounding = CornerRounding(width * 0.05f),
-                center = PointF(width / 2, width / 2),
-            ).also { starCache = it }
-            paint.color = spec.color.toArgb()
-            canvas.nativeCanvas.drawPolygon(star, paint)
-        }
-    }
+                centerX = width / 2,
+                centerY = width / 2,
+            )
+            val path = star.toPath().asComposePath()
+
+            onDrawBehind {
+                translate(width * spec.offset.x,
+                    width * spec.offset.y) {
+                    drawPath(path, color = spec.color)
+                }
+            }
+        },
+    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
