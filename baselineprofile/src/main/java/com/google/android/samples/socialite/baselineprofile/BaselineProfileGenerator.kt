@@ -57,7 +57,7 @@ class BaselineProfileGenerator {
     fun generate() {
         rule.collect(
             packageName = "com.google.android.samples.socialite",
-            includeInStartupProfile = true
+            includeInStartupProfile = true,
         ) {
             pressHome()
             startActivityAndWait()

@@ -88,7 +88,7 @@ fun Timeline(
             viewModel::initializePlayer,
             viewModel::releasePlayer,
             viewModel::changePlayerItem,
-            videoRatio
+            videoRatio,
         )
     }
 }
@@ -103,7 +103,7 @@ fun TimelineVerticalPager(
     onInitializePlayer: () -> Unit = {},
     onReleasePlayer: () -> Unit = {},
     onChangePlayerItem: (uri: Uri?) -> Unit = {},
-    videoRatio: Float?
+    videoRatio: Float?,
 ) {
     val pagerState = rememberPagerState(pageCount = { mediaItems.count() })
     LaunchedEffect(pagerState) {
@@ -142,27 +142,28 @@ fun TimelineVerticalPager(
             .fillMaxSize(),
     ) { page ->
         if (player != null) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-                .graphicsLayer {
-                    // Calculate the absolute offset for the current page from the
-                    // scroll position. We use the absolute value which allows us to mirror
-                    // any effects for both directions
-                    val pageOffset = (
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .graphicsLayer {
+                        // Calculate the absolute offset for the current page from the
+                        // scroll position. We use the absolute value which allows us to mirror
+                        // any effects for both directions
+                        val pageOffset = (
                             (pagerState.currentPage - page) + pagerState
                                 .currentPageOffsetFraction
                             ).absoluteValue
 
-                    // We animate the alpha, between 0% and 100%
-                    alpha = lerp(
-                        start = 0f,
-                        stop = 1f,
-                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                    )
-                }
+                        // We animate the alpha, between 0% and 100%
+                        alpha = lerp(
+                            start = 0f,
+                            stop = 1f,
+                            fraction = 1f - pageOffset.coerceIn(0f, 1f),
+                        )
+                    },
             ) {
                 TimelinePage(
                     modifier = Modifier
@@ -173,7 +174,7 @@ fun TimelineVerticalPager(
                     player = player,
                     page,
                     pagerState,
-                    videoRatio
+                    videoRatio,
                 )
 
                 MetadataOverlay(modifier = Modifier.padding(16.dp), mediaItem = mediaItems[page])
@@ -190,7 +191,7 @@ fun TimelinePage(
     player: Player,
     page: Int,
     state: PagerState,
-    videoRatio: Float?
+    videoRatio: Float?,
 ) {
     when (media.type) {
         TimelineMediaType.VIDEO -> {
@@ -222,7 +223,7 @@ fun TimelinePage(
                 contentDescription = null,
                 modifier = modifier
                     .fillMaxSize(),
-                contentScale = ContentScale.Fit
+                contentScale = ContentScale.Fit,
             )
         }
     }
@@ -233,13 +234,13 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .zIndex(999f)
+            .zIndex(999f),
     ) {
         if (mediaItem.type == TimelineMediaType.VIDEO) {
             val mediaMetadataRetriever = MediaMetadataRetriever()
             mediaMetadataRetriever.setDataSource(
                 LocalContext.current,
-                Uri.parse(mediaItem.uri)
+                Uri.parse(mediaItem.uri),
             )
 
             val duration =
@@ -253,11 +254,11 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
                         .padding(16.dp)
                         .align(Alignment.TopEnd)
                         .clip(RoundedCornerShape(50))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
                 ) {
                     Text(
                         modifier = Modifier.padding(8.dp),
-                        text = "%d:%02d".format(minutes, seconds % 60)
+                        text = "%d:%02d".format(minutes, seconds % 60),
                     )
                 }
             }
@@ -270,7 +271,7 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
                 .clip(RoundedCornerShape(50))
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             mediaItem.chatIconUri?.let {
                 Image(
