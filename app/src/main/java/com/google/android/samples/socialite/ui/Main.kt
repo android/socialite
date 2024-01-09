@@ -198,19 +198,19 @@ data class ShortcutParams(
 )
 
 object AnimationConstants {
-    private const val enterMillis = 250
-    private const val exitMillis = 250
+    private const val ENTER_MILLIS = 250
+    private const val EXIT_MILLIS = 250
 
     val enterTransition = fadeIn(
         animationSpec = tween(
-            durationMillis = enterMillis,
+            durationMillis = ENTER_MILLIS,
             easing = FastOutLinearInEasing,
         ),
     )
 
     val exitTransition = fadeOut(
         animationSpec = tween(
-            durationMillis = exitMillis,
+            durationMillis = EXIT_MILLIS,
             easing = FastOutSlowInEasing,
         ),
     )

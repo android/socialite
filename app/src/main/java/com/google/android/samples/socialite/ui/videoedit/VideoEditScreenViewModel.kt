@@ -43,14 +43,14 @@ import com.google.android.samples.socialite.ui.camera.CameraViewModel
 import com.google.common.collect.ImmutableList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class VideoEditScreenViewModel @Inject constructor(
@@ -58,7 +58,7 @@ class VideoEditScreenViewModel @Inject constructor(
     private val repository: ChatRepository,
 ) : ViewModel() {
 
-    private val _chatId = MutableStateFlow(0L)
+    private val chatId = MutableStateFlow(0L)
     private var transformedVideoFilePath = ""
 
     private val _isFinishedEditing = MutableStateFlow(false)
@@ -68,7 +68,7 @@ class VideoEditScreenViewModel @Inject constructor(
     val isProcessing: StateFlow<Boolean> = _isProcessing
 
     fun setChatId(chatId: Long) {
-        _chatId.value = chatId
+        this.chatId.value = chatId
     }
 
     private val transformerListener: Transformer.Listener =
@@ -179,7 +179,7 @@ class VideoEditScreenViewModel @Inject constructor(
 
     fun sendVideo() {
         viewModelScope.launch {
-            repository.sendMessage(_chatId.value, "", transformedVideoFilePath, "video/mp4")
+            repository.sendMessage(chatId.value, "", transformedVideoFilePath, "video/mp4")
         }
     }
 }

@@ -49,7 +49,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 class BaselineProfileGenerator {
-
     @get:Rule
     val rule = BaselineProfileRule()
 
@@ -57,7 +56,7 @@ class BaselineProfileGenerator {
     fun generate() {
         rule.collect(
             packageName = "com.google.android.samples.socialite",
-            includeInStartupProfile = true
+            includeInStartupProfile = true,
         ) {
             pressHome()
             startActivityAndWait()

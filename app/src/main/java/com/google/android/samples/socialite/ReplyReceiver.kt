@@ -22,10 +22,10 @@ import android.content.Context
 import android.content.Intent
 import com.google.android.samples.socialite.repository.ChatRepository
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Handles the "Reply" action in the chat notification.

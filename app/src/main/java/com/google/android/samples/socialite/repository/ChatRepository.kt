@@ -22,12 +22,12 @@ import com.google.android.samples.socialite.data.MessageDao
 import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class ChatRepository @Inject internal constructor(
@@ -67,7 +67,8 @@ class ChatRepository @Inject internal constructor(
             Message(
                 id = 0L,
                 chatId = chatId,
-                senderId = 0L, // User
+                // User
+                senderId = 0L,
                 text = text,
                 mediaUri = mediaUri,
                 mediaMimeType = mediaMimeType,
