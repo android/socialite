@@ -117,11 +117,11 @@ dependencies {
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
 
-    implementation (libs.media3.common)
-    implementation (libs.media3.effect)
-    implementation (libs.media3.exoplayer)
-    implementation (libs.media3.transformer)
-    implementation (libs.media3.ui)
+    implementation(libs.media3.common)
+    implementation(libs.media3.effect)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.transformer)
+    implementation(libs.media3.ui)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
@@ -131,7 +131,7 @@ dependencies {
 
     androidTestImplementation(libs.turbine)
 
-    //For photopicker feature
+    // For photopicker feature
     implementation(libs.activity)
 
     implementation(libs.coil)
