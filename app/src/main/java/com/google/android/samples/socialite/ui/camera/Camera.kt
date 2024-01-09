@@ -64,16 +64,17 @@ import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlin.reflect.KFunction1
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
-import kotlin.reflect.KFunction1
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Camera(chatId: Long,
-           onMediaCaptured: (Media?) -> Unit,
-           viewModel: CameraViewModel = hiltViewModel(),
-           ) {
+fun Camera(
+    chatId: Long,
+    onMediaCaptured: (Media?) -> Unit,
+    viewModel: CameraViewModel = hiltViewModel(),
+) {
     var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
     var cameraSelector by remember { mutableStateOf(CameraSelector.DEFAULT_BACK_CAMERA) }
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
@@ -98,12 +99,11 @@ fun Camera(chatId: Long,
                 val foldingFeature = newLayoutInfo?.displayFeatures
                     ?.firstOrNull { it is FoldingFeature } as FoldingFeature
                 isLayoutUnfolded = (foldingFeature != null)
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 // If there was an issue detecting a foldable in the open position, default
                 // to isLayoutUnfolded being false.
                 isLayoutUnfolded = false
             }
-
         }
     }
 
@@ -199,7 +199,7 @@ fun Camera(chatId: Long,
                 if (isLayoutUnfolded != null) {
                     if (isLayoutUnfolded as Boolean) {
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             Column(
                                 modifier = Modifier
@@ -216,7 +216,7 @@ fun Camera(chatId: Long,
                                     CameraControls(
                                         captureMode,
                                         { setCaptureMode(CaptureMode.PHOTO) },
-                                        { setCaptureMode(CaptureMode.VIDEO_READY) }
+                                        { setCaptureMode(CaptureMode.VIDEO_READY) },
                                     )
                                 }
                                 Row(
@@ -228,10 +228,12 @@ fun Camera(chatId: Long,
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
                                 ) {
-                                    ShutterButton(captureMode,
+                                    ShutterButton(
+                                        captureMode,
                                         { viewModel.capturePhoto(onMediaCaptured) },
                                         { onVideoRecordingStart() },
-                                        { onVideoRecordingFinish() })
+                                        { onVideoRecordingFinish() },
+                                    )
                                 }
                                 Row(
                                     modifier = Modifier,
@@ -281,7 +283,7 @@ fun Camera(chatId: Long,
                             CameraControls(
                                 captureMode,
                                 { setCaptureMode(CaptureMode.PHOTO) },
-                                { setCaptureMode(CaptureMode.VIDEO_READY) }
+                                { setCaptureMode(CaptureMode.VIDEO_READY) },
                             )
                         }
                         Row(
@@ -294,10 +296,12 @@ fun Camera(chatId: Long,
                             horizontalArrangement = Arrangement.Center,
                         ) {
                             Spacer(modifier = Modifier.size(50.dp))
-                            ShutterButton(captureMode,
+                            ShutterButton(
+                                captureMode,
                                 { viewModel.capturePhoto(onMediaCaptured) },
                                 { onVideoRecordingStart() },
-                                { onVideoRecordingFinish() })
+                                { onVideoRecordingFinish() },
+                            )
                             CameraSwitcher(captureMode, cameraSelector, ::setCameraSelector)
                         }
                     }

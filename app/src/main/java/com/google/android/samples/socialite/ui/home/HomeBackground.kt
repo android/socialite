@@ -121,26 +121,29 @@ private fun Star(
     spec: StarSpec,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.blur(spec.blurRadius)
-        .drawWithCache {
-            val width = size.width
-            val star = RoundedPolygon.star(
-                numVerticesPerRadius = spec.numVertices,
-                radius = width * spec.size / 2,
-                innerRadius = width * spec.size * 0.7f / 2,
-                rounding = CornerRounding(width * 0.05f),
-                centerX = width / 2,
-                centerY = width / 2,
-            )
-            val path = star.toPath().asComposePath()
+    Box(
+        modifier = modifier.blur(spec.blurRadius)
+            .drawWithCache {
+                val width = size.width
+                val star = RoundedPolygon.star(
+                    numVerticesPerRadius = spec.numVertices,
+                    radius = width * spec.size / 2,
+                    innerRadius = width * spec.size * 0.7f / 2,
+                    rounding = CornerRounding(width * 0.05f),
+                    centerX = width / 2,
+                    centerY = width / 2,
+                )
+                val path = star.toPath().asComposePath()
 
-            onDrawBehind {
-                translate(width * spec.offset.x,
-                    width * spec.offset.y) {
-                    drawPath(path, color = spec.color)
+                onDrawBehind {
+                    translate(
+                        width * spec.offset.x,
+                        width * spec.offset.y,
+                    ) {
+                        drawPath(path, color = spec.color)
+                    }
                 }
-            }
-        },
+            },
     )
 }
 
