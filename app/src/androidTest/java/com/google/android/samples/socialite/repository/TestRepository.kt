@@ -30,6 +30,6 @@ fun createTestRepository(): ChatRepository {
         contactDao = database.contactDao(),
         messageDao = database.messageDao(),
         notificationHelper = NotificationHelper(context),
-        coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
     )
 }
