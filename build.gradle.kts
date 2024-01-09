@@ -31,7 +31,7 @@ subprojects {
         kotlin {
             target("**/*.kt")
             targetExclude("**/camera/viewfinder/**")
-            ktlint(libs.versions.ktlint.get())
+            ktlint(libs.ktlint.get().version)
         }
     }
 }
