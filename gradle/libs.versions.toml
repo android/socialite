@@ -15,13 +15,13 @@
 [versions]
 accompanist = "0.32.0"
 activity = "1.9.0-alpha01"
-agp = "8.2.0"
+agp = "8.2.1"
 benchmarkMacroJunit4 = "1.2.2"
 baselineprofile = "1.2.2"
 camera = "1.3.1"
 coil = "2.4.0"
 compose_bom = "2023.10.01"
-composeCompiler = "1.5.3" # Used in app/build.gradle.kts
+composeCompiler = "1.5.4" # Used in app/build.gradle.kts
 compose-foundation = "1.6.0-beta03"
 concurrent = "1.1.0"
 core = "1.12.0"
@@ -31,8 +31,8 @@ graphics = "1.0.0-alpha04"
 hilt = "2.48.1"
 hiltNavigationCompose = "1.1.0"
 junit = "4.13.2"
-kotlin = "1.9.10"
-ksp = "1.9.10-1.0.13"
+kotlin = "1.9.20"
+ksp = "1.9.20-1.0.14"
 ktlint = "0.50.0" # Used in build.gradle.kts
 lifecycle = "2.7.0-rc02"
 material3 = "1.2.0-beta01"
@@ -50,7 +50,7 @@ window = "1.2.0"
 [libraries]
 accompanist-painter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
-activity = { group = "androidx.activity", name = "activity", version = "1.8.0" }
+activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacroJunit4" }
 camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camera" }
