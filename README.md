@@ -46,6 +46,30 @@ Here are the screens that make up SociaLite:
 You can report an [issue with a sample](https://github.com/android/social-sample/issues) using
 this repository. When doing so, make sure to specify which sample you are referring to.
 
+## Troubleshooting
+
+### Error running gradlew command on WSL
+
+```shell
+./gradlew spotlessApply
+
+/usr/bin/env: ‘sh\r’: No such file or directory
+```
+
+You most likely have problems with the line ending character. You can fix it with a few steps:
+
+1. Install _dos2unix_
+
+```shell
+sudo apt install dos2unix 
+```
+
+1. Fix the gradlew file
+
+```shell
+dos2unix gradlew
+```
+
 ## Contributions
 
 Please contribute! We will gladly review any pull requests.
