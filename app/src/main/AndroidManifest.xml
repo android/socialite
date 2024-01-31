@@ -28,6 +28,14 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!--
+        minSdk for this project is 21, but the PlayServicesDevicePerformance from the
+        core-performance-play-services dependency requires minSdk 24. We fall back to using
+        DefaultDevicePerformance from the core-performance dependency (minSdk 19) if the SDK level
+        is <24.
+    -->
+    <uses-sdk tools:overrideLibrary="androidx.core.performance.play.services" />
+
     <application
         android:name=".SocialApp"
         android:allowBackup="true"

@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.samples.socialite.R
 
 @Composable
@@ -58,6 +57,16 @@ fun Settings(
                 ) {
                     Text(text = stringResource(R.string.clear_message_history))
                 }
+            }
+        }
+        item {
+            Box(modifier = Modifier.padding(32.dp)) {
+                Text(
+                    text = stringResource(
+                        R.string.performance_class_level,
+                        viewModel.mediaPerformanceClass
+                    )
+                )
             }
         }
     }
