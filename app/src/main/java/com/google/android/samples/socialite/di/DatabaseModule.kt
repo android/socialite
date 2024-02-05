@@ -26,18 +26,17 @@ import com.google.android.samples.socialite.data.DatabaseManager
 import com.google.android.samples.socialite.data.MessageDao
 import com.google.android.samples.socialite.data.RoomDatabaseManager
 import com.google.android.samples.socialite.data.populateInitialData
-import com.google.android.samples.socialite.widget.model.WidgetModelDao
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 import javax.inject.Qualifier
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
 
 @Qualifier
 annotation class AppCoroutineScope
@@ -49,14 +48,12 @@ object DatabaseModule {
     @Singleton
     fun providesAppDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "app.db")
-            .addCallback(
-                object : RoomDatabase.Callback() {
-                    override fun onCreate(db: SupportSQLiteDatabase) {
-                        super.onCreate(db)
-                        db.populateInitialData()
-                    }
-                },
-            ).build()
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    super.onCreate(db)
+                    db.populateInitialData()
+                }
+            }).build()
 
     @Provides
     fun providesChatDao(database: AppDatabase): ChatDao = database.chatDao()
@@ -66,9 +63,6 @@ object DatabaseModule {
 
     @Provides
     fun providesContactDao(database: AppDatabase): ContactDao = database.contactDao()
-
-    @Provides
-    fun providesWidgetModelDao(database: AppDatabase): WidgetModelDao = database.widgetDao()
 
     @Provides
     @Singleton

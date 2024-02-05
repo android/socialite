@@ -64,15 +64,15 @@ import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import kotlin.reflect.KFunction1
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
+import kotlin.reflect.KFunction1
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(
+    chatId: Long,
     onMediaCaptured: (Media?) -> Unit,
-    modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
 ) {
     var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
@@ -85,6 +85,8 @@ fun Camera(
         ),
     )
 
+    viewModel.setChatId(chatId)
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
 
@@ -94,8 +96,8 @@ fun Camera(
         val windowInfoTracker = WindowInfoTracker.getOrCreate(context)
         windowInfoTracker.windowLayoutInfo(context).collect { newLayoutInfo ->
             try {
-                val foldingFeature = newLayoutInfo.displayFeatures
-                    .filterIsInstance<FoldingFeature>().firstOrNull()
+                val foldingFeature = newLayoutInfo?.displayFeatures
+                    ?.firstOrNull { it is FoldingFeature } as FoldingFeature
                 isLayoutUnfolded = (foldingFeature != null)
             } catch (e: Exception) {
                 // If there was an issue detecting a foldable in the open position, default
@@ -113,7 +115,11 @@ fun Camera(
         val rotationListener: (Int) -> Unit = { rotationValue: Int ->
             if (rotationValue != rotation) {
                 surfaceProvider?.let { provider ->
-                    viewModel.setTargetRotation(
+                    viewModel.startPreview(
+                        lifecycleOwner,
+                        provider,
+                        captureMode,
+                        cameraSelector,
                         rotationValue,
                     )
                 }
@@ -171,7 +177,7 @@ fun Camera(
     }
 
     if (cameraAndRecordAudioPermissionState.allPermissionsGranted) {
-        Box(modifier = modifier.background(color = Color.Black)) {
+        Box(modifier = Modifier.background(color = Color.Black)) {
             Column(verticalArrangement = Arrangement.Bottom) {
                 Row(
                     modifier = Modifier
@@ -247,6 +253,7 @@ fun Camera(
                                 ViewFinder(
                                     viewFinderState.cameraState,
                                     onPreviewSurfaceProviderReady,
+                                    viewModel::tapToFocus,
                                     viewModel::setZoomScale,
                                 )
                             }
@@ -260,6 +267,7 @@ fun Camera(
                             ViewFinder(
                                 viewFinderState.cameraState,
                                 onPreviewSurfaceProviderReady,
+                                viewModel::tapToFocus,
                                 viewModel::setZoomScale,
                             )
                         }

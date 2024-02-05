@@ -27,6 +27,5 @@ data class TimelineMediaItem(
 )
 
 enum class TimelineMediaType {
-    PHOTO,
-    VIDEO,
+    PHOTO, VIDEO
 }
