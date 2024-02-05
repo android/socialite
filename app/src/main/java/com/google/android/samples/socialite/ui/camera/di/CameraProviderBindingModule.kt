@@ -28,5 +28,5 @@ import dagger.hilt.components.SingletonComponent
 interface CameraProviderBindingModule {
 
     @Binds
-    fun bindCameraProviderManager(manager: CameraXProcessCameraProviderManager) : CameraProviderManager
+    fun bindCameraProviderManager(manager: CameraXProcessCameraProviderManager): CameraProviderManager
 }

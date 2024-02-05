@@ -64,8 +64,8 @@ fun Settings(
                 Text(
                     text = stringResource(
                         R.string.performance_class_level,
-                        viewModel.mediaPerformanceClass
-                    )
+                        viewModel.mediaPerformanceClass,
+                    ),
                 )
             }
         }

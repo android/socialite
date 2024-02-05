@@ -74,7 +74,7 @@ class StartupBenchmarks {
             },
             measureBlock = {
                 startActivityAndWait()
-            }
+            },
         )
     }
 }

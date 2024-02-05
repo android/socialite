@@ -16,14 +16,12 @@
 
 package com.google.android.samples.socialite.ui.home.timeline
 
-import android.app.Application
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -58,7 +56,9 @@ class TimelineViewModel @Inject constructor(
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             videoRatio = if (videoSize.height > 0 && videoSize.width > 0) {
                 videoSize.width.toFloat() / videoSize.height.toFloat()
-            } else null
+            } else {
+                null
+            }
             super.onVideoSizeChanged(videoSize)
         }
     }
