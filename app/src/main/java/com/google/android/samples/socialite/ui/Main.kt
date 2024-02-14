@@ -26,7 +26,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,9 +54,7 @@ fun Main(
 ) {
     val modifier = Modifier.fillMaxSize()
     SocialTheme {
-        Surface(modifier = modifier) {
-            MainNavigation(modifier, shortcutParams)
-        }
+        MainNavigation(modifier, shortcutParams)
     }
 }
 
