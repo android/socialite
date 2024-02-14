@@ -43,7 +43,7 @@ Here are the screens that make up SociaLite:
 
 ## Reporting Issues
 
-You can report an [issue with a sample](https://github.com/android/social-sample/issues) using
+You can report an [issue with a sample](https://github.com/android/socialite/issues) using
 this repository. When doing so, make sure to specify which sample you are referring to.
 
 ## Contributions
