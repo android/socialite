@@ -32,12 +32,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 import javax.inject.Qualifier
 import javax.inject.Singleton
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
 
 @Qualifier
 annotation class AppCoroutineScope
@@ -69,7 +68,7 @@ object DatabaseModule {
     @Singleton
     @AppCoroutineScope
     fun providesApplicationCoroutineScope(): CoroutineScope = CoroutineScope(
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        Executors.newSingleThreadExecutor().asCoroutineDispatcher(),
     )
 }
 
@@ -78,5 +77,5 @@ object DatabaseModule {
 interface DatabaseBindingModule {
 
     @Binds
-    fun bindDatabaseManager(manager: RoomDatabaseManager) : DatabaseManager
+    fun bindDatabaseManager(manager: RoomDatabaseManager): DatabaseManager
 }

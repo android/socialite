@@ -21,6 +21,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.stateInUi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,26 +29,25 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val repository: ChatRepository,
 ) : ViewModel() {
 
-    private val _chatId = MutableStateFlow(0L)
+    private val chatId = MutableStateFlow(0L)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val _chat = _chatId.flatMapLatest { id -> repository.findChat(id) }
+    private val _chat = chatId.flatMapLatest { id -> repository.findChat(id) }
 
-    private val _attendees = _chat.map { c -> (c?.attendees ?: emptyList()).associateBy { it.id } }
+    private val attendees = _chat.map { c -> (c?.attendees ?: emptyList()).associateBy { it.id } }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val _messages = _chatId.flatMapLatest { id -> repository.findMessages(id) }
+    private val _messages = chatId.flatMapLatest { id -> repository.findMessages(id) }
 
     val chat = _chat.stateInUi(null)
 
-    val messages = combine(_messages, _attendees) { messages, attendees ->
+    val messages = combine(_messages, attendees) { messages, attendees ->
         // Build a list of `ChatMessage` from this list of `Message`.
         buildList {
             for (i in messages.indices) {
@@ -83,7 +83,7 @@ class ChatViewModel @Inject constructor(
      * suppressing further notifications.
      */
     fun setForeground(foreground: Boolean) {
-        val chatId = _chatId.value
+        val chatId = chatId.value
         if (chatId != 0L) {
             if (foreground) {
                 repository.activateChat(chatId)
@@ -94,7 +94,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun setChatId(chatId: Long) {
-        _chatId.value = chatId
+        this.chatId.value = chatId
     }
 
     fun updateInput(input: String) {
@@ -108,7 +108,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun send() {
-        val chatId = _chatId.value
+        val chatId = chatId.value
         if (chatId <= 0) return
         val input = _input.value
         if (!isInputValid(input)) return

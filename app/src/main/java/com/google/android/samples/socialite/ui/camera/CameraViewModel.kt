@@ -37,7 +37,6 @@ import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.extensions.ExtensionMode
 import androidx.camera.extensions.ExtensionsManager
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
@@ -53,14 +52,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
-import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
@@ -250,7 +248,7 @@ class CameraViewModel @Inject constructor(
                     chatId = chatId,
                     text = "",
                     mediaUri = photoUri,
-                    mediaMimeType = "image/jpeg"
+                    mediaMimeType = "image/jpeg",
                 )
             }
         }
@@ -333,5 +331,7 @@ enum class CameraState {
 }
 
 enum class CaptureMode {
-    PHOTO, VIDEO_READY, VIDEO_RECORDING
+    PHOTO,
+    VIDEO_READY,
+    VIDEO_RECORDING,
 }

@@ -28,9 +28,12 @@ fun Bubble(chatId: Long) {
             chatId = chatId,
             foreground = false,
             onBackPressed = null,
-            onCameraClick = {}, // TODO (donovanfm): Hook up camera button in the Bubble composable
-            onVideoClick = {}, // TODO (jolandaverhoef): Hook up play video button in the Bubble composable
-            onPhotoPickerClick = {}, // TODO (mayurikhin): Hook up camera button in the Bubble composable
+            // TODO (donovanfm): Hook up camera button in the Bubble composable
+            onCameraClick = {},
+            // TODO (jolandaverhoef): Hook up play video button in the Bubble composable
+            onVideoClick = {},
+            // TODO (mayurikhin): Hook up camera button in the Bubble composable
+            onPhotoPickerClick = {},
             modifier = Modifier.fillMaxSize(),
         )
     }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import com.diffplug.gradle.spotless.SpotlessExtension
+
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.androidApplication) apply false
@@ -26,12 +28,15 @@ plugins {
 }
 
 subprojects {
-    apply(plugin = "com.diffplug.spotless")
-    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+    plugins.apply(rootProject.libs.plugins.spotless.get().pluginId)
+    configure<SpotlessExtension> {
         kotlin {
             target("**/*.kt")
             targetExclude("**/camera/viewfinder/**")
-            ktlint(libs.versions.ktlint.get())
+            ktlint(libs.ktlint.get().version)
+        }
+        kotlinGradle {
+            ktlint(libs.ktlint.get().version)
         }
     }
 }

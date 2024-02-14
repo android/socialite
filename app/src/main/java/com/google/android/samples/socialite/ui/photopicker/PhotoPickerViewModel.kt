@@ -24,8 +24,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class PhotoPickerViewModel @Inject constructor(
@@ -39,7 +39,7 @@ class PhotoPickerViewModel @Inject constructor(
 
     fun onPhotoPicked(imageUri: Uri) {
         viewModelScope.launch {
-            //Ask permission since want to persist media access after app restart too.
+            // Ask permission since want to persist media access after app restart too.
             contentResolver.takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
             chatRepository.sendMessage(
