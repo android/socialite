@@ -56,19 +56,7 @@ this repository. When doing so, make sure to specify which sample you are referr
 /usr/bin/env: ‘sh\r’: No such file or directory
 ```
 
-You most likely have problems with the line ending character. You can fix it with a few steps:
-
-1. Install _dos2unix_
-
-```shell
-sudo apt install dos2unix 
-```
-
-1. Fix the gradlew file
-
-```shell
-dos2unix gradlew
-```
+This may be due to issues with the `gradlew` file's line ending characters. Try converting the file's line endings to CRLF or LF as required by your operating system.
 
 ## Contributions
 
