@@ -27,25 +27,25 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AppDatabaseTest {
 
-    private lateinit var _db: AppDatabase
-    private var _contactsSize = Contact.CONTACTS.size + 1
+    private lateinit var db: AppDatabase
+    private var contactsSize = Contact.CONTACTS.size + 1
 
     @Before
     fun setup() {
-        _db = createTestDatabase()
+        db = createTestDatabase()
     }
 
     @Test
     fun populateInitialData_AssureDataIsInitialized() = runBlocking {
-        val contacts = _db.contactDao().loadAll()
-        val chatDetails = _db.chatDao().loadAllDetails()
+        val contacts = db.contactDao().loadAll()
+        val chatDetails = db.chatDao().loadAllDetails()
 
         // Assert
-        assertThat(contacts).hasSize(_contactsSize)
+        assertThat(contacts).hasSize(contactsSize)
         assertThat(chatDetails).hasSize(4)
         for (detail in chatDetails) {
             assertThat(detail.attendees).hasSize(1)
-            val messages = _db.messageDao().loadAll(detail.chatWithLastMessage.id)
+            val messages = db.messageDao().loadAll(detail.chatWithLastMessage.id)
             assertThat(messages).hasSize(2)
         }
     }

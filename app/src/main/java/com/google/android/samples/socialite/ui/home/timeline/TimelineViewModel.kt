@@ -33,9 +33,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.google.android.samples.socialite.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class TimelineViewModel @Inject constructor(

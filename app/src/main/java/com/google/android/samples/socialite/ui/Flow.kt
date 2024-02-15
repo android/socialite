@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.stateIn
  * use in UI.
  */
 context(ViewModel)
-fun <T> Flow<T>.stateInUi(initialValue: T): StateFlow<T> {
+fun <T> Flow<T>.stateInUi(
+    initialValue: T,
+): StateFlow<T> {
     return stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), initialValue)
 }

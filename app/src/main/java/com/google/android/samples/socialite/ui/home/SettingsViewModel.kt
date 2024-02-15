@@ -25,10 +25,10 @@ import com.google.android.samples.socialite.data.DatabaseManager
 import com.google.android.samples.socialite.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(

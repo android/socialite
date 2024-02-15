@@ -54,11 +54,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
@@ -331,5 +331,7 @@ enum class CameraState {
 }
 
 enum class CaptureMode {
-    PHOTO, VIDEO_READY, VIDEO_RECORDING
+    PHOTO,
+    VIDEO_READY,
+    VIDEO_RECORDING,
 }

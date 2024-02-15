@@ -64,9 +64,9 @@ import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlin.reflect.KFunction1
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
-import kotlin.reflect.KFunction1
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
