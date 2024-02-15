@@ -59,7 +59,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -79,7 +78,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
 
 private const val TAG = "VideoEditScreen"
@@ -91,37 +89,67 @@ fun VideoEditScreen(
     uri: String,
     onCloseButtonClicked: () -> Unit,
     navController: NavController,
+    viewModel: VideoEditScreenViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
-
-    val viewModel: VideoEditScreenViewModel = hiltViewModel()
     viewModel.setChatId(chatId)
-
-    val isFinishedEditing = viewModel.isFinishedEditing.collectAsStateWithLifecycle()
-    if (isFinishedEditing.value) {
-        navController.popBackStack("chat/$chatId", false)
-    }
-
-    val isProcessing = viewModel.isProcessing.collectAsState()
-
+    val isFinishedEditing by viewModel.isFinishedEditing.collectAsStateWithLifecycle()
+    val isProcessing by viewModel.isProcessing.collectAsStateWithLifecycle()
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    if (isFinishedEditing) {
+        navController.popBackStack("chat/$chatId", false)
+    }
 
+    VideoEditScreen(
+        uri = uri,
+        isProcessing = isProcessing,
+        filterChipSelected = removeAudioEnabled,
+        onCloseButtonClicked = onCloseButtonClicked,
+        buttonOverlayText = overlayText,
+        redOverlayTextEnabled = redOverlayTextEnabled,
+        largeOverlayTextEnabled = largeOverlayTextEnabled,
+        onSendButtonClicked = {
+            viewModel.applyVideoTransformation(
+                context = context,
+                videoUri = uri,
+                removeAudio = removeAudioEnabled,
+                textOverlayText = overlayText,
+                textOverlayRedSelected = redOverlayTextEnabled,
+                textOverlayLargeSelected = largeOverlayTextEnabled,
+            )
+        },
+        onFilterChipPressed = { removeAudioEnabled = !removeAudioEnabled },
+        onButtonOverlayTextChanged = { overlayText = it },
+        onRedOverlayTextCheckedStateChanged = { redOverlayTextEnabled = !redOverlayTextEnabled },
+        onLargeOverlayTextCheckedStateChanged = {
+            largeOverlayTextEnabled = !largeOverlayTextEnabled
+        },
+    )
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+fun VideoEditScreen(
+    uri: String,
+    isProcessing: Boolean,
+    filterChipSelected: Boolean,
+    buttonOverlayText: String,
+    redOverlayTextEnabled: Boolean,
+    largeOverlayTextEnabled: Boolean,
+    onCloseButtonClicked: () -> Unit,
+    onSendButtonClicked: () -> Unit,
+    onFilterChipPressed: () -> Unit,
+    onButtonOverlayTextChanged: (String) -> Unit,
+    onRedOverlayTextCheckedStateChanged: () -> Unit,
+    onLargeOverlayTextCheckedStateChanged: () -> Unit,
+) {
     Scaffold(
         topBar = {
             VideoEditTopAppBar(
-                onSendButtonClicked = {
-                    viewModel.applyVideoTransformation(
-                        context = context,
-                        videoUri = uri,
-                        removeAudio = removeAudioEnabled,
-                        textOverlayText = overlayText,
-                        textOverlayRedSelected = redOverlayTextEnabled,
-                        textOverlayLargeSelected = largeOverlayTextEnabled,
-                    )
-                },
+                onSendButtonClicked = onSendButtonClicked,
                 onCloseButtonClicked = onCloseButtonClicked,
             )
         },
@@ -136,7 +164,7 @@ fun VideoEditScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(50.dp))
-            VideoMessagePreview(uri, isProcessing.value)
+            VideoMessagePreview(uri, isProcessing)
             Spacer(modifier = Modifier.height(20.dp))
 
             Column(
@@ -150,27 +178,23 @@ fun VideoEditScreen(
             ) {
                 VideoEditFilterChip(
                     icon = Icons.Filled.VolumeMute,
-                    selected = removeAudioEnabled,
-                    onClick = { removeAudioEnabled = !removeAudioEnabled },
+                    selected = filterChipSelected,
+                    onClick = onFilterChipPressed,
                     label = stringResource(id = R.string.remove_audio),
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 TextOverlayOption(
-                    inputtedText = overlayText,
+                    inputtedText = buttonOverlayText,
                     inputtedTextChange = {
                         // Limit character count to 20
                         if (it.length <= 20) {
-                            overlayText = it
+                            onButtonOverlayTextChanged(it)
                         }
                     },
                     redTextCheckedState = redOverlayTextEnabled,
-                    redTextCheckedStateChange = {
-                        redOverlayTextEnabled = !redOverlayTextEnabled
-                    },
+                    redTextCheckedStateChange = onRedOverlayTextCheckedStateChanged,
                     largeTextCheckedState = largeOverlayTextEnabled,
-                    largeTextCheckedStateChange = {
-                        largeOverlayTextEnabled = !largeOverlayTextEnabled
-                    },
+                    largeTextCheckedStateChange = onLargeOverlayTextCheckedStateChanged,
                 )
             }
         }
@@ -343,9 +367,17 @@ private fun VideoEditFilterChip(
 @Preview
 fun VideoEditScreenPreview() {
     VideoEditScreen(
-        chatId = 0L,
         uri = "",
+        isProcessing = true,
+        buttonOverlayText = "",
+        filterChipSelected = true,
+        redOverlayTextEnabled = false,
+        largeOverlayTextEnabled = false,
         onCloseButtonClicked = {},
-        navController = rememberNavController(),
+        onSendButtonClicked = {},
+        onFilterChipPressed = {},
+        onButtonOverlayTextChanged = {},
+        onRedOverlayTextCheckedStateChanged = {},
+        onLargeOverlayTextCheckedStateChanged = {},
     )
 }
