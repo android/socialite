@@ -20,6 +20,7 @@ plugins {
     alias(libs.plugins.baselineprofile)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinCompose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
 }
@@ -62,9 +63,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
     packaging {
         resources {
@@ -115,7 +113,6 @@ dependencies {
 
     implementation(libs.lifecycle.ktx)
     implementation(libs.lifecycle.compose)
-    implementation(libs.lifecycle.runtime.compose)
 
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
