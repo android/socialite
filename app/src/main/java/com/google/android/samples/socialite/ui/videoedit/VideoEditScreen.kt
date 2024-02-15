@@ -332,7 +332,6 @@ fun TextOverlayOption(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VideoEditFilterChip(
     icon: ImageVector,
