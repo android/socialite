@@ -38,11 +38,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeMute
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -177,7 +177,7 @@ fun VideoEditScreen(
                     .padding(15.dp),
             ) {
                 VideoEditFilterChip(
-                    icon = Icons.Filled.VolumeMute,
+                    icon = Icons.AutoMirrored.Filled.VolumeMute,
                     selected = filterChipSelected,
                     onClick = onFilterChipPressed,
                     label = stringResource(id = R.string.remove_audio),
