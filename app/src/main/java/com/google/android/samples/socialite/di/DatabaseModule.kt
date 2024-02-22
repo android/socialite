@@ -63,13 +63,6 @@ object DatabaseModule {
 
     @Provides
     fun providesContactDao(database: AppDatabase): ContactDao = database.contactDao()
-
-    @Provides
-    @Singleton
-    @AppCoroutineScope
-    fun providesApplicationCoroutineScope(): CoroutineScope = CoroutineScope(
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher(),
-    )
 }
 
 @Module
