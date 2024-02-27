@@ -55,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
@@ -204,17 +205,19 @@ fun Camera(
                             Column(
                                 modifier = Modifier
                                     .fillMaxHeight()
-                                    .weight(1f),
+                                    .weight(1f)
+                                    ,
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().height(100.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
                                 ) {
                                     CameraControls(
                                         captureMode,
+                                        rotation,
                                         { setCaptureMode(CaptureMode.PHOTO) },
                                         { setCaptureMode(CaptureMode.VIDEO_READY) },
                                     )
@@ -276,12 +279,13 @@ fun Camera(
                                 .fillMaxWidth()
                                 .padding(0.dp, 5.dp, 0.dp, 5.dp)
                                 .background(Color.Black)
-                                .height(50.dp),
+                                .height(100.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                         ) {
                             CameraControls(
                                 captureMode,
+                                rotation,
                                 { setCaptureMode(CaptureMode.PHOTO) },
                                 { setCaptureMode(CaptureMode.VIDEO_READY) },
                             )
@@ -316,21 +320,21 @@ fun Camera(
 }
 
 @Composable
-fun CameraControls(captureMode: CaptureMode, onPhotoButtonClick: () -> Unit, onVideoButtonClick: () -> Unit) {
+fun CameraControls(captureMode: CaptureMode, rotation: Int, onPhotoButtonClick: () -> Unit, onVideoButtonClick: () -> Unit) {
     val activeButtonColor =
         ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     val inactiveButtonColor =
         ButtonDefaults.buttonColors(containerColor = Color.LightGray)
     if (captureMode != CaptureMode.VIDEO_RECORDING) {
         Button(
-            modifier = Modifier.padding(5.dp),
+            modifier = Modifier.padding(5.dp).graphicsLayer(rotationZ = rotation.toFloat()*90),
             onClick = onPhotoButtonClick,
             colors = if (captureMode == CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
         ) {
             Text("Photo")
         }
         Button(
-            modifier = Modifier.padding(5.dp),
+            modifier = Modifier.padding(5.dp).graphicsLayer(rotationZ = rotation.toFloat()*90),
             onClick = onVideoButtonClick,
             colors = if (captureMode != CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
         ) {
