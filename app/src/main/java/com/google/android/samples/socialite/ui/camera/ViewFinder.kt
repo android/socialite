@@ -18,7 +18,6 @@ package com.google.android.samples.socialite.ui.camera
 
 import android.view.Display
 import android.view.View
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
@@ -26,10 +25,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +51,7 @@ fun ViewFinder(
             onZoomChange(zoomChange)
         },
     )
-    BoxWithConstraints(
+    Box(
         Modifier
             .background(Color.Black)
             .fillMaxSize()
@@ -76,15 +72,8 @@ fun ViewFinder(
             },
         contentAlignment = Alignment.Center,
     ) {
-        val maxAspectRatio: Float = maxWidth / maxHeight
-        val aspectRatio: Float = CameraViewModel.aspectRatios.getValue(AspectRatio.RATIO_16_9)
-        val shouldUseMaxWidth = maxAspectRatio <= aspectRatio
-        val width = if (shouldUseMaxWidth) maxWidth else maxHeight * aspectRatio
-        val height = if (!shouldUseMaxWidth) maxHeight else maxWidth / aspectRatio
         Box(
             modifier = Modifier
-                .width(width)
-                .height(height)
                 .transformable(state = transformableState),
         ) {
             CameraPreview(
