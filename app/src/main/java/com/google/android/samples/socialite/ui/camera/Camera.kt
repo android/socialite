@@ -326,14 +326,14 @@ fun CameraControls(captureMode: CaptureMode, rotation: Int, onPhotoButtonClick: 
         ButtonDefaults.buttonColors(containerColor = Color.LightGray)
     if (captureMode != CaptureMode.VIDEO_RECORDING) {
         Button(
-            modifier = Modifier.padding(5.dp).graphicsLayer(rotationZ = rotation.toFloat()*90),
+            modifier = Modifier.padding(5.dp).graphicsLayer(rotationZ = rotation.toFloat() * 90),
             onClick = onPhotoButtonClick,
             colors = if (captureMode == CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
         ) {
             Text("Photo")
         }
         Button(
-            modifier = Modifier.padding(5.dp).graphicsLayer(rotationZ = rotation.toFloat()*90),
+            modifier = Modifier.padding(5.dp).graphicsLayer(rotationZ = rotation.toFloat() * 90),
             onClick = onVideoButtonClick,
             colors = if (captureMode != CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
         ) {
