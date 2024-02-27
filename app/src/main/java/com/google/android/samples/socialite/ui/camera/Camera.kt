@@ -205,8 +205,7 @@ fun Camera(
                             Column(
                                 modifier = Modifier
                                     .fillMaxHeight()
-                                    .weight(1f)
-                                    ,
+                                    .weight(1f),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
