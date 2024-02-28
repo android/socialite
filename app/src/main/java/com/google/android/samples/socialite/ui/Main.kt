@@ -145,7 +145,7 @@ fun MainNavigation(
                     }
                 },
                 chatId = chatId,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
         }
 
