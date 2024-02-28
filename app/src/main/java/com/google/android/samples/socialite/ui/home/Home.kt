@@ -170,10 +170,9 @@ private fun HomeNavigationBar(
                     )
                 },
                 label = {
-                    if (selected) {
-                        Text(text = label)
-                    }
+                    Text(text = label)
                 },
+                alwaysShowLabel = false,
             )
         }
     }
