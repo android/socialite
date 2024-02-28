@@ -84,12 +84,13 @@ fun MainNavigation(
         popEnterTransition = { AnimationConstants.enterTransition },
         exitTransition = { AnimationConstants.exitTransition },
         popExitTransition = { AnimationConstants.exitTransition },
+        modifier = modifier,
     ) {
         composable(
             route = "home",
         ) {
             Home(
-                modifier = modifier,
+                modifier = Modifier.fillMaxSize(),
                 onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
             )
         }
@@ -116,7 +117,7 @@ fun MainNavigation(
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
-                modifier = modifier,
+                modifier = Modifier.fillMaxSize(),
             )
         }
         composable(
@@ -144,6 +145,7 @@ fun MainNavigation(
                     }
                 },
                 chatId = chatId,
+                modifier = Modifier.fillMaxSize()
             )
         }
 

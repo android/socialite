@@ -73,6 +73,7 @@ import kotlinx.coroutines.asExecutor
 fun Camera(
     chatId: Long,
     onMediaCaptured: (Media?) -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
 ) {
     var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
@@ -177,7 +178,7 @@ fun Camera(
     }
 
     if (cameraAndRecordAudioPermissionState.allPermissionsGranted) {
-        Box(modifier = Modifier.background(color = Color.Black)) {
+        Box(modifier = modifier.background(color = Color.Black)) {
             Column(verticalArrangement = Arrangement.Bottom) {
                 Row(
                     modifier = Modifier
