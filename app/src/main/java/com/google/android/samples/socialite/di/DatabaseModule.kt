@@ -32,11 +32,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Qualifier
 import javax.inject.Singleton
-
-@Qualifier
-annotation class AppCoroutineScope
 
 @Module
 @InstallIn(SingletonComponent::class)
