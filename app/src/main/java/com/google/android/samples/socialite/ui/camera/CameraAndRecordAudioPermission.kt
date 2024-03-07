@@ -46,7 +46,11 @@ import com.google.android.samples.socialite.R
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun CameraAndRecordAudioPermission(permissionsState: MultiplePermissionsState, onBackClicked: () -> Unit) {
+fun CameraAndRecordAudioPermission(
+    permissionsState: MultiplePermissionsState,
+    modifier: Modifier = Modifier,
+    onBackClicked: () -> Unit,
+) {
     var alreadyRequestedCameraPermissions by remember { mutableStateOf(false) }
     fun onRequestPermissionsClicked() {
         permissionsState.launchMultiplePermissionRequest()
@@ -54,7 +58,7 @@ fun CameraAndRecordAudioPermission(permissionsState: MultiplePermissionsState, o
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Column(
