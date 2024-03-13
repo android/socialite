@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -74,11 +75,13 @@ fun ChatRow(
             Text(
                 text = contact.name,
                 style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 16.sp,
             )
             Text(
                 text = chat.chatWithLastMessage.text,
                 style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 4.dp),
@@ -92,6 +95,7 @@ fun ChatRow(
         ) {
             Text(
                 text = chat.chatWithLastMessage.timestamp.toReadableString(),
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
             )
         }

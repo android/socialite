@@ -283,7 +283,11 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
                         .background(Color.LightGray),
                 )
             }
-            Text(modifier = Modifier.padding(end = 16.dp), text = mediaItem.chatName)
+            Text(
+                modifier = Modifier.padding(end = 16.dp),
+                text = mediaItem.chatName,
+                color = MaterialTheme.colorScheme.onBackground
+            )
         }
     }
 }
@@ -308,10 +312,12 @@ fun EmptyTimeline(
             text = stringResource(R.string.timeline_empty_title),
             modifier = Modifier.padding(top = 64.dp),
             style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = stringResource(R.string.timeline_empty_message),
             textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
