@@ -64,7 +64,6 @@ fun Home(
                 onDestinationChanged = { destination = it },
             )
         },
-        containerColor = Color.Transparent,
     ) { innerPadding ->
         val navController = rememberNavController()
         HomeBackground(modifier = Modifier.fillMaxSize())
