@@ -20,11 +20,14 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -81,9 +84,13 @@ fun MainNavigation(
         navController = navController,
         startDestination = "home",
         enterTransition = { AnimationConstants.enterTransition },
-        popEnterTransition = { AnimationConstants.enterTransition },
+        popEnterTransition = {
+            scaleIn(initialScale = 0.9F) + fadeIn()
+        },
         exitTransition = { AnimationConstants.exitTransition },
-        popExitTransition = { AnimationConstants.exitTransition },
+        popExitTransition = {
+            scaleOut(targetScale = 0.9F) + fadeOut()
+        },
         modifier = modifier,
     ) {
         composable(
