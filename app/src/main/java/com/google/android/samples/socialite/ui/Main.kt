@@ -82,11 +82,9 @@ fun MainNavigation(
     NavHost(
         navController = navController,
         startDestination = "home",
-        enterTransition = { AnimationConstants.enterTransition },
         popEnterTransition = {
             scaleIn(initialScale = 0.9F) + fadeIn()
         },
-        exitTransition = { AnimationConstants.exitTransition },
         popExitTransition = {
             scaleOut(targetScale = 0.9F) + fadeOut()
         },
