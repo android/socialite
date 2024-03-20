@@ -17,8 +17,6 @@
 package com.google.android.samples.socialite.ui.home
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -26,17 +24,12 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3AdaptiveNavigationSuiteApi
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,66 +42,96 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.AnimationConstants
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
-import com.google.android.samples.socialite.ui.player.findActivity
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class)
 @Composable
 fun Home(
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val windowSizeClass = calculateWindowSizeClass(
-        activity = LocalContext.current.findActivity()
-    ).widthSizeClass
-    when (windowSizeClass) {
-        WindowWidthSizeClass.Compact -> CompactScreen(modifier, onChatClicked)
-        else -> LargeScreen(onChatClicked = onChatClicked)
-    }
+    val context = LocalContext.current
+    var currentDestination by rememberSaveable { mutableStateOf(Destination.Chats) }
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            for (destination in Destination.entries) {
+                val selected = currentDestination.route == destination.route
+                val label = context.getString(destination.label)
+                item(
+                    selected = selected,
+                    onClick = { currentDestination = destination },
+                    icon = {
+                        Icon(
+                            imageVector = destination.imageVector,
+                            contentDescription = label,
+                        )
+                    },
+                    label = {
+                        Text(text = label)
+                    },
+                    alwaysShowLabel = false,
+                )
+            }
+        },
+    ) { HomeContent(currentDestination, modifier, onChatClicked) }
 }
 
 @Composable
-private fun CompactScreen(
+private fun HomeContent(
+    currentDestination: Destination,
     modifier: Modifier,
     onChatClicked: (chatId: Long) -> Unit
-) {
-    var destination by rememberSaveable { mutableStateOf(Destination.Chats) }
+){
     Scaffold(
         modifier = modifier,
-        topBar = { HomeAppBar(title = stringResource(destination.label)) },
-        bottomBar = {
-            HomeNavigationBar(
-                currentDestination = destination.route,
-                onDestinationChanged = { destination = it },
-            )
-        },
+        topBar = { HomeAppBar(title = stringResource(currentDestination.label)) }
     ) { innerPadding ->
-        HomeContent(innerPadding, modifier, destination, onChatClicked)
-    }
-}
-
-@Composable
-private fun LargeScreen(
-    modifier: Modifier = Modifier,
-    onChatClicked: (chatId: Long) -> Unit
-) {
-    var destination by rememberSaveable { mutableStateOf(Destination.Chats) }
-    Row(modifier = Modifier.fillMaxSize()) {
-        HomeNavigationRail(
-            currentDestination = destination.route,
-            onDestinationChanged = { destination = it }
-        )
-        Scaffold(
+        val navController = rememberNavController()
+        HomeBackground(modifier = Modifier.fillMaxSize())
+        NavHost(
+            navController = navController,
+            startDestination = currentDestination.route,
             modifier = modifier,
-            topBar = { HomeAppBar(title = stringResource(destination.label)) }
-        ) {innerPadding ->
-            HomeContent(innerPadding, modifier, destination, onChatClicked)
+        ) {
+            composable(
+                route = Destination.Timeline.route,
+                enterTransition = { AnimationConstants.enterTransition },
+                exitTransition = { AnimationConstants.exitTransition },
+            ) {
+                Timeline(
+                    contentPadding = innerPadding,
+                    modifier = modifier,
+                )
+            }
+            composable(
+                route = Destination.Chats.route,
+                enterTransition = { AnimationConstants.enterTransition },
+                exitTransition = { AnimationConstants.exitTransition },
+            ) {
+                val viewModel: HomeViewModel = hiltViewModel()
+                val chats by viewModel.chats.collectAsStateWithLifecycle()
+                ChatList(
+                    chats = chats,
+                    contentPadding = innerPadding,
+                    onChatClicked = onChatClicked,
+                    modifier = modifier,
+                )
+            }
+            composable(
+                route = Destination.Settings.route,
+                enterTransition = { AnimationConstants.enterTransition },
+                exitTransition = { AnimationConstants.exitTransition },
+            ) {
+                Settings(
+                    contentPadding = innerPadding,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }
@@ -126,57 +149,6 @@ private fun HomeAppBar(
             containerColor = Color.Transparent,
         ),
     )
-}
-
-@Composable
-private fun HomeContent(
-    innerPadding: PaddingValues,
-    modifier: Modifier,
-    destination: Destination,
-    onChatClicked: (chatId: Long) -> Unit
-){
-    val navController = rememberNavController()
-    HomeBackground(modifier = Modifier.fillMaxSize())
-    NavHost(
-        navController = navController,
-        startDestination = destination.route,
-        modifier = modifier,
-    ) {
-        composable(
-            route = Destination.Timeline.route,
-            enterTransition = { AnimationConstants.enterTransition },
-            exitTransition = { AnimationConstants.exitTransition },
-        ) {
-            Timeline(
-                contentPadding = innerPadding,
-                modifier = modifier,
-            )
-        }
-        composable(
-            route = Destination.Chats.route,
-            enterTransition = { AnimationConstants.enterTransition },
-            exitTransition = { AnimationConstants.exitTransition },
-        ) {
-            val viewModel: HomeViewModel = hiltViewModel()
-            val chats by viewModel.chats.collectAsStateWithLifecycle()
-            ChatList(
-                chats = chats,
-                contentPadding = innerPadding,
-                onChatClicked = onChatClicked,
-                modifier = modifier,
-            )
-        }
-        composable(
-            route = Destination.Settings.route,
-            enterTransition = { AnimationConstants.enterTransition },
-            exitTransition = { AnimationConstants.exitTransition },
-        ) {
-            Settings(
-                contentPadding = innerPadding,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-    }
 }
 
 private enum class Destination(
@@ -199,64 +171,4 @@ private enum class Destination(
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
     ),
-}
-
-@Composable
-private fun HomeNavigationBar(
-    currentDestination: String,
-    onDestinationChanged: (Destination) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    NavigationBar(
-        modifier = modifier,
-    ) {
-        for (destination in Destination.values()) {
-            val selected = currentDestination == destination.route
-            val label = stringResource(destination.label)
-            NavigationBarItem(
-                selected = selected,
-                onClick = { onDestinationChanged(destination) },
-                icon = {
-                    Icon(
-                        imageVector = destination.imageVector,
-                        contentDescription = label,
-                    )
-                },
-                label = {
-                    Text(text = label)
-                },
-                alwaysShowLabel = false,
-            )
-        }
-    }
-}
-
-@Composable
-private fun HomeNavigationRail(
-    currentDestination: String,
-    onDestinationChanged: (Destination) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    NavigationRail(
-        modifier = modifier
-    ) {
-        for (destination in Destination.values()) {
-            val selected = currentDestination == destination.route
-            val label = stringResource(destination.label)
-            NavigationRailItem(
-                selected = selected,
-                onClick = { onDestinationChanged(destination) },
-                icon = {
-                    Icon(
-                        imageVector = destination.imageVector,
-                        contentDescription = label,
-                    )
-                },
-                label = {
-                    Text(text = label)
-                },
-                alwaysShowLabel = false,
-            )
-        }
-    }
 }
