@@ -41,7 +41,6 @@ import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.camera.CameraViewModel
 import com.google.common.collect.ImmutableList
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -192,5 +191,5 @@ class VideoEditScreenViewModel @Inject constructor(
 enum class VideoSaveState {
     PENDING,
     VIDEO_SAVE_SUCCESS,
-    VIDEO_SAVE_FAIL
+    VIDEO_SAVE_FAIL,
 }

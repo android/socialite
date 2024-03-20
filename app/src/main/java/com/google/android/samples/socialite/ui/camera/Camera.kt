@@ -65,7 +65,6 @@ import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KFunction1
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
@@ -104,7 +103,6 @@ fun Camera(
                     /* no-op */
                 }
             }
-
         }
     }
 

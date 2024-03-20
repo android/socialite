@@ -320,7 +320,7 @@ data class ViewFinderState(
 enum class ImageCaptureState {
     PENDING,
     IMAGE_CAPTURE_SUCCESS,
-    IMAGE_CAPTURE_FAIL
+    IMAGE_CAPTURE_FAIL,
 }
 
 /**
