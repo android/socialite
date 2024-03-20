@@ -19,6 +19,7 @@ package com.google.android.samples.socialite.ui.videoedit
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -59,6 +60,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +73,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -92,6 +95,7 @@ fun VideoEditScreen(
     onCloseButtonClicked: () -> Unit,
     navController: NavController,
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
 
     val viewModel: VideoEditScreenViewModel = hiltViewModel()
@@ -103,6 +107,21 @@ fun VideoEditScreen(
     }
 
     val isProcessing = viewModel.isProcessing.collectAsState()
+
+    LaunchedEffect(lifecycleOwner, context) {
+        viewModel.videoSaveState.collect { state ->
+            when (state) {
+                VideoSaveState.VIDEO_SAVE_SUCCESS ->
+                    Toast.makeText(context, "Edited video saved", Toast.LENGTH_LONG).show()
+                VideoSaveState.VIDEO_SAVE_FAIL ->
+                    Toast.makeText(context, "Error applying edits on video", Toast.LENGTH_LONG)
+                        .show()
+                else -> {
+                    /* no-op */
+                }
+            }
+        }
+    }
 
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
     var overlayText by rememberSaveable { mutableStateOf("") }

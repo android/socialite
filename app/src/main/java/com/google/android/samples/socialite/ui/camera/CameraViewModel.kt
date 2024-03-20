@@ -22,7 +22,6 @@ import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
 import android.view.Display
-import android.widget.Toast
 import androidx.annotation.RequiresPermission
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
@@ -58,6 +57,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -72,6 +72,8 @@ class CameraViewModel @Inject constructor(
 
     val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
+    private var _imageCaptureState = MutableStateFlow(ImageCaptureState.PENDING)
+    val imageCaptureState: SharedFlow<ImageCaptureState> = _imageCaptureState
 
     val aspectRatioStrategy =
         AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
@@ -189,18 +191,23 @@ class CameraViewModel @Inject constructor(
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    val msg = "Photo capture failed."
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                    viewModelScope.launch {
+                        _imageCaptureState.emit(ImageCaptureState.IMAGE_CAPTURE_FAIL)
+                    }
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    var state = ImageCaptureState.PENDING
                     val savedUri = output.savedUri
                     if (savedUri != null) {
+                        state = ImageCaptureState.IMAGE_CAPTURE_SUCCESS
                         sendPhotoMessage(savedUri.toString())
                         onMediaCaptured(Media(savedUri, MediaType.PHOTO))
                     } else {
-                        val msg = "Photo capture failed."
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        state = ImageCaptureState.IMAGE_CAPTURE_FAIL
+                    }
+                    viewModelScope.launch {
+                        _imageCaptureState.emit(state)
                     }
                 }
             },
@@ -309,6 +316,12 @@ data class ViewFinderState(
     var cameraState: CameraState = CameraState.NOT_READY,
     val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
 )
+
+enum class ImageCaptureState {
+    PENDING,
+    IMAGE_CAPTURE_SUCCESS,
+    IMAGE_CAPTURE_FAIL
+}
 
 /**
  * Defines the current state of the camera.

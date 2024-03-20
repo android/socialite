@@ -23,7 +23,6 @@ import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -49,12 +48,12 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class VideoEditScreenViewModel @Inject constructor(
-    @ApplicationContext private val application: Context,
     private val repository: ChatRepository,
 ) : ViewModel() {
 
@@ -67,6 +66,9 @@ class VideoEditScreenViewModel @Inject constructor(
     private val _isProcessing = MutableStateFlow(false)
     val isProcessing: StateFlow<Boolean> = _isProcessing
 
+    private var _videoSaveState = MutableStateFlow(VideoSaveState.PENDING)
+    val videoSaveState: SharedFlow<VideoSaveState> = _videoSaveState
+
     fun setChatId(chatId: Long) {
         this.chatId.value = chatId
     }
@@ -74,7 +76,9 @@ class VideoEditScreenViewModel @Inject constructor(
     private val transformerListener: Transformer.Listener =
         @UnstableApi object : Transformer.Listener {
             override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-                Toast.makeText(application, "Edited video saved", Toast.LENGTH_LONG).show()
+                viewModelScope.launch {
+                    _videoSaveState.emit(VideoSaveState.VIDEO_SAVE_SUCCESS)
+                }
 
                 sendVideo()
 
@@ -88,8 +92,9 @@ class VideoEditScreenViewModel @Inject constructor(
                 exportException: ExportException,
             ) {
                 exportException.printStackTrace()
-                Toast.makeText(application, "Error applying edits on video", Toast.LENGTH_LONG)
-                    .show()
+                viewModelScope.launch {
+                    _videoSaveState.emit(VideoSaveState.VIDEO_SAVE_FAIL)
+                }
                 _isProcessing.value = false
             }
         }
@@ -182,4 +187,10 @@ class VideoEditScreenViewModel @Inject constructor(
             repository.sendMessage(chatId.value, "", transformedVideoFilePath, "video/mp4")
         }
     }
+}
+
+enum class VideoSaveState {
+    PENDING,
+    VIDEO_SAVE_SUCCESS,
+    VIDEO_SAVE_FAIL
 }
