@@ -23,10 +23,6 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-kotlin {
-    jvmToolchain(17)
-}
-
 android {
     namespace = "com.google.android.samples.socialite"
     compileSdk = 34
@@ -47,12 +43,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
     kotlinOptions {
-        jvmTarget = "17"
         freeCompilerArgs = listOf("-Xcontext-receivers")
     }
     buildFeatures {
