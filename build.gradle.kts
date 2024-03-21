@@ -28,6 +28,14 @@ plugins {
 }
 
 subprojects {
+    // Configure Java to use our chosen language level. Kotlin will automatically pick this up.
+    // See https://kotlinlang.org/docs/gradle-configure-project.html#gradle-java-toolchains-support
+    plugins.withType<JavaBasePlugin>().configureEach {
+        extensions.configure<JavaPluginExtension> {
+            toolchain.languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
     plugins.apply(rootProject.libs.plugins.spotless.get().pluginId)
     configure<SpotlessExtension> {
         kotlin {
