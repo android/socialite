@@ -156,7 +156,7 @@ private fun HomeNavigationBar(
     NavigationBar(
         modifier = modifier,
     ) {
-        for (destination in Destination.values()) {
+        for (destination in Destination.entries) {
             val selected = currentDestination == destination.route
             val label = stringResource(destination.label)
             NavigationBarItem(
