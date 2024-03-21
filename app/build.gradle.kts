@@ -62,7 +62,7 @@ android {
         freeCompilerArgs = listOf("-Xcontext-receivers")
     }
     buildFeatures {
-        compose = true
+        buildConfig = true
     }
     packaging {
         resources {
