@@ -1,6 +1,9 @@
-name: Pull Request
+name: Build
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types: [ opened, synchronize, reopened ]
 
@@ -24,10 +27,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Check spotless
         run: ./gradlew spotlessCheck
