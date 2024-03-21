@@ -16,6 +16,7 @@
 
 package com.google.android.samples.socialite.ui.home
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -38,13 +40,19 @@ fun Settings(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+    val clearHistoryMessage = stringResource(R.string.clear_message_history_success)
+
     Column(
         modifier = modifier
             .padding(contentPadding)
             .padding(32.dp),
     ) {
         TextButton(
-            onClick = { viewModel.clearMessages() },
+            onClick = {
+                viewModel.clearMessages()
+                Toast.makeText(context, clearHistoryMessage, Toast.LENGTH_SHORT).show()
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp),
