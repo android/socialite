@@ -16,7 +16,6 @@
 
 import com.diffplug.gradle.spotless.SpotlessExtension
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidTest) apply false
