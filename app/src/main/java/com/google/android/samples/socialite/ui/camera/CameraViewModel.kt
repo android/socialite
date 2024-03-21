@@ -57,7 +57,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -73,7 +73,7 @@ class CameraViewModel @Inject constructor(
     val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
     private var _imageCaptureState = MutableStateFlow(ImageCaptureState.PENDING)
-    val imageCaptureState: SharedFlow<ImageCaptureState> = _imageCaptureState
+    val imageCaptureState: StateFlow<ImageCaptureState> = _imageCaptureState
 
     val aspectRatioStrategy =
         AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
@@ -191,13 +191,11 @@ class CameraViewModel @Inject constructor(
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    viewModelScope.launch {
-                        _imageCaptureState.emit(ImageCaptureState.IMAGE_CAPTURE_FAIL)
-                    }
+                    _imageCaptureState.value = ImageCaptureState.IMAGE_CAPTURE_FAIL
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    var state = ImageCaptureState.PENDING
+                    var state: ImageCaptureState
                     val savedUri = output.savedUri
                     if (savedUri != null) {
                         state = ImageCaptureState.IMAGE_CAPTURE_SUCCESS
@@ -206,9 +204,7 @@ class CameraViewModel @Inject constructor(
                     } else {
                         state = ImageCaptureState.IMAGE_CAPTURE_FAIL
                     }
-                    viewModelScope.launch {
-                        _imageCaptureState.emit(state)
-                    }
+                    _imageCaptureState.value = state
                 }
             },
         )

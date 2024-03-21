@@ -116,9 +116,7 @@ fun VideoEditScreen(
                 VideoSaveState.VIDEO_SAVE_FAIL ->
                     Toast.makeText(context, "Error applying edits on video", Toast.LENGTH_LONG)
                         .show()
-                else -> {
-                    /* no-op */
-                }
+                VideoSaveState.PENDING -> Unit
             }
         }
     }

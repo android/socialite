@@ -99,9 +99,7 @@ fun Camera(
                     Toast.makeText(context, "Photo saved.", Toast.LENGTH_SHORT).show()
                 ImageCaptureState.IMAGE_CAPTURE_FAIL ->
                     Toast.makeText(context, "Photo capture failed.", Toast.LENGTH_SHORT).show()
-                else -> {
-                    /* no-op */
-                }
+                ImageCaptureState.PENDING -> Unit
             }
         }
     }
