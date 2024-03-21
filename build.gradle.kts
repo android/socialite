@@ -27,7 +27,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
 }
 
-subprojects {
+allprojects {
     // Configure Java to use our chosen language level. Kotlin will automatically pick this up.
     // See https://kotlinlang.org/docs/gradle-configure-project.html#gradle-java-toolchains-support
     plugins.withType<JavaBasePlugin>().configureEach {
