@@ -56,6 +56,7 @@ android {
         freeCompilerArgs = listOf("-Xcontext-receivers")
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
     composeOptions {
