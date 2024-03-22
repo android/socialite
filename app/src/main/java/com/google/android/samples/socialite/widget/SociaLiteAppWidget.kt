@@ -17,11 +17,67 @@
 package com.google.android.samples.socialite.widget
 
 import android.content.Context
+import android.content.Intent
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.core.net.toUri
 import androidx.glance.GlanceId
+import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
+import androidx.glance.ImageProvider
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.components.Scaffold
+import androidx.glance.appwidget.components.TitleBar
+import androidx.glance.appwidget.provideContent
+import androidx.glance.layout.fillMaxSize
+import com.google.android.samples.socialite.MainActivity
+import com.google.android.samples.socialite.R
+import com.google.android.samples.socialite.widget.model.WidgetModelRepository
+import com.google.android.samples.socialite.widget.ui.FavoriteContact
+import com.google.android.samples.socialite.widget.ui.ZeroState
 
 class SociaLiteAppWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        TODO("Not yet implemented")
+        provideContent {
+            GlanceTheme {
+                Content(context, id)
+            }
+        }
+    }
+
+    @Composable
+    private fun Content(context: Context, id: GlanceId) {
+        val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
+        val repository = WidgetModelRepository.get(context)
+        val model = repository.loadModel(widgetId).collectAsState(null).value
+
+        Scaffold(
+            titleBar = {
+                TitleBar(
+                    textColor = GlanceTheme.colors.onSurface,
+                    startIcon = ImageProvider(R.drawable.ic_launcher_monochrome),
+                    title = "SociaLite",
+                )
+            },
+            backgroundColor = GlanceTheme.colors.widgetBackground,
+            modifier = GlanceModifier.fillMaxSize(),
+        ) {
+            when (model) {
+                null -> ZeroState(repository, widgetId, context)
+                else -> {
+                    FavoriteContact(
+                        model,
+                        actionStartActivity(
+                            Intent(context.applicationContext, MainActivity::class.java)
+                                .setAction(Intent.ACTION_VIEW)
+                                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                .setData("https://socialite.google.com/chat/${model.contactId}".toUri()),
+                        ),
+                    )
+                }
+            }
+        }
     }
 }

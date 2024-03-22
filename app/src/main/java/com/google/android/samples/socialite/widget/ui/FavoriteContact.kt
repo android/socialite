@@ -47,11 +47,11 @@ import com.google.android.samples.socialite.widget.model.WidgetModel
 fun FavoriteContact(model: WidgetModel, onClick: Action) {
     Box(
         modifier = GlanceModifier.fillMaxSize().clickable(onClick)
-                                 .cornerRadius(8.dp).padding(bottom = 8.dp),
+            .cornerRadius(8.dp).padding(bottom = 8.dp),
         contentAlignment = Alignment.TopCenter,
     ) {
         Image(
-            modifier = GlanceModifier.fillMaxSize().cornerRadius( 8.dp),
+            modifier = GlanceModifier.fillMaxSize().cornerRadius(8.dp),
             provider = ImageProvider(model.photo.toUri()),
             contentScale = ContentScale.Crop,
             contentDescription = model.displayName,

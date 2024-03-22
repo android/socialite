@@ -23,9 +23,10 @@ import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.size
 import com.google.android.samples.socialite.model.Contact
+import com.google.android.samples.socialite.widget.model.WidgetModel
 import com.google.android.samples.socialite.widget.model.WidgetModelRepository
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun ZeroState(repository: WidgetModelRepository, widgetId: Int, context: Context) {
@@ -34,11 +35,19 @@ fun ZeroState(repository: WidgetModelRepository, widgetId: Int, context: Context
             items(Contact.CONTACTS.size) { contactIndex ->
                 val contact = Contact.CONTACTS[contactIndex]
 
-                ContactRow(
-                    contact = contact,
-                    profileImageUri = contact.iconUri,
-                    onClick = TODO(),
-                )
+                ContactRow(contact, contact.iconUri) {
+                    runBlocking {
+                        repository.create(
+                            WidgetModel(
+                                widgetId,
+                                contact.id,
+                                contact.name,
+                                contact.iconUri.toString(),
+                                false,
+                            ),
+                        )
+                    }
+                }
             }
         }
     }
