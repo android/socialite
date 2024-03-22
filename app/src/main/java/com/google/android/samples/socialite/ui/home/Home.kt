@@ -85,11 +85,11 @@ fun Home(
 private fun HomeContent(
     currentDestination: Destination,
     modifier: Modifier,
-    onChatClicked: (chatId: Long) -> Unit
-){
+    onChatClicked: (chatId: Long) -> Unit,
+) {
     Scaffold(
         modifier = modifier,
-        topBar = { HomeAppBar(title = stringResource(currentDestination.label)) }
+        topBar = { HomeAppBar(title = stringResource(currentDestination.label)) },
     ) { innerPadding ->
         val navController = rememberNavController()
         HomeBackground(modifier = Modifier.fillMaxSize())
