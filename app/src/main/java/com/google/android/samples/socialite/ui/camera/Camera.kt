@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -71,7 +72,7 @@ import kotlinx.coroutines.asExecutor
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(
-    chatId: Long,
+    onBackPressed: () -> Unit,
     onMediaCaptured: (Media?) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
@@ -85,8 +86,6 @@ fun Camera(
             Manifest.permission.RECORD_AUDIO,
         ),
     )
-
-    viewModel.setChatId(chatId)
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -178,7 +177,11 @@ fun Camera(
     }
 
     if (cameraAndRecordAudioPermissionState.allPermissionsGranted) {
-        Box(modifier = modifier.background(color = Color.Black)) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(color = Color.Black),
+        ) {
             Column(verticalArrangement = Arrangement.Bottom) {
                 Row(
                     modifier = Modifier
@@ -187,9 +190,7 @@ fun Camera(
                         .background(Color.Black)
                         .height(50.dp),
                 ) {
-                    IconButton(onClick = {
-                        onMediaCaptured(null)
-                    }) {
+                    IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = null,
@@ -310,14 +311,19 @@ fun Camera(
             }
         }
     } else {
-        CameraAndRecordAudioPermission(cameraAndRecordAudioPermissionState) {
-            onMediaCaptured(null)
-        }
+        CameraAndRecordAudioPermission(
+            permissionsState = cameraAndRecordAudioPermissionState,
+            onBackClicked = onBackPressed,
+        )
     }
 }
 
 @Composable
-fun CameraControls(captureMode: CaptureMode, onPhotoButtonClick: () -> Unit, onVideoButtonClick: () -> Unit) {
+fun CameraControls(
+    captureMode: CaptureMode,
+    onPhotoButtonClick: () -> Unit,
+    onVideoButtonClick: () -> Unit,
+) {
     val activeButtonColor =
         ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     val inactiveButtonColor =
@@ -341,8 +347,15 @@ fun CameraControls(captureMode: CaptureMode, onPhotoButtonClick: () -> Unit, onV
 }
 
 @Composable
-fun ShutterButton(captureMode: CaptureMode, onPhotoCapture: () -> Unit, onVideoRecordingStart: () -> Unit, onVideoRecordingFinish: () -> Unit) {
-    Box(modifier = Modifier.padding(25.dp, 0.dp)) {
+fun ShutterButton(
+    captureMode: CaptureMode,
+    onPhotoCapture: () -> Unit,
+    onVideoRecordingStart: () -> Unit,
+    onVideoRecordingFinish: () -> Unit,
+) {
+    Box(
+        modifier = Modifier.padding(horizontal = 25.dp)
+    ) {
         if (captureMode == CaptureMode.PHOTO) {
             Button(
                 onClick = onPhotoCapture,
@@ -376,15 +389,21 @@ fun ShutterButton(captureMode: CaptureMode, onPhotoCapture: () -> Unit, onVideoR
 }
 
 @Composable
-fun CameraSwitcher(captureMode: CaptureMode, cameraSelector: CameraSelector, setCameraSelector: KFunction1<CameraSelector, Unit>) {
+fun CameraSwitcher(
+    captureMode: CaptureMode,
+    cameraSelector: CameraSelector,
+    setCameraSelector: KFunction1<CameraSelector, Unit>,
+) {
     if (captureMode != CaptureMode.VIDEO_RECORDING) {
-        IconButton(onClick = {
-            if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
-            } else {
-                setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
-            }
-        }) {
+        IconButton(
+            onClick = {
+                if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                    setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
+                } else {
+                    setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
+                }
+            },
+        ) {
             Icon(
                 imageVector = Icons.Default.Autorenew,
                 contentDescription = null,

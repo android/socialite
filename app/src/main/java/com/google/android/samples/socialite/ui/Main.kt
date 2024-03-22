@@ -40,9 +40,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.google.android.samples.socialite.model.extractChatId
-import com.google.android.samples.socialite.ui.camera.Camera
-import com.google.android.samples.socialite.ui.camera.Media
-import com.google.android.samples.socialite.ui.camera.MediaType
+import com.google.android.samples.socialite.ui.camera.navigation.cameraScreen
+import com.google.android.samples.socialite.ui.camera.navigation.navigateToCamera
 import com.google.android.samples.socialite.ui.chat.ChatScreen
 import com.google.android.samples.socialite.ui.home.Home
 import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
@@ -117,41 +116,18 @@ fun MainNavigation(
                 chatId = chatId,
                 foreground = true,
                 onBackPressed = { navController.popBackStack() },
-                onCameraClick = { navController.navigate("chat/$chatId/camera") },
+                onCameraClick = { navController.navigateToCamera(chatId) },
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        composable(
-            route = "chat/{chatId}/camera",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            Camera(
-                onMediaCaptured = { capturedMedia: Media? ->
-                    when (capturedMedia?.mediaType) {
-                        MediaType.PHOTO -> {
-                            navController.popBackStack()
-                        }
 
-                        MediaType.VIDEO -> {
-                            navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=$chatId")
-                        }
-
-                        else -> {
-                            // No media to use.
-                            navController.popBackStack()
-                        }
-                    }
-                },
-                chatId = chatId,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+        cameraScreen(
+            onBackPressed = navController::popBackStack,
+            onVideoEditClick = { uri -> navController.navigate(uri) },
+        )
 
         // Invoke PhotoPicker to select photo or video from device gallery
         photoPickerScreen(
