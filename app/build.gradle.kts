@@ -73,6 +73,9 @@ dependencies {
     implementation(libs.camera.extensions)
     implementation(libs.profileinstaller)
 
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
     androidTestImplementation(libs.ext.junit)

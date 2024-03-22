@@ -26,6 +26,8 @@ import com.google.android.samples.socialite.data.DatabaseManager
 import com.google.android.samples.socialite.data.MessageDao
 import com.google.android.samples.socialite.data.RoomDatabaseManager
 import com.google.android.samples.socialite.data.populateInitialData
+import com.google.android.samples.socialite.widget.model.WidgetModelDao
+import com.google.android.samples.socialite.widget.model.WidgetModelRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -48,12 +50,14 @@ object DatabaseModule {
     @Singleton
     fun providesAppDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "app.db")
-            .addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) {
-                    super.onCreate(db)
-                    db.populateInitialData()
-                }
-            }).build()
+            .addCallback(
+                object : RoomDatabase.Callback() {
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        super.onCreate(db)
+                        db.populateInitialData()
+                    }
+                },
+            ).build()
 
     @Provides
     fun providesChatDao(database: AppDatabase): ChatDao = database.chatDao()
@@ -63,6 +67,9 @@ object DatabaseModule {
 
     @Provides
     fun providesContactDao(database: AppDatabase): ContactDao = database.contactDao()
+
+    @Provides
+    fun providesWidgetModelDao(database: AppDatabase): WidgetModelDao = database.widgetDao()
 
     @Provides
     @Singleton
