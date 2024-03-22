@@ -91,7 +91,6 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
 
                     HomeBackground()
                     val viewModel: HomeViewModel = hiltViewModel()
-
                     LazyColumn(
                         modifier = modifier,
                         contentPadding = innerPadding,
@@ -100,7 +99,26 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
 
                             ContactRow(
                                 contact = contact,
-                                onClick = TODO("Replace with code from codelab"),
+                                onClick = {
+                                    runBlocking {
+                                        widgetModelRepository.createOrUpdate(
+                                            WidgetModel(
+                                                appWidgetId,
+                                                contact.id,
+                                                contact.name,
+                                                contact.iconUri.toString(),
+                                                false,
+                                            ),
+                                        )
+                                        SociaLiteAppWidget().updateAll(this@SociaLiteAppWidgetConfigActivity)
+                                        val resultValue = Intent().putExtra(
+                                            AppWidgetManager.EXTRA_APPWIDGET_ID,
+                                            appWidgetId,
+                                        )
+                                        setResult(RESULT_OK, resultValue)
+                                        finish()
+                                    }
+                                },
                             )
                         }
                     }

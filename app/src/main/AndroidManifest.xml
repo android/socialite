@@ -39,6 +39,23 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Social"
         tools:targetApi="34">
+
+        <receiver
+            android:name=".widget.SociaLiteAppWidgetReceiver"
+            android:exported="true"
+            android:label="@string/favorite_contact_widget_name">
+
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/socialite_widget_info" />
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -46,6 +63,7 @@
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:supportsPictureInPicture="true">
+
 
             <!-- This activity is the one that's shown in the launcher. -->
             <intent-filter>

@@ -82,6 +82,9 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     baselineProfile(project(":baselineprofile"))
 
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material)
+
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)

@@ -17,11 +17,54 @@
 package com.google.android.samples.socialite.widget
 
 import android.content.Context
+import android.content.Intent
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.core.net.toUri
 import androidx.glance.GlanceId
+import androidx.glance.GlanceTheme
+import androidx.glance.LocalContext
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.provideContent
+import androidx.glance.layout.Box
+import com.google.android.samples.socialite.MainActivity
+import com.google.android.samples.socialite.widget.model.WidgetModel
+import com.google.android.samples.socialite.widget.model.WidgetModelRepository
+import com.google.android.samples.socialite.widget.model.WidgetState.Empty
+import com.google.android.samples.socialite.widget.model.WidgetState.Loading
+import com.google.android.samples.socialite.widget.ui.FavoriteContact
+import com.google.android.samples.socialite.widget.ui.ZeroState
 
 class SociaLiteAppWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        TODO("Not yet implemented")
+        val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
+        val repository = WidgetModelRepository.get(context)
+
+        provideContent {
+            GlanceTheme {
+                Content(repository, widgetId)
+            }
+        }
+    }
+
+    @Composable
+    private fun Content(repository: WidgetModelRepository, widgetId: Int) {
+        val model = repository.loadModel(widgetId).collectAsState(Loading).value
+        val context = LocalContext.current
+        when (model) {
+            is Empty -> ZeroState(widgetId)
+            is Loading -> Box {}
+            is WidgetModel -> FavoriteContact(
+                model,
+                actionStartActivity(
+                    Intent(context.applicationContext, MainActivity::class.java)
+                        .setAction(Intent.ACTION_VIEW)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        .setData("https://socialite.google.com/chat/${model.contactId}".toUri()),
+                ),
+            )
+        }
     }
 }

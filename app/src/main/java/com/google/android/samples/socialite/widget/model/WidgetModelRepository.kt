@@ -31,12 +31,16 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @Singleton
-class WidgetModelRepository @Inject internal constructor(private val widgetModelDao: WidgetModelDao, @AppCoroutineScope private val coroutineScope: CoroutineScope, @ApplicationContext private val appContext: Context) {
+class WidgetModelRepository @Inject internal constructor(
+    private val widgetModelDao: WidgetModelDao,
+    @AppCoroutineScope private val coroutineScope: CoroutineScope,
+    @ApplicationContext private val appContext: Context,
+) {
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
@@ -54,21 +58,29 @@ class WidgetModelRepository @Inject internal constructor(private val widgetModel
         }
     }
 
-    suspend fun create(model: WidgetModel): WidgetModel {
-        widgetModelDao.insert(model)
-        return widgetModelDao.loadWidgetModel(model.widgetId).filterNotNull().first()
+    suspend fun createOrUpdate(model: WidgetModel): WidgetModel? {
+        val maybeModel = widgetModelDao.loadWidgetModel(model.widgetId).first()
+        if (maybeModel == null) {
+            widgetModelDao.insert(model)
+        } else {
+            widgetModelDao.update(model)
+        }
+        SociaLiteAppWidget().updateAll(appContext)
+        return widgetModelDao.loadWidgetModel(model.widgetId).first()
     }
 
-    fun loadModel(widgetId: Int): Flow<WidgetModel?> {
-        return widgetModelDao.loadWidgetModel(widgetId).distinctUntilChanged()
+    fun loadModel(widgetId: Int): Flow<WidgetState> {
+        return widgetModelDao.loadWidgetModel(widgetId).map { it ?: WidgetState.Empty }
+            .distinctUntilChanged()
     }
 
     fun cleanupWidgetModels(context: Context) {
         coroutineScope.launch {
             val widgetManager = GlanceAppWidgetManager(context)
-            val widgetIds = widgetManager.getGlanceIds(SociaLiteAppWidget::class.java).map { glanceId ->
-                widgetManager.getAppWidgetId(glanceId)
-            }.toList()
+            val widgetIds =
+                widgetManager.getGlanceIds(SociaLiteAppWidget::class.java).map { glanceId ->
+                    widgetManager.getAppWidgetId(glanceId)
+                }.toList()
 
             widgetModelDao.findOrphanModels(widgetIds).forEach { model ->
                 widgetModelDao.delete(
@@ -80,21 +92,20 @@ class WidgetModelRepository @Inject internal constructor(private val widgetModel
 
     fun updateUnreadMessagesForContact(contactId: Long, unread: Boolean) {
         coroutineScope.launch {
-            widgetModelDao.modelsForContact(contactId).filterNotNull().forEach { model ->
-                widgetModelDao.update(WidgetModel(model.widgetId, model.contactId, model.displayName, model.photo, unread))
-                SociaLiteAppWidget().updateAll(appContext)
+            widgetModelDao.modelsForContact(contactId).forEach { model ->
+                if (model != null) {
+                    widgetModelDao.update(
+                        WidgetModel(
+                            model.widgetId,
+                            model.contactId,
+                            model.displayName,
+                            model.photo,
+                            unread,
+                        ),
+                    )
+                    SociaLiteAppWidget().updateAll(appContext)
+                }
             }
         }
-    }
-
-    suspend fun createOrUpdate(model: WidgetModel): WidgetModel {
-        val maybeModel = widgetModelDao.loadWidgetModel(model.widgetId).first()
-        if (maybeModel == null) {
-            widgetModelDao.insert(model)
-        } else {
-            widgetModelDao.update(model)
-        }
-        SociaLiteAppWidget().updateAll(appContext)
-        return widgetModelDao.loadWidgetModel(model.widgetId).filterNotNull().first()
     }
 }
