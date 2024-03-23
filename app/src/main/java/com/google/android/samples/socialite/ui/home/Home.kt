@@ -55,24 +55,22 @@ fun Home(
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     var currentDestination by rememberSaveable { mutableStateOf(Destination.Chats) }
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             for (destination in Destination.entries) {
                 val selected = currentDestination.route == destination.route
-                val label = context.getString(destination.label)
                 item(
                     selected = selected,
                     onClick = { currentDestination = destination },
                     icon = {
                         Icon(
                             imageVector = destination.imageVector,
-                            contentDescription = label,
+                            contentDescription = stringResource(destination.label),
                         )
                     },
                     label = {
-                        Text(text = label)
+                        Text(text = stringResource(destination.label))
                     },
                     alwaysShowLabel = false,
                 )
