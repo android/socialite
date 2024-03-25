@@ -82,12 +82,6 @@ fun MainNavigation(
     NavHost(
         navController = navController,
         startDestination = "home",
-        popEnterTransition = {
-            scaleIn(initialScale = 0.9F) + fadeIn()
-        },
-        popExitTransition = {
-            scaleOut(targetScale = 0.9F) + fadeOut()
-        },
         modifier = modifier,
     ) {
         composable(
