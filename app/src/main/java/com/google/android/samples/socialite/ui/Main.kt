@@ -25,6 +25,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -80,6 +82,12 @@ fun MainNavigation(
     NavHost(
         navController = navController,
         startDestination = "home",
+        popEnterTransition = {
+            scaleIn(initialScale = 1.1F) + fadeIn()
+        },
+        popExitTransition = {
+            scaleOut(targetScale = 0.9F) + fadeOut()
+        },
         modifier = modifier,
     ) {
         composable(
