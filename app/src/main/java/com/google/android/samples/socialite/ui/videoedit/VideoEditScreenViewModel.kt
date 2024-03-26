@@ -64,7 +64,7 @@ class VideoEditScreenViewModel @Inject constructor(
     private val _isProcessing = MutableStateFlow(false)
     val isProcessing: StateFlow<Boolean> = _isProcessing
 
-    private var _videoSaveState = MutableStateFlow(VideoSaveState.PENDING)
+    private val _videoSaveState = MutableStateFlow(VideoSaveState.PENDING)
     val videoSaveState: StateFlow<VideoSaveState> = _videoSaveState
 
     fun setChatId(chatId: Long) {

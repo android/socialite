@@ -72,7 +72,7 @@ class CameraViewModel @Inject constructor(
 
     val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
-    private var _imageCaptureState = MutableStateFlow(ImageCaptureState.PENDING)
+    private val _imageCaptureState = MutableStateFlow(ImageCaptureState.PENDING)
     val imageCaptureState: StateFlow<ImageCaptureState> = _imageCaptureState
 
     val aspectRatioStrategy =
@@ -195,7 +195,7 @@ class CameraViewModel @Inject constructor(
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    var state: ImageCaptureState
+                    val state: ImageCaptureState
                     val savedUri = output.savedUri
                     if (savedUri != null) {
                         state = ImageCaptureState.IMAGE_CAPTURE_SUCCESS
