@@ -83,7 +83,7 @@ fun MainNavigation(
         navController = navController,
         startDestination = "home",
         popEnterTransition = {
-            scaleIn(initialScale = 0.9F) + fadeIn()
+            scaleIn(initialScale = 1.1F) + fadeIn()
         },
         popExitTransition = {
             scaleOut(targetScale = 0.9F) + fadeOut()
