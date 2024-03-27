@@ -28,7 +28,6 @@ import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.ImageProvider
 import androidx.glance.appwidget.cornerRadius
-import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -41,14 +40,13 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.widget.model.WidgetModel
 
 @Composable
 fun FavoriteContact(model: WidgetModel, onClick: Action) {
     Box(
         modifier = GlanceModifier.fillMaxSize().clickable(onClick)
-            .cornerRadius(8.dp).padding(bottom = 16.dp),
+            .cornerRadius(8.dp).padding(bottom = 8.dp),
         contentAlignment = Alignment.TopCenter,
     ) {
         Image(
@@ -58,8 +56,7 @@ fun FavoriteContact(model: WidgetModel, onClick: Action) {
             contentDescription = model.displayName,
         )
         Column(
-            modifier = GlanceModifier.fillMaxWidth().wrapContentHeight()
-                .background(imageProvider = ImageProvider(R.drawable.widget_text_gradient)),
+            modifier = GlanceModifier.fillMaxWidth().wrapContentHeight(),
             verticalAlignment = Alignment.Vertical.Top,
             horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         ) {

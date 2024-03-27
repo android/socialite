@@ -17,18 +17,8 @@
 package com.google.android.samples.socialite.widget.model
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.net.Uri
-import android.util.Log
-import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
-import coil.Coil
-import coil.request.CachePolicy
-import coil.request.ErrorResult
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import coil.transform.CircleCropTransformation
 import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.EntryPoint
@@ -44,7 +34,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @Singleton
 class WidgetModelRepository @Inject internal constructor(private val widgetModelDao: WidgetModelDao, @AppCoroutineScope private val coroutineScope: CoroutineScope, @ApplicationContext private val appContext: Context) {

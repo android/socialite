@@ -84,13 +84,6 @@
                 android:resource="@xml/sharing_shortcuts" />
         </activity>
 
-        <!-- This activity handles configuration for the SociaLiteAppWidget -->
-        <activity android:name=".widget.SociaLiteAppWidgetConfigActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
-            </intent-filter>
-        </activity>
 
 
         <!--
@@ -119,6 +112,17 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
+
+
+        <!-- This activity handles configuration for the SociaLiteAppWidget -->
+        <activity android:name=".widget.SociaLiteAppWidgetConfigActivity"
+            android:taskAffinity=""
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
 
         <provider
             android:name="com.google.android.samples.socialite.AssetFileProvider"

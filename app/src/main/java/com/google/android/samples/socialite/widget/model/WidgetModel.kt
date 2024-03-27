@@ -22,6 +22,11 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.android.samples.socialite.model.Contact
 
+sealed interface WidgetState {
+    data object Empty : WidgetState
+    data object Loading : WidgetState
+}
+
 @Entity(
     foreignKeys = [
         ForeignKey(
@@ -38,8 +43,8 @@ import com.google.android.samples.socialite.model.Contact
 )
 data class WidgetModel(
     @PrimaryKey val widgetId: Int,
-    val contactId: Long?,
-    val displayName: String = "",
-    val photo: String = "",
+    val contactId: Long,
+    val displayName: String,
+    val photo: String,
     val unreadMessages: Boolean = false,
-)
+) : WidgetState
