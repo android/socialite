@@ -17,17 +17,8 @@
 package com.google.android.samples.socialite.widget.model
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.net.Uri
-import android.util.Log
-import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
-import coil.Coil
-import coil.request.CachePolicy
-import coil.request.ErrorResult
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import coil.transform.CircleCropTransformation
 import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.EntryPoint
@@ -44,15 +35,13 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-
 @Singleton
 class WidgetModelRepository @Inject internal constructor(private val widgetModelDao: WidgetModelDao, @AppCoroutineScope private val coroutineScope: CoroutineScope, @ApplicationContext private val appContext: Context) {
-
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface WidgetModelRepositoryEntryoint {
-        fun widgetModelRepository() : WidgetModelRepository;
+        fun widgetModelRepository(): WidgetModelRepository
     }
 
     companion object {
@@ -61,9 +50,8 @@ class WidgetModelRepository @Inject internal constructor(private val widgetModel
                 applicationContext,
                 WidgetModelRepositoryEntryoint::class.java,
             )
-            return widgetModelRepositoryEntryoint.widgetModelRepository();
+            return widgetModelRepositoryEntryoint.widgetModelRepository()
         }
-
     }
 
     suspend fun create(model: WidgetModel): WidgetModel {
@@ -75,14 +63,17 @@ class WidgetModelRepository @Inject internal constructor(private val widgetModel
         return widgetModelDao.loadWidgetModel(widgetId).distinctUntilChanged()
     }
 
-    fun delete(appWidgetIds: IntArray) {
+    fun cleanupWidgetModels(context: Context) {
         coroutineScope.launch {
-            appWidgetIds.forEach { appWidgetId ->
-                widgetModelDao.loadWidgetModel(appWidgetId).collect { model ->
-                    if (model != null) {
-                        widgetModelDao.delete(model)
-                    }
-                }
+            val widgetManager = GlanceAppWidgetManager(context)
+            val widgetIds = widgetManager.getGlanceIds(SociaLiteAppWidget::class.java).map { glanceId ->
+                widgetManager.getAppWidgetId(glanceId)
+            }.toList()
+
+            widgetModelDao.findOrphanModels(widgetIds).forEach { model ->
+                widgetModelDao.delete(
+                    model,
+                )
             }
         }
     }
@@ -96,25 +87,14 @@ class WidgetModelRepository @Inject internal constructor(private val widgetModel
         }
     }
 
-
-    suspend fun getImage(url: Uri, force: Boolean = false, context: Context): Bitmap? {
-        val request =
-            ImageRequest.Builder(context).transformations(CircleCropTransformation()).data(url)
-                .apply {
-                    if (force) {
-                        memoryCachePolicy(CachePolicy.DISABLED)
-                        diskCachePolicy(CachePolicy.DISABLED)
-                    }
-                }.build()
-
-        // Request the image to be loaded and throw error if it failed
-        return when (val result = Coil.imageLoader(context).execute(request)) {
-            is ErrorResult -> {
-                Log.e("GLANCE", "Error " + result.throwable.message)
-                throw result.throwable
-            }
-
-            is SuccessResult -> result.drawable.toBitmapOrNull()
+    suspend fun createOrUpdate(model: WidgetModel): WidgetModel {
+        val maybeModel = widgetModelDao.loadWidgetModel(model.widgetId).first()
+        if (maybeModel == null) {
+            widgetModelDao.insert(model)
+        } else {
+            widgetModelDao.update(model)
         }
+        SociaLiteAppWidget().updateAll(appContext)
+        return widgetModelDao.loadWidgetModel(model.widgetId).filterNotNull().first()
     }
 }

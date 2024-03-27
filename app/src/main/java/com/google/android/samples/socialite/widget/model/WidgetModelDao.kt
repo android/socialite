@@ -38,6 +38,9 @@ interface WidgetModelDao {
     @Delete
     suspend fun delete(model: WidgetModel)
 
+    @Query("SELECT * FROM WidgetModel where widgetId NOT IN (:widgetIds)")
+    fun findOrphanModels(widgetIds: List<Int>): List<WidgetModel>
+
     @Query("SELECT * FROM WidgetModel where contactId = :contactId")
     fun modelsForContact(contactId: Long): List<WidgetModel?>
 }
