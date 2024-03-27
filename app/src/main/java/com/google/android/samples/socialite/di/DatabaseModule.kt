@@ -27,7 +27,6 @@ import com.google.android.samples.socialite.data.MessageDao
 import com.google.android.samples.socialite.data.RoomDatabaseManager
 import com.google.android.samples.socialite.data.populateInitialData
 import com.google.android.samples.socialite.widget.model.WidgetModelDao
-import com.google.android.samples.socialite.widget.model.WidgetModelRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
