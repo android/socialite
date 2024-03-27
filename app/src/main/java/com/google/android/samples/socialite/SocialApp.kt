@@ -16,7 +16,19 @@
 package com.google.android.samples.socialite
 
 import android.app.Application
+import androidx.lifecycle.ProcessLifecycleOwner
+import com.google.android.samples.socialite.repository.ChatReplyHelper
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
-class SocialApp : Application()
+class SocialApp : Application() {
+
+    @Inject
+    lateinit var chatReplyHelper: ChatReplyHelper
+
+    override fun onCreate() {
+        super.onCreate()
+        chatReplyHelper.start(ProcessLifecycleOwner.get().lifecycle)
+    }
+}

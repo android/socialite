@@ -17,26 +17,19 @@
 package com.google.android.samples.socialite.repository
 
 import com.google.android.samples.socialite.data.ChatDao
-import com.google.android.samples.socialite.data.ContactDao
 import com.google.android.samples.socialite.data.MessageDao
-import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
+import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.model.Message
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 @Singleton
 class ChatRepository @Inject internal constructor(
     private val chatDao: ChatDao,
     private val messageDao: MessageDao,
-    private val contactDao: ContactDao,
     private val notificationHelper: NotificationHelper,
-    @AppCoroutineScope
-    private val coroutineScope: CoroutineScope,
 ) {
     private var currentChat: Long = 0L
 
@@ -54,6 +47,18 @@ class ChatRepository @Inject internal constructor(
 
     fun findMessages(chatId: Long): Flow<List<Message>> {
         return messageDao.allByChatId(chatId)
+    }
+
+    fun getLatestOutgoingMessage(): Flow<Message> {
+        return messageDao.latestOutgoingMessage()
+    }
+
+    suspend fun findReplier(message: Message): Contact? {
+        // Find the chat room.
+        val detail = chatDao.loadDetailById(message.chatId) ?: return null
+        // Take the first contact in the chat room to reply.
+        // TODO: Take group chat into account.
+        return detail.firstContact
     }
 
     suspend fun sendMessage(
@@ -76,25 +81,22 @@ class ChatRepository @Inject internal constructor(
             ),
         )
         notificationHelper.pushShortcut(detail.firstContact, PushReason.OutgoingMessage)
-        // Simulate a response from the peer.
-        // The code here is just for demonstration purpose in this sample.
-        // Real apps will use their server backend and Firebase Cloud Messaging to deliver messages.
-        coroutineScope.launch {
-            // The person is typing...
-            delay(5000L)
-            // Receive a reply.
-            messageDao.insert(
-                detail.firstContact.reply(text).apply { this.chatId = chatId }.build(),
+    }
+
+    suspend fun receiveMessage(
+        message: Message,
+    ) {
+        val detail = chatDao.loadDetailById(message.chatId) ?: return
+        // Receive a reply.
+        messageDao.insert(message)
+        notificationHelper.pushShortcut(detail.firstContact, PushReason.IncomingMessage)
+        // Show notification if the chat is not on the foreground.
+        if (message.chatId != currentChat) {
+            notificationHelper.showNotification(
+                detail.firstContact,
+                messageDao.loadAll(message.chatId),
+                false,
             )
-            notificationHelper.pushShortcut(detail.firstContact, PushReason.IncomingMessage)
-            // Show notification if the chat is not on the foreground.
-            if (chatId != currentChat) {
-                notificationHelper.showNotification(
-                    detail.firstContact,
-                    messageDao.loadAll(chatId),
-                    false,
-                )
-            }
         }
     }
 

@@ -42,4 +42,7 @@ interface MessageDao {
 
     @Query("DELETE FROM Message")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM Message WHERE senderId = 0 ORDER BY timestamp DESC LIMIT 1")
+    fun latestOutgoingMessage(): Flow<Message>
 }
