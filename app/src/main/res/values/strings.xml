@@ -51,6 +51,7 @@
     <!-- Settings -->
     <eat-comment />
     <string name="clear_message_history">Clear message history</string>
+    <string name="clear_message_history_success">✨ Messages have been reset</string>
 
     <!-- Video Edit Screen -->
     <string name="remove_audio">Remove audio</string>
