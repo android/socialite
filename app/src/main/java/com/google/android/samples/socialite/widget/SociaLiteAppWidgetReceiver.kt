@@ -16,12 +16,11 @@
 
 package com.google.android.samples.socialite.widget
 
-import android.content.Context
-import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import dagger.hilt.android.AndroidEntryPoint
 
-class SociaLiteAppWidget : GlanceAppWidget() {
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
-        TODO("Not yet implemented")
-    }
+@AndroidEntryPoint
+class SociaLiteAppWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = TODO("Create instance of SociaLiteAppWidget")
 }
