@@ -32,13 +32,13 @@ const val CAMERA_ROUTE = "chat/{$CHAT_ID_ARG}/camera"
 fun NavController.navigateToCamera(chatId: Long, navOptions: NavOptions? = null) {
     navigate(
         route = CAMERA_ROUTE.replace("{$CHAT_ID_ARG}", chatId.toString()),
-        navOptions = navOptions
+        navOptions = navOptions,
     )
 }
 
 fun NavGraphBuilder.cameraScreen(
     onBackPressed: () -> Unit,
-    onVideoEditClick: (String) -> Unit
+    onVideoEditClick: (String) -> Unit,
 ) {
     composable(
         route = CAMERA_ROUTE,
