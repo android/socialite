@@ -219,7 +219,7 @@ private fun ChatContent(
                 onSendClick = onSendClick,
                 onCameraClick = onCameraClick,
                 onPhotoPickerClick = onPhotoPickerClick,
-                contentPadding = innerPadding.copy(layoutDirection, top = 0.dp),
+                contentPadding = PaddingValues(0.dp),
                 sendEnabled = sendEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
