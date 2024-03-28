@@ -39,7 +39,6 @@ import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.Transformer
 import com.google.android.samples.socialite.repository.ChatRepository
-import com.google.android.samples.socialite.ui.camera.CameraViewModel
 import com.google.common.collect.ImmutableList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -150,7 +149,7 @@ class VideoEditScreenViewModel @Inject constructor(
                 .build()
 
         val editedVideoFileName = "Socialite-edited-recording-" +
-            SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
+            SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
                 .format(System.currentTimeMillis()) + ".mp4"
 
         transformedVideoFilePath = createNewVideoFilePath(context, editedVideoFileName)

@@ -21,11 +21,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.layout.DisplayFeature
+import androidx.window.layout.FoldingFeature
+import androidx.window.layout.WindowInfoTracker
+import com.google.android.samples.socialite.ui.LocalFoldingState
 import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.ui.ShortcutParams
+import com.google.android.samples.socialite.ui.camera.FoldingState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.map
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -33,10 +42,27 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
         setContent {
-            Main(
-                shortcutParams = extractShortcutParams(intent),
-            )
+            val foldingState = WindowInfoTracker.getOrCreate(this@MainActivity)
+                .windowLayoutInfo(this@MainActivity)
+                .map { layoutInfo ->
+                    val displayFeatures = layoutInfo.displayFeatures
+                    when {
+                        displayFeatures.isEmpty() -> FoldingState.CLOSE
+                        hasFlatFoldingFeature(displayFeatures) -> FoldingState.HALF_OPEN
+                        else -> FoldingState.FLAT
+                    }
+                }
+                .collectAsStateWithLifecycle(initialValue = FoldingState.FLAT)
+
+            CompositionLocalProvider(
+                LocalFoldingState provides foldingState.value,
+            ) {
+                Main(
+                    shortcutParams = extractShortcutParams(intent),
+                )
+            }
         }
     }
 
@@ -48,4 +74,10 @@ class MainActivity : ComponentActivity() {
         val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
         return ShortcutParams(shortcutId, text)
     }
+
+    private fun hasFlatFoldingFeature(displayFeatures: List<DisplayFeature>): Boolean =
+        displayFeatures.any { feature ->
+            feature is FoldingFeature &&
+                feature.state == FoldingFeature.State.HALF_OPENED
+        }
 }

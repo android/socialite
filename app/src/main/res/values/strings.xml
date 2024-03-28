@@ -65,4 +65,8 @@
     <string name="ff_title">Fast forward</string>
     <string name="rw_title">Rewind</string>
 
+    <!--Camera Screen -->
+    <string name="photo">Photo</string>
+    <string name="video">Video</string>
+
 </resources>

@@ -39,10 +39,10 @@ import com.google.android.samples.socialite.ui.camera.viewfinder.CameraPreview
 
 @Composable
 fun ViewFinder(
-    cameraState: CameraState,
-    onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
     onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
     onZoomChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+    onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
 ) {
     var viewInfo: View? by remember { mutableStateOf(null) }
 
@@ -52,9 +52,9 @@ fun ViewFinder(
         },
     )
     Box(
-        Modifier
-            .background(Color.Black)
+        modifier
             .fillMaxSize()
+            .background(Color.Black)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = { offset ->
@@ -69,24 +69,20 @@ fun ViewFinder(
                         }
                     },
                 )
-            },
+            }
+            .transformable(state = transformableState),
         contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .transformable(state = transformableState),
-        ) {
-            CameraPreview(
-                modifier = Modifier.fillMaxSize(),
-                implementationMode = PreviewView.ImplementationMode.COMPATIBLE,
-                onSurfaceProviderReady = onSurfaceProviderReady,
-                onRequestBitmapReady = {
-                    val bitmap = it.invoke()
-                },
-                setSurfaceView = { s: View ->
-                    viewInfo = s
-                },
-            )
-        }
+        CameraPreview(
+            modifier = Modifier.fillMaxSize(),
+            implementationMode = PreviewView.ImplementationMode.COMPATIBLE,
+            onSurfaceProviderReady = onSurfaceProviderReady,
+            onRequestBitmapReady = {
+                val bitmap = it.invoke()
+            },
+            setSurfaceView = { s: View ->
+                viewInfo = s
+            },
+        )
     }
 }
