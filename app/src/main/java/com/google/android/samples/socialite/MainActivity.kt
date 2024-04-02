@@ -26,38 +26,28 @@ import androidx.compose.runtime.getValue
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.window.layout.DisplayFeature
-import androidx.window.layout.FoldingFeature
-import androidx.window.layout.WindowInfoTracker
-import com.google.android.samples.socialite.ui.LocalFoldingState
+import com.google.android.samples.socialite.domain.CameraOrientationUseCase
+import com.google.android.samples.socialite.domain.CameraSettings
+import com.google.android.samples.socialite.ui.LocalCameraOrientation
 import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.ui.ShortcutParams
-import com.google.android.samples.socialite.ui.camera.FoldingState
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var cameraOrientationUseCase: CameraOrientationUseCase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
         setContent {
-            val foldingState = WindowInfoTracker.getOrCreate(this@MainActivity)
-                .windowLayoutInfo(this@MainActivity)
-                .map { layoutInfo ->
-                    val displayFeatures = layoutInfo.displayFeatures
-                    when {
-                        displayFeatures.isEmpty() -> FoldingState.CLOSE
-                        hasFlatFoldingFeature(displayFeatures) -> FoldingState.HALF_OPEN
-                        else -> FoldingState.FLAT
-                    }
-                }
-                .collectAsStateWithLifecycle(initialValue = FoldingState.FLAT)
+            val cameraOrientation by cameraOrientationUseCase().collectAsStateWithLifecycle(initialValue = CameraSettings())
 
             CompositionLocalProvider(
-                LocalFoldingState provides foldingState.value,
+                LocalCameraOrientation provides cameraOrientation,
             ) {
                 Main(
                     shortcutParams = extractShortcutParams(intent),
@@ -74,10 +64,4 @@ class MainActivity : ComponentActivity() {
         val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
         return ShortcutParams(shortcutId, text)
     }
-
-    private fun hasFlatFoldingFeature(displayFeatures: List<DisplayFeature>): Boolean =
-        displayFeatures.any { feature ->
-            feature is FoldingFeature &&
-                feature.state == FoldingFeature.State.HALF_OPENED
-        }
 }

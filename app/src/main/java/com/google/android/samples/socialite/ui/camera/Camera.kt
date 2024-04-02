@@ -17,10 +17,7 @@
 package com.google.android.samples.socialite.ui.camera
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.view.Display
 import android.view.Surface
-import androidx.camera.core.Preview.SurfaceProvider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +26,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,15 +57,18 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.domain.CameraSettings
 import com.google.android.samples.socialite.ui.DevicePreview
-import com.google.android.samples.socialite.ui.LocalFoldingState
+import com.google.android.samples.socialite.ui.LocalCameraOrientation
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(
     onBackPressed: () -> Unit,
@@ -75,10 +76,41 @@ fun Camera(
     modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
 ) {
-    val foldState = LocalFoldingState.current
-    val rotationState by viewModel.rotationState.collectAsStateWithLifecycle()
+    val localCameraSettings = LocalCameraOrientation.current
+    viewModel.setCameraOrientation(localCameraSettings)
+
     val cameraSettings by viewModel.cameraSettings.collectAsStateWithLifecycle()
 
+    LifecycleResumeEffect {
+        val job = viewModel.mediaCapture
+            .onEach { onMediaCaptured(it) }
+            .launchIn(viewModel.viewModelScope)
+
+        onPauseOrDispose {
+            job.cancel()
+        }
+    }
+
+    CameraPermissionHandle(
+        onBackPressed = onBackPressed,
+        modifier = modifier,
+    ) {
+        CameraContent(
+            cameraSettings = cameraSettings,
+            onCameraEvent = viewModel::setUserEvent,
+            onBackPressed = onBackPressed,
+            modifier = modifier,
+        )
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun CameraPermissionHandle(
+    onBackPressed: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
     val cameraAndRecordAudioPermissionState = rememberMultiplePermissionsState(
         listOf(
             Manifest.permission.CAMERA,
@@ -86,110 +118,74 @@ fun Camera(
         ),
     )
 
-    @SuppressLint("MissingPermission")
     if (cameraAndRecordAudioPermissionState.allPermissionsGranted) {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = Color.Black)
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .windowInsetsPadding(WindowInsets.statusBars),
-        ) {
-            when (foldState) {
-                FoldingState.HALF_OPEN -> {
-                    TwoPaneCameraLayout(
-                        cameraSettings = cameraSettings,
-                        rotationState = rotationState,
-                        onCameraSelector = viewModel::toggleCameraFacing,
-                        onCaptureMode = viewModel::setCaptureMode,
-                        onPhotoCapture = {
-                            viewModel.capturePhoto(onMediaCaptured)
-                        },
-                        onPreviewSurfaceProviderReady = viewModel::setSurfaceProvider,
-                        onVideoRecordingStart = {
-                            viewModel.setCaptureMode(CaptureMode.VIDEO_RECORDING)
-                            viewModel.startVideoCapture(onMediaCaptured)
-                        },
-                        onVideoRecordingFinish = {
-                            viewModel.setCaptureMode(CaptureMode.VIDEO_READY)
-                            viewModel.stopVideoRecording()
-                        },
-                        onTapToFocus = viewModel::tapToFocus,
-                        onZoomChange = viewModel::setZoomScale,
-                    )
-                }
-
-                FoldingState.FLAT, FoldingState.CLOSE -> {
-                    FlatCameraLayout(
-                        cameraSettings = cameraSettings,
-                        onCameraSelector = viewModel::toggleCameraFacing,
-                        onCaptureMode = viewModel::setCaptureMode,
-                        onPhotoCapture = {
-                            viewModel.capturePhoto(onMediaCaptured)
-                        },
-                        onPreviewSurfaceProviderReady = viewModel::setSurfaceProvider,
-                        onVideoRecordingStart = {
-                            viewModel.setCaptureMode(CaptureMode.VIDEO_RECORDING)
-                            viewModel.startVideoCapture(onMediaCaptured)
-                        },
-                        onVideoRecordingFinish = {
-                            viewModel.setCaptureMode(CaptureMode.VIDEO_READY)
-                            viewModel.stopVideoRecording()
-                        },
-                        onTapToFocus = viewModel::tapToFocus,
-                        onZoomChange = viewModel::setZoomScale,
-                    )
-                }
-            }
-
-            IconButton(
-                onClick = onBackPressed,
-                modifier = modifier
-                    .size(50.dp)
-                    .align(Alignment.TopStart)
-                    .padding(start = 12.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
-                    tint = Color.White,
-                )
-            }
-        }
+        content()
     } else {
         CameraAndRecordAudioPermission(
             permissionsState = cameraAndRecordAudioPermissionState,
             onBackClicked = onBackPressed,
+            modifier = modifier,
         )
+    }
+}
+
+@Composable
+private fun CameraContent(
+    cameraSettings: CameraSettings,
+    onCameraEvent: (CameraEvent) -> Unit,
+    onBackPressed: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = Color.Black)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .windowInsetsPadding(WindowInsets.statusBars),
+    ) {
+        when (cameraSettings.foldingState) {
+            FoldingState.HALF_OPEN -> {
+                TwoPaneCameraLayout(
+                    cameraSettings = cameraSettings,
+                    onCameraEvent = onCameraEvent,
+                )
+            }
+
+            FoldingState.FLAT, FoldingState.CLOSE -> {
+                FlatCameraLayout(
+                    cameraSettings = cameraSettings,
+                    onCameraEvent = onCameraEvent,
+                )
+            }
+        }
+
+        IconButton(
+            onClick = onBackPressed,
+            modifier = modifier
+                .size(50.dp)
+                .align(Alignment.TopStart)
+                .padding(start = 12.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = null,
+                tint = Color.White,
+            )
+        }
     }
 }
 
 @Composable
 private fun TwoPaneCameraLayout(
     cameraSettings: CameraSettings,
-    rotationState: Int,
-    onCameraSelector: () -> Unit,
-    onCaptureMode: (CaptureMode) -> Unit,
-    onPhotoCapture: () -> Unit,
-    onPreviewSurfaceProviderReady: (SurfaceProvider) -> Unit,
-    onVideoRecordingStart: () -> Unit,
-    onVideoRecordingFinish: () -> Unit,
-    onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
-    onZoomChange: (Float) -> Unit,
+    onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    when (rotationState) {
+    when (cameraSettings.rotation) {
         Surface.ROTATION_0, Surface.ROTATION_180 -> {
             TwoPaneVerticalCameraLayout(
                 cameraSettings = cameraSettings,
-                onCameraSelector = onCameraSelector,
-                onCaptureMode = onCaptureMode,
-                onPhotoCapture = onPhotoCapture,
-                onPreviewSurfaceProviderReady = onPreviewSurfaceProviderReady,
-                onVideoRecordingStart = onVideoRecordingStart,
-                onVideoRecordingFinish = onVideoRecordingFinish,
-                onTapToFocus = onTapToFocus,
-                onZoomChange = onZoomChange,
+                onCameraEvent = onCameraEvent,
                 modifier = modifier,
             )
         }
@@ -197,14 +193,7 @@ private fun TwoPaneCameraLayout(
         else -> {
             TwoPaneHorizontalCameraLayout(
                 cameraSettings = cameraSettings,
-                onCameraSelector = onCameraSelector,
-                onCaptureMode = onCaptureMode,
-                onPhotoCapture = onPhotoCapture,
-                onPreviewSurfaceProviderReady = onPreviewSurfaceProviderReady,
-                onVideoRecordingStart = onVideoRecordingStart,
-                onVideoRecordingFinish = onVideoRecordingFinish,
-                onTapToFocus = onTapToFocus,
-                onZoomChange = onZoomChange,
+                onCameraEvent = onCameraEvent,
                 modifier = modifier,
             )
         }
@@ -214,19 +203,12 @@ private fun TwoPaneCameraLayout(
 @Composable
 private fun TwoPaneVerticalCameraLayout(
     cameraSettings: CameraSettings,
-    onCameraSelector: () -> Unit,
-    onCaptureMode: (CaptureMode) -> Unit,
-    onPhotoCapture: () -> Unit,
-    onPreviewSurfaceProviderReady: (SurfaceProvider) -> Unit,
-    onVideoRecordingStart: () -> Unit,
-    onVideoRecordingFinish: () -> Unit,
-    onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
-    onZoomChange: (Float) -> Unit,
+    onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier = modifier) {
+    Row {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxHeight()
                 .weight(1f),
         ) {
@@ -237,16 +219,13 @@ private fun TwoPaneVerticalCameraLayout(
             ) {
                 CameraControls(
                     captureMode = cameraSettings.captureMode,
-                    onPhotoButtonClick = { onCaptureMode(CaptureMode.PHOTO) },
-                    onVideoButtonClick = { onCaptureMode(CaptureMode.VIDEO_READY) },
+                    onCameraEvent = onCameraEvent,
                 )
             }
 
             ShutterButton(
                 captureMode = cameraSettings.captureMode,
-                onPhotoCapture = onPhotoCapture,
-                onVideoRecordingStart = onVideoRecordingStart,
-                onVideoRecordingFinish = onVideoRecordingFinish,
+                onCameraEvent = onCameraEvent,
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(top = 50.dp),
@@ -254,50 +233,44 @@ private fun TwoPaneVerticalCameraLayout(
 
             CameraSwitcher(
                 captureMode = cameraSettings.captureMode,
-                onCameraSelector = onCameraSelector,
+                onCameraSelector = { onCameraEvent(CameraEvent.ToggleCameraFacing) },
                 modifier = Modifier
                     .padding(start = 200.dp, top = 50.dp)
                     .align(Alignment.Center),
             )
         }
 
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            ViewFinder(
-                onSurfaceProviderReady = onPreviewSurfaceProviderReady,
-                onTapToFocus = onTapToFocus,
-                onZoomChange = onZoomChange,
-            )
-        }
+        ViewFinder(
+            onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
+            onTapToFocus = { display, width, height, x, y ->
+                onCameraEvent(CameraEvent.TapToFocus(display, width, height, x, y))
+            },
+            onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
+            modifier = modifier
+                .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
+                .weight(1f),
+        )
     }
 }
 
 @Composable
 private fun TwoPaneHorizontalCameraLayout(
     cameraSettings: CameraSettings,
-    onCameraSelector: () -> Unit,
-    onCaptureMode: (CaptureMode) -> Unit,
-    onPhotoCapture: () -> Unit,
-    onPreviewSurfaceProviderReady: (SurfaceProvider) -> Unit,
-    onVideoRecordingStart: () -> Unit,
-    onVideoRecordingFinish: () -> Unit,
-    onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
-    onZoomChange: (Float) -> Unit,
+    onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        Row(
+    Column {
+        ViewFinder(
+            onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
+            onTapToFocus = { display, width, height, x, y ->
+                onCameraEvent(CameraEvent.TapToFocus(display, width, height, x, y))
+            },
+            onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
             modifier = modifier
-                .fillMaxWidth()
-                .weight(1f),
-        ) {
-            ViewFinder(
-                onSurfaceProviderReady = onPreviewSurfaceProviderReady,
-                onTapToFocus = onTapToFocus,
-                onZoomChange = onZoomChange,
-            )
-        }
+                .weight(1f)
+                .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
+                .align(Alignment.CenterHorizontally),
+        )
 
         Row(
             modifier = modifier
@@ -312,8 +285,7 @@ private fun TwoPaneHorizontalCameraLayout(
                 Row {
                     CameraControls(
                         captureMode = cameraSettings.captureMode,
-                        onPhotoButtonClick = { onCaptureMode(CaptureMode.PHOTO) },
-                        onVideoButtonClick = { onCaptureMode(CaptureMode.VIDEO_READY) },
+                        onCameraEvent = onCameraEvent,
                     )
                 }
 
@@ -322,15 +294,13 @@ private fun TwoPaneHorizontalCameraLayout(
                 Box {
                     ShutterButton(
                         captureMode = cameraSettings.captureMode,
-                        onPhotoCapture = onPhotoCapture,
-                        onVideoRecordingStart = onVideoRecordingStart,
-                        onVideoRecordingFinish = onVideoRecordingFinish,
+                        onCameraEvent = onCameraEvent,
                         modifier = modifier.align(Alignment.Center),
                     )
 
                     CameraSwitcher(
                         captureMode = cameraSettings.captureMode,
-                        onCameraSelector = onCameraSelector,
+                        onCameraSelector = { onCameraEvent(CameraEvent.ToggleCameraFacing) },
                         modifier = modifier
                             .padding(start = 200.dp)
                             .align(Alignment.CenterEnd),
@@ -344,21 +314,18 @@ private fun TwoPaneHorizontalCameraLayout(
 @Composable
 private fun BoxScope.FlatCameraLayout(
     cameraSettings: CameraSettings,
-    onCameraSelector: () -> Unit,
-    onCaptureMode: (CaptureMode) -> Unit,
-    onPhotoCapture: () -> Unit,
-    onPreviewSurfaceProviderReady: (SurfaceProvider) -> Unit,
-    onVideoRecordingStart: () -> Unit,
-    onVideoRecordingFinish: () -> Unit,
-    onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
-    onZoomChange: (Float) -> Unit,
+    onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ViewFinder(
-        modifier = modifier.fillMaxSize(),
-        onSurfaceProviderReady = onPreviewSurfaceProviderReady,
-        onTapToFocus = onTapToFocus,
-        onZoomChange = onZoomChange,
+        modifier = modifier
+            .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
+            .align(Alignment.Center),
+        onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
+        onTapToFocus = { display, width, height, x, y ->
+            onCameraEvent(CameraEvent.TapToFocus(display, width, height, x, y))
+        },
+        onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
     )
 
     Row(
@@ -368,16 +335,13 @@ private fun BoxScope.FlatCameraLayout(
     ) {
         CameraControls(
             captureMode = cameraSettings.captureMode,
-            onPhotoButtonClick = { onCaptureMode(CaptureMode.PHOTO) },
-            onVideoButtonClick = { onCaptureMode(CaptureMode.VIDEO_READY) },
+            onCameraEvent = onCameraEvent,
         )
     }
 
     ShutterButton(
         captureMode = cameraSettings.captureMode,
-        onPhotoCapture = onPhotoCapture,
-        onVideoRecordingStart = onVideoRecordingStart,
-        onVideoRecordingFinish = onVideoRecordingFinish,
+        onCameraEvent = onCameraEvent,
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .padding(bottom = 12.5.dp),
@@ -385,7 +349,7 @@ private fun BoxScope.FlatCameraLayout(
 
     CameraSwitcher(
         captureMode = cameraSettings.captureMode,
-        onCameraSelector = onCameraSelector,
+        onCameraSelector = { onCameraEvent(CameraEvent.ToggleCameraFacing) },
         modifier = Modifier
             .align(Alignment.BottomCenter)
             .padding(start = 200.dp, bottom = 30.dp),
@@ -393,10 +357,9 @@ private fun BoxScope.FlatCameraLayout(
 }
 
 @Composable
-fun CameraControls(
+private fun CameraControls(
     captureMode: CaptureMode,
-    onPhotoButtonClick: () -> Unit,
-    onVideoButtonClick: () -> Unit,
+    onCameraEvent: (CameraEvent) -> Unit,
 ) {
     val activeButtonColor =
         ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -405,14 +368,14 @@ fun CameraControls(
     if (captureMode != CaptureMode.VIDEO_RECORDING) {
         Button(
             modifier = Modifier.padding(5.dp),
-            onClick = onPhotoButtonClick,
+            onClick = { onCameraEvent(CameraEvent.CaptureModeChange(CaptureMode.PHOTO)) },
             colors = if (captureMode == CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
         ) {
             Text(stringResource(id = R.string.photo))
         }
         Button(
             modifier = Modifier.padding(5.dp),
-            onClick = onVideoButtonClick,
+            onClick = { onCameraEvent(CameraEvent.CaptureModeChange(CaptureMode.VIDEO_READY)) },
             colors = if (captureMode != CaptureMode.PHOTO) activeButtonColor else inactiveButtonColor,
         ) {
             Text(stringResource(id = R.string.video))
@@ -421,11 +384,9 @@ fun CameraControls(
 }
 
 @Composable
-fun ShutterButton(
+private fun ShutterButton(
     captureMode: CaptureMode,
-    onPhotoCapture: () -> Unit,
-    onVideoRecordingStart: () -> Unit,
-    onVideoRecordingFinish: () -> Unit,
+    onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -434,7 +395,7 @@ fun ShutterButton(
         when (captureMode) {
             CaptureMode.PHOTO -> {
                 Button(
-                    onClick = onPhotoCapture,
+                    onClick = { onCameraEvent(CameraEvent.CapturePhoto) },
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                     modifier = Modifier.size(75.dp),
@@ -444,7 +405,10 @@ fun ShutterButton(
 
             CaptureMode.VIDEO_READY -> {
                 Button(
-                    onClick = onVideoRecordingStart,
+                    onClick = {
+                        onCameraEvent(CameraEvent.CaptureModeChange(CaptureMode.VIDEO_RECORDING))
+                        onCameraEvent(CameraEvent.StartVideoRecording)
+                    },
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                     modifier = Modifier.size(75.dp),
@@ -454,7 +418,10 @@ fun ShutterButton(
 
             CaptureMode.VIDEO_RECORDING -> {
                 Button(
-                    onClick = onVideoRecordingFinish,
+                    onClick = {
+                        onCameraEvent(CameraEvent.CaptureModeChange(CaptureMode.VIDEO_READY))
+                        onCameraEvent(CameraEvent.StopVideoRecording)
+                    },
                     shape = RoundedCornerShape(10),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                     modifier = Modifier.size(50.dp),
@@ -466,7 +433,7 @@ fun ShutterButton(
 }
 
 @Composable
-fun CameraSwitcher(
+private fun CameraSwitcher(
     captureMode: CaptureMode,
     onCameraSelector: () -> Unit,
     modifier: Modifier = Modifier,
@@ -493,16 +460,8 @@ private fun HalfOpenHorizontalCameraLayoutPreView() {
         modifier = Modifier.fillMaxSize(),
     ) {
         TwoPaneCameraLayout(
-            cameraSettings = CameraSettings(),
-            rotationState = Surface.ROTATION_270,
-            onCameraSelector = {},
-            onCaptureMode = {},
-            onPhotoCapture = {},
-            onPreviewSurfaceProviderReady = {},
-            onVideoRecordingStart = {},
-            onVideoRecordingFinish = {},
-            onTapToFocus = { _, _, _, _, _ -> },
-            onZoomChange = {},
+            cameraSettings = CameraSettings(rotation = Surface.ROTATION_270),
+            onCameraEvent = {},
         )
     }
 }
@@ -514,16 +473,8 @@ private fun HalfOpenVerticalCameraLayoutPreView() {
         modifier = Modifier.fillMaxSize(),
     ) {
         TwoPaneCameraLayout(
-            cameraSettings = CameraSettings(),
-            rotationState = Surface.ROTATION_0,
-            onCameraSelector = {},
-            onCaptureMode = {},
-            onPhotoCapture = {},
-            onPreviewSurfaceProviderReady = {},
-            onVideoRecordingStart = {},
-            onVideoRecordingFinish = {},
-            onTapToFocus = { _, _, _, _, _ -> },
-            onZoomChange = {},
+            cameraSettings = CameraSettings(rotation = Surface.ROTATION_0),
+            onCameraEvent = {},
         )
     }
 }
@@ -536,14 +487,7 @@ private fun FlatCameraLayoutPreView() {
     ) {
         FlatCameraLayout(
             cameraSettings = CameraSettings(captureMode = CaptureMode.VIDEO_READY),
-            onCameraSelector = {},
-            onCaptureMode = {},
-            onPhotoCapture = {},
-            onPreviewSurfaceProviderReady = {},
-            onVideoRecordingStart = {},
-            onVideoRecordingFinish = {},
-            onTapToFocus = { _, _, _, _, _ -> },
-            onZoomChange = {},
+            onCameraEvent = {},
         )
     }
 }

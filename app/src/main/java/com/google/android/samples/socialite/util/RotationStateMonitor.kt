@@ -18,9 +18,9 @@ package com.google.android.samples.socialite.util
 
 import android.content.Context
 import androidx.camera.view.RotationProvider
-import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.qualifiers.ActivityContext
+import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.channels.awaitClose
@@ -31,9 +31,9 @@ interface RotationStateMonitor {
     val currentRotation: Flow<Int>
 }
 
-@Singleton
-class RotationStateManager @Inject constructor(
-    @ApplicationContext context: Context,
+@ActivityScoped
+class RotationStateMonitorImpl @Inject constructor(
+    @ActivityContext context: Context,
 ) : RotationStateMonitor {
 
     override val currentRotation: Flow<Int> = callbackFlow {
@@ -43,7 +43,7 @@ class RotationStateManager @Inject constructor(
             trySend(rotation)
         }
 
-        rotationProvider.addListener(Dispatchers.Main.asExecutor(), rotationListener)
+        rotationProvider.addListener(Dispatchers.Default.asExecutor(), rotationListener)
 
         awaitClose {
             rotationProvider.removeListener(rotationListener)

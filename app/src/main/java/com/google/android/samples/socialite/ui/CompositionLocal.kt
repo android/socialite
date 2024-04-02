@@ -17,6 +17,6 @@
 package com.google.android.samples.socialite.ui
 
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.google.android.samples.socialite.ui.camera.FoldingState
+import com.google.android.samples.socialite.domain.CameraSettings
 
-val LocalFoldingState = staticCompositionLocalOf { FoldingState.FLAT }
+val LocalCameraOrientation = staticCompositionLocalOf { CameraSettings() }

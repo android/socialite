@@ -16,11 +16,9 @@
 
 package com.google.android.samples.socialite.ui.camera
 
-import android.Manifest
 import android.util.Log
 import android.view.Display
 import android.view.Surface
-import androidx.annotation.RequiresPermission
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.DisplayOrientedMeteringPointFactory
@@ -30,18 +28,19 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.samples.socialite.domain.AspectRatioType
 import com.google.android.samples.socialite.domain.CameraSettings
 import com.google.android.samples.socialite.domain.CameraUseCase
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.util.CoroutineLifecycleOwner
-import com.google.android.samples.socialite.util.RotationStateMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -51,28 +50,27 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     private val cameraProviderManager: CameraProviderManager,
-    private val cameraXUseCase: CameraUseCase,
+    private val cameraUseCase: CameraUseCase,
     private val repository: ChatRepository,
     savedStateHandle: SavedStateHandle,
-    rotationStateMonitor: RotationStateMonitor,
 ) : ViewModel() {
 
-    val chatId: StateFlow<Long> = savedStateHandle.getStateFlow("chatId", 0L)
+    val chatId: StateFlow<Long?> = savedStateHandle.getStateFlow("chatId", null)
 
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
 
+    private val _mediaCapture = MutableSharedFlow<Media>(replay = 0)
+    val mediaCapture: SharedFlow<Media> = _mediaCapture
+
     private val _cameraSettings = MutableStateFlow(CameraSettings())
     val cameraSettings: StateFlow<CameraSettings> = _cameraSettings
-        .filter { cameraSettings ->
-            cameraSettings.surfaceProvider != null
-        }
         .onStart {
             cameraProvider = cameraProviderManager.getCameraProvider()
-            cameraXUseCase.initializeCamera()
+            cameraUseCase.initializeCamera()
         }
         .onEach { cameraSettings ->
-            val useCaseGroup = cameraXUseCase.createCameraUseCaseGroup(cameraSettings)
+            val useCaseGroup = cameraUseCase.createCameraUseCaseGroup(cameraSettings)
 
             cameraProvider.unbindAll()
             camera = cameraProvider.bindToLifecycle(
@@ -92,17 +90,67 @@ class CameraViewModel @Inject constructor(
             initialValue = CameraSettings(),
         )
 
-    val rotationState: StateFlow<Int> = rotationStateMonitor.currentRotation
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = Surface.ROTATION_0,
-        )
+    fun setUserEvent(cameraEvent: CameraEvent) {
+        when (cameraEvent) {
+            CameraEvent.CapturePhoto -> capturePhoto()
+            CameraEvent.StartVideoRecording -> startVideoCapture()
+            CameraEvent.StopVideoRecording -> stopVideoRecording()
+            CameraEvent.ToggleCameraFacing -> toggleCameraFacing()
+            is CameraEvent.CaptureModeChange -> setCaptureMode(cameraEvent.mode)
+            is CameraEvent.TapToFocus -> tapToFocus(
+                cameraEvent.display,
+                cameraEvent.surfaceWidth,
+                cameraEvent.surfaceHeight,
+                cameraEvent.x,
+                cameraEvent.y,
+            )
 
-    fun toggleCameraFacing() {
+            is CameraEvent.ZoomChange -> setZoomScale(cameraEvent.scale)
+            is CameraEvent.SurfaceProviderReady -> setSurfaceProvider(cameraEvent.surfaceProvider)
+        }
+    }
+
+    fun setCameraOrientation(cameraSettings: CameraSettings) {
+        _cameraSettings.update { settings ->
+            val isVerticalRotation =
+                cameraSettings.rotation == Surface.ROTATION_0 ||
+                    cameraSettings.rotation == Surface.ROTATION_180
+
+            val aspectRatio = when (cameraSettings.foldingState) {
+                FoldingState.CLOSE -> {
+                    AspectRatioType.RATIO_9_16
+                }
+
+                FoldingState.HALF_OPEN -> {
+                    if (isVerticalRotation) {
+                        AspectRatioType.RATIO_9_16
+                    } else {
+                        AspectRatioType.RATIO_16_9
+                    }
+                }
+
+                FoldingState.FLAT -> {
+                    if (isVerticalRotation) {
+                        AspectRatioType.RATIO_4_3
+                    } else {
+                        AspectRatioType.RATIO_1_1
+                    }
+                }
+            }
+
+            settings.copy(
+                foldingState = cameraSettings.foldingState,
+                rotation = cameraSettings.rotation,
+                aspectRatioType = aspectRatio,
+            )
+        }
+    }
+
+    private fun toggleCameraFacing() {
         _cameraSettings.update { settings ->
             settings.copy(
-                cameraLensFacing = if (settings.cameraLensFacing == CameraSelector.LENS_FACING_BACK) {
+                cameraLensFacing =
+                if (settings.cameraLensFacing == CameraSelector.LENS_FACING_BACK) {
                     CameraSelector.LENS_FACING_FRONT
                 } else {
                     CameraSelector.LENS_FACING_BACK
@@ -111,19 +159,19 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    fun setCaptureMode(captureMode: CaptureMode) {
+    private fun setCaptureMode(captureMode: CaptureMode) {
         _cameraSettings.update { settings ->
             settings.copy(captureMode = captureMode)
         }
     }
 
-    fun setSurfaceProvider(surfaceProvider: Preview.SurfaceProvider) {
+    private fun setSurfaceProvider(surfaceProvider: Preview.SurfaceProvider) {
         _cameraSettings.update { settings ->
             settings.copy(surfaceProvider = surfaceProvider)
         }
     }
 
-    fun tapToFocus(
+    private fun tapToFocus(
         display: Display,
         surfaceWidth: Int,
         surfaceHeight: Int,
@@ -143,7 +191,7 @@ class CameraViewModel @Inject constructor(
         camera.cameraControl.startFocusAndMetering(action)
     }
 
-    fun setZoomScale(scale: Float) {
+    private fun setZoomScale(scale: Float) {
         val zoomState = camera.cameraInfo.zoomState.value ?: return
         val finalScale = (zoomState.zoomRatio * scale).coerceIn(
             zoomState.minZoomRatio,
@@ -153,30 +201,30 @@ class CameraViewModel @Inject constructor(
         camera.cameraControl.setZoomRatio(finalScale)
     }
 
-    fun capturePhoto(onMediaCaptured: (Media) -> Unit) {
+    private fun capturePhoto() {
         viewModelScope.launch {
-            val uri = cameraXUseCase.capturePhoto() ?: return@launch
+            val uri = cameraUseCase.capturePhoto() ?: return@launch
+            val chaId = chatId.value ?: return@launch
 
             repository.sendMessage(
-                chatId = chatId.value,
+                chatId = chaId,
                 text = "",
                 mediaUri = uri.toString(),
                 mediaMimeType = "image/jpeg",
             )
-            onMediaCaptured(Media(uri, MediaType.PHOTO))
+            _mediaCapture.emit(Media(uri, MediaType.PHOTO))
         }
     }
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
+    private fun startVideoCapture() {
         viewModelScope.launch {
-            val media = cameraXUseCase.startVideoRecording()
-            onMediaCaptured(media)
+            val media = cameraUseCase.startVideoRecording()
+            _mediaCapture.emit(media)
         }
     }
 
-    fun stopVideoRecording() {
-        cameraXUseCase.stopVideoRecording()
+    private fun stopVideoRecording() {
+        cameraUseCase.stopVideoRecording()
     }
 }
 
@@ -190,4 +238,21 @@ enum class FoldingState {
     CLOSE,
     HALF_OPEN,
     FLAT,
+}
+
+sealed interface CameraEvent {
+    data object ToggleCameraFacing : CameraEvent
+    data object CapturePhoto : CameraEvent
+    data object StartVideoRecording : CameraEvent
+    data object StopVideoRecording : CameraEvent
+    data class ZoomChange(val scale: Float) : CameraEvent
+    data class CaptureModeChange(val mode: CaptureMode) : CameraEvent
+    data class SurfaceProviderReady(val surfaceProvider: Preview.SurfaceProvider) : CameraEvent
+    data class TapToFocus(
+        val display: Display,
+        val surfaceWidth: Int,
+        val surfaceHeight: Int,
+        val x: Float,
+        val y: Float,
+    ) : CameraEvent
 }

@@ -14,24 +14,30 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.di
+package com.google.android.samples.socialite.domain
 
 import com.google.android.samples.socialite.util.DisplayFeaturesMonitor
-import com.google.android.samples.socialite.util.DisplayFeaturesMonitorImpl
-import com.google.android.samples.socialite.util.RotationStateMonitorImpl
 import com.google.android.samples.socialite.util.RotationStateMonitor
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.android.scopes.ActivityScoped
+import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 
-@Module
-@InstallIn(ActivityComponent::class)
-abstract class ManagerModule {
+@ActivityScoped
+class CameraOrientationUseCase @Inject constructor(
+    private val displayFeaturesMonitor: DisplayFeaturesMonitor,
+    private val rotationStateMonitor: RotationStateMonitor,
+) {
 
-    @Binds
-    abstract fun bindsRotationStateManager(rotationStateMonitor: RotationStateMonitorImpl): RotationStateMonitor
-
-    @Binds
-    abstract fun bindDisplayFeaturesMonitor(displayFeaturesMonitor: DisplayFeaturesMonitorImpl): DisplayFeaturesMonitor
+    operator fun invoke(): Flow<CameraSettings> {
+        return combine(
+            displayFeaturesMonitor.foldingState,
+            rotationStateMonitor.currentRotation,
+        ) { foldingState, rotation ->
+            CameraSettings(
+                foldingState = foldingState,
+                rotation = rotation,
+            )
+        }
+    }
 }
