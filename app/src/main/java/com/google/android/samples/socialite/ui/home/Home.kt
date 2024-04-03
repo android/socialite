@@ -135,7 +135,7 @@ private fun HomeContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeAppBar(
+fun HomeAppBar(
     title: String,
     modifier: Modifier = Modifier,
 ) {

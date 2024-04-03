@@ -16,30 +16,28 @@
 
 package com.google.android.samples.socialite.widget.ui
 
-import android.content.Context
+import android.appwidget.AppWidgetManager
 import androidx.compose.runtime.Composable
+import androidx.glance.Button
 import androidx.glance.GlanceModifier
-import androidx.glance.appwidget.lazy.LazyColumn
+import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionParametersOf
+import androidx.glance.action.actionStartActivity
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.size
-import com.google.android.samples.socialite.model.Contact
-import com.google.android.samples.socialite.widget.model.WidgetModelRepository
+import com.google.android.samples.socialite.widget.SociaLiteAppWidgetConfigActivity
 
 @Composable
-fun ZeroState(repository: WidgetModelRepository, widgetId: Int, context: Context) {
-    Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
-        LazyColumn {
-            items(Contact.CONTACTS.size) { contactIndex ->
-                val contact = Contact.CONTACTS[contactIndex]
+fun ZeroState(widgetId: Int) {
+    val widgetIdKey = ActionParameters.Key<Int>(AppWidgetManager.EXTRA_APPWIDGET_ID)
 
-                ContactRow(
-                    contact = contact,
-                    profileImageUri = contact.iconUri,
-                    onClick = TODO(),
-                )
-            }
-        }
+    Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Button(
+            text = "Select Favorite Contact",
+            onClick = actionStartActivity<SociaLiteAppWidgetConfigActivity>(
+                parameters = actionParametersOf(widgetIdKey to widgetId),
+            ),
+        )
     }
 }

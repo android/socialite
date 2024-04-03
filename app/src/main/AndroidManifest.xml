@@ -83,6 +83,16 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/sharing_shortcuts" />
         </activity>
+
+        <!-- This activity handles configuration for the SociaLiteAppWidget -->
+        <activity android:name=".widget.SociaLiteAppWidgetConfigActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
+
         <!--
             This Activity is the expanded Bubble. For that, this Activity has to have several
             attributes.

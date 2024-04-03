@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Singleton
 class WidgetModelRepository @Inject internal constructor(private val widgetModelDao: WidgetModelDao, @AppCoroutineScope private val coroutineScope: CoroutineScope, @ApplicationContext private val appContext: Context) {
@@ -64,13 +65,19 @@ class WidgetModelRepository @Inject internal constructor(private val widgetModel
         }
     }
 
-    suspend fun create(model: WidgetModel): WidgetModel {
-        widgetModelDao.insert(model)
+    suspend fun createOrUpdate(model: WidgetModel): WidgetModel {
+        val maybeModel = widgetModelDao.loadWidgetModel(model.widgetId).first()
+        if (maybeModel == null) {
+            widgetModelDao.insert(model)
+        } else {
+            widgetModelDao.update(model)
+        }
+        SociaLiteAppWidget().updateAll(appContext)
         return widgetModelDao.loadWidgetModel(model.widgetId).filterNotNull().first()
     }
 
-    fun loadModel(widgetId: Int): Flow<WidgetModel?> {
-        return widgetModelDao.loadWidgetModel(widgetId).distinctUntilChanged()
+    fun loadModel(widgetId: Int): Flow<WidgetModel> {
+        return widgetModelDao.loadWidgetModel(widgetId).filterNotNull().distinctUntilChanged()
     }
 
     fun cleanupWidgetModels(context: Context) {
@@ -94,27 +101,6 @@ class WidgetModelRepository @Inject internal constructor(private val widgetModel
                 widgetModelDao.update(WidgetModel(model.widgetId, model.contactId, model.displayName, model.photo, unread))
                 SociaLiteAppWidget().updateAll(appContext)
             }
-        }
-    }
-
-    suspend fun getImage(url: Uri, force: Boolean = false, context: Context): Bitmap? {
-        val request =
-            ImageRequest.Builder(context).transformations(CircleCropTransformation()).data(url)
-                .apply {
-                    if (force) {
-                        memoryCachePolicy(CachePolicy.DISABLED)
-                        diskCachePolicy(CachePolicy.DISABLED)
-                    }
-                }.build()
-
-        // Request the image to be loaded and throw error if it failed
-        return when (val result = Coil.imageLoader(context).execute(request)) {
-            is ErrorResult -> {
-                Log.e("GLANCE", "Error " + result.throwable.message)
-                throw result.throwable
-            }
-
-            is SuccessResult -> result.drawable.toBitmapOrNull()
         }
     }
 }

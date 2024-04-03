@@ -38,8 +38,8 @@ import com.google.android.samples.socialite.model.Contact
 )
 data class WidgetModel(
     @PrimaryKey val widgetId: Int,
-    val contactId: Long,
-    val displayName: String,
-    val photo: String,
+    val contactId: Long?,
+    val displayName: String = "",
+    val photo: String = "",
     val unreadMessages: Boolean = false,
 )
