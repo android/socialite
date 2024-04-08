@@ -16,10 +16,7 @@
 
 package com.google.android.samples.socialite.ui
 
-import android.app.Activity
 import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.os.Bundle
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -30,9 +27,6 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -64,19 +58,7 @@ fun MainNavigation(
     modifier: Modifier,
     shortcutParams: ShortcutParams?,
 ) {
-    val activity = LocalContext.current as Activity
     val navController = rememberNavController()
-
-    navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, _: Bundle? ->
-        // Lock the layout of the Camera screen to portrait so that the UI layout remains
-        // constant, even on orientation changes. Note that the camera is still aware of
-        // orientation, and will assign the correct edge as the bottom of the photo or video.
-        if (navDestination.route?.contains("camera") == true) {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-        } else {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
-    }
 
     NavHost(
         navController = navController,

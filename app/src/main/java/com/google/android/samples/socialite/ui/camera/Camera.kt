@@ -64,6 +64,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.domain.CameraSettings
+import com.google.android.samples.socialite.domain.FoldingState
 import com.google.android.samples.socialite.ui.DevicePreview
 import com.google.android.samples.socialite.ui.LocalCameraOrientation
 import kotlinx.coroutines.flow.launchIn

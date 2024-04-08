@@ -31,6 +31,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.domain.AspectRatioType
 import com.google.android.samples.socialite.domain.CameraSettings
 import com.google.android.samples.socialite.domain.CameraUseCase
+import com.google.android.samples.socialite.domain.FoldingState
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.util.CoroutineLifecycleOwner
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -116,27 +117,24 @@ class CameraViewModel @Inject constructor(
                 cameraSettings.rotation == Surface.ROTATION_0 ||
                     cameraSettings.rotation == Surface.ROTATION_180
 
-            val aspectRatio = when (cameraSettings.foldingState) {
-                FoldingState.CLOSE -> {
-                    AspectRatioType.RATIO_9_16
-                }
+            val aspectRatio =
+                when (cameraSettings.foldingState) {
+                    FoldingState.CLOSE, FoldingState.HALF_OPEN -> {
+                        if (isVerticalRotation) {
+                            AspectRatioType.RATIO_9_16
+                        } else {
+                            AspectRatioType.RATIO_16_9
+                        }
+                    }
 
-                FoldingState.HALF_OPEN -> {
-                    if (isVerticalRotation) {
-                        AspectRatioType.RATIO_9_16
-                    } else {
-                        AspectRatioType.RATIO_16_9
+                    FoldingState.FLAT -> {
+                        if (isVerticalRotation) {
+                            AspectRatioType.RATIO_4_3
+                        } else {
+                            AspectRatioType.RATIO_1_1
+                        }
                     }
                 }
-
-                FoldingState.FLAT -> {
-                    if (isVerticalRotation) {
-                        AspectRatioType.RATIO_4_3
-                    } else {
-                        AspectRatioType.RATIO_1_1
-                    }
-                }
-            }
 
             settings.copy(
                 foldingState = cameraSettings.foldingState,
@@ -232,12 +230,6 @@ enum class CaptureMode {
     PHOTO,
     VIDEO_READY,
     VIDEO_RECORDING,
-}
-
-enum class FoldingState {
-    CLOSE,
-    HALF_OPEN,
-    FLAT,
 }
 
 sealed interface CameraEvent {

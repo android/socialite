@@ -18,8 +18,8 @@ package com.google.android.samples.socialite.di
 
 import com.google.android.samples.socialite.util.DisplayFeaturesMonitor
 import com.google.android.samples.socialite.util.DisplayFeaturesMonitorImpl
-import com.google.android.samples.socialite.util.RotationStateMonitorImpl
 import com.google.android.samples.socialite.util.RotationStateMonitor
+import com.google.android.samples.socialite.util.RotationStateMonitorImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

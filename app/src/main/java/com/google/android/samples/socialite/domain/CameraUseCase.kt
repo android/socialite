@@ -36,7 +36,6 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.media3.common.util.UnstableApi
 import com.google.android.samples.socialite.ui.camera.CaptureMode
-import com.google.android.samples.socialite.ui.camera.FoldingState
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -155,6 +154,12 @@ data class CameraSettings(
     val foldingState: FoldingState = FoldingState.CLOSE,
     val surfaceProvider: Preview.SurfaceProvider? = null,
 )
+
+enum class FoldingState {
+    CLOSE,
+    HALF_OPEN,
+    FLAT,
+}
 
 enum class AspectRatioType(val ratio: Rational) {
     RATIO_4_3(Rational(4, 3)),

@@ -17,10 +17,9 @@
 package com.google.android.samples.socialite.util
 
 import android.content.Context
-import androidx.window.layout.DisplayFeature
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
-import com.google.android.samples.socialite.ui.camera.FoldingState
+import com.google.android.samples.socialite.domain.FoldingState
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
@@ -40,7 +39,7 @@ class DisplayFeaturesMonitorImpl @Inject constructor(
         WindowInfoTracker.getOrCreate(context)
             .windowLayoutInfo(context)
             .map { layoutInfo ->
-                val displayFeatures = layoutInfo.displayFeatures
+                val displayFeatures = layoutInfo.displayFeatures.filterIsInstance<FoldingFeature>()
                 when {
                     displayFeatures.isEmpty() -> FoldingState.CLOSE
                     hasHalfOpenedFoldingFeature(displayFeatures) -> FoldingState.HALF_OPEN
@@ -48,10 +47,8 @@ class DisplayFeaturesMonitorImpl @Inject constructor(
                 }
             }
 
-    private fun hasHalfOpenedFoldingFeature(displayFeatures: List<DisplayFeature>): Boolean {
-        return displayFeatures.any { feature ->
-            feature is FoldingFeature &&
-                feature.state == FoldingFeature.State.HALF_OPENED
+    private fun hasHalfOpenedFoldingFeature(displayFeatures: List<FoldingFeature>): Boolean =
+        displayFeatures.any { feature ->
+            feature.state == FoldingFeature.State.HALF_OPENED
         }
-    }
 }
