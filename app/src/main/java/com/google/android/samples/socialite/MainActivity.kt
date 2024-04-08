@@ -43,6 +43,11 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        val windowParams: WindowManager.LayoutParams = window.attributes
+        windowParams.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS
+        window.attributes = windowParams
+        
         setContent {
             val cameraOrientation by cameraOrientationUseCase().collectAsStateWithLifecycle(initialValue = CameraSettings())
 
