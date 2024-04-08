@@ -46,6 +46,7 @@
             android:theme="@style/Theme.Social.SplashScreen"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
+            android:screenOrientation="fullUser"
             android:supportsPictureInPicture="true">
 
             <!-- This activity is the one that's shown in the launcher. -->
