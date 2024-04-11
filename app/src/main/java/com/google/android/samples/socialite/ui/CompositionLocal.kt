@@ -16,7 +16,7 @@
 
 package com.google.android.samples.socialite.ui
 
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import com.google.android.samples.socialite.domain.CameraSettings
 
-val LocalCameraOrientation = staticCompositionLocalOf { CameraSettings() }
+val LocalCameraOrientation = compositionLocalOf { CameraSettings() }
