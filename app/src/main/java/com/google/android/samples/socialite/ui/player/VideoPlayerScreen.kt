@@ -23,6 +23,7 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.util.Log
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.focusable
@@ -179,7 +180,17 @@ private fun VideoPlayer(
                 // set source rect hint, aspect ratio and remote actions
                 val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
                 builder.setSourceRectHint(sourceRect)
-                builder.setAspectRatio(Rational(sourceRect.width(), sourceRect.height()))
+                var aspectRatio = Rational(sourceRect.width(), sourceRect.height())
+                val upperAspectRatioBound = Rational(2.39.toInt(), 1)
+                val lowerAspectRatioBound = Rational(1, 2.39.toInt())
+
+                if(aspectRatio.toFloat() > upperAspectRatioBound.toFloat()) {
+                    aspectRatio = upperAspectRatioBound
+                } else if(aspectRatio.toFloat() < lowerAspectRatioBound.toFloat()) {
+                    aspectRatio = lowerAspectRatioBound
+                }
+
+                builder.setAspectRatio(aspectRatio)
             }
 
             builder.setActions(
