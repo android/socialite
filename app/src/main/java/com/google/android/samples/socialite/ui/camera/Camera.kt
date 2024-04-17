@@ -254,7 +254,6 @@ fun Camera(
                                 ViewFinder(
                                     viewFinderState.cameraState,
                                     onPreviewSurfaceProviderReady,
-                                    viewModel::tapToFocus,
                                     viewModel::setZoomScale,
                                 )
                             }
@@ -268,7 +267,6 @@ fun Camera(
                             ViewFinder(
                                 viewFinderState.cameraState,
                                 onPreviewSurfaceProviderReady,
-                                viewModel::tapToFocus,
                                 viewModel::setZoomScale,
                             )
                         }
