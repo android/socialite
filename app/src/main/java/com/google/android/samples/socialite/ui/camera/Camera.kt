@@ -78,7 +78,7 @@ fun Camera(
 ) {
     var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
     var cameraSelector by remember { mutableStateOf(CameraSelector.DEFAULT_BACK_CAMERA) }
-    var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
+    var captureMode by remember { mutableStateOf(CaptureMode.VIDEO_READY) }
     val cameraAndRecordAudioPermissionState = rememberMultiplePermissionsState(
         listOf(
             Manifest.permission.CAMERA,
