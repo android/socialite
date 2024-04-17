@@ -16,10 +16,10 @@
 
 package com.google.android.samples.socialite.ui.camera
 
+import android.annotation.SuppressLint
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.SurfaceRequest.TransformationInfo as CXTransformationInfo
-import android.annotation.SuppressLint
 import androidx.camera.viewfinder.compose.Viewfinder
 import androidx.camera.viewfinder.surface.ImplementationMode
 import androidx.camera.viewfinder.surface.TransformationInfo
@@ -56,7 +56,7 @@ import kotlinx.coroutines.launch
 fun CameraXViewfinder(
     modifier: Modifier = Modifier,
     implementationMode: ImplementationMode = ImplementationMode.PERFORMANCE,
-    onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {}
+    onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
 ) {
     val viewfinderArgs by produceState<ViewfinderArgs?>(initialValue = null, implementationMode) {
         val requests = MutableStateFlow<SurfaceRequest?>(null)
@@ -66,7 +66,7 @@ fun CameraXViewfinder(
                     oldRequest?.willNotProvideSurface()
                     request
                 }
-            }
+            },
         )
 
         requests.filterNotNull().collectLatest { request ->
@@ -107,8 +107,8 @@ fun CameraXViewfinder(
                         it.cropRect.right,
                         it.cropRect.top,
                         it.cropRect.bottom,
-                        it.isMirroring
-                    )
+                        it.isMirroring,
+                    ),
                 )
             }
         }
@@ -119,7 +119,7 @@ fun CameraXViewfinder(
             surfaceRequest = args.viewfinderSurfaceRequest,
             implementationMode = args.implementationMode,
             transformationInfo = args.transformationInfo,
-            modifier = modifier.fillMaxSize()
+            modifier = modifier.fillMaxSize(),
         )
     }
 }
@@ -127,5 +127,5 @@ fun CameraXViewfinder(
 private data class ViewfinderArgs(
     val viewfinderSurfaceRequest: ViewfinderSurfaceRequest,
     val implementationMode: ImplementationMode,
-    val transformationInfo: TransformationInfo
+    val transformationInfo: TransformationInfo,
 )
