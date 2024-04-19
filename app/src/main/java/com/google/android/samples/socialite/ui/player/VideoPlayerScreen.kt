@@ -175,22 +175,15 @@ private fun VideoPlayer(
         // create modifier that adds pip to video player
         val pipModifier = modifier.onGloballyPositioned { layoutCoordinates ->
             val builder = PictureInPictureParams.Builder()
-
             if (shouldEnterPipMode) {
-                // set source rect hint, aspect ratio and remote actions
-                val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
-                builder.setSourceRectHint(sourceRect)
-                var aspectRatio = Rational(sourceRect.width(), sourceRect.height())
-                val upperAspectRatioBound = Rational(2.39.toInt(), 1)
-                val lowerAspectRatioBound = Rational(1, 2.39.toInt())
-
-                if(aspectRatio.toFloat() > upperAspectRatioBound.toFloat()) {
-                    aspectRatio = upperAspectRatioBound
-                } else if(aspectRatio.toFloat() < lowerAspectRatioBound.toFloat()) {
-                    aspectRatio = lowerAspectRatioBound
+                
+                // set source rect hint, aspect ratio
+                if(player != null && player.videoSize.width > 0 && player.videoSize.height > 0) {
+                    val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
+                    builder.setSourceRectHint(sourceRect)
+                    var aspectRatio = Rational(player.videoSize.width, player.videoSize.height)
+                    builder.setAspectRatio(aspectRatio)
                 }
-
-                builder.setAspectRatio(aspectRatio)
             }
 
             builder.setActions(
