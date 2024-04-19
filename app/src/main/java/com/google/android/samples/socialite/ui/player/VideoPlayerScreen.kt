@@ -23,7 +23,6 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.util.Log
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.focusable
@@ -176,12 +175,11 @@ private fun VideoPlayer(
         val pipModifier = modifier.onGloballyPositioned { layoutCoordinates ->
             val builder = PictureInPictureParams.Builder()
             if (shouldEnterPipMode) {
-                
                 // set source rect hint, aspect ratio
-                if(player != null && player.videoSize.width > 0 && player.videoSize.height > 0) {
+                if (player != null && player.videoSize.width > 0 && player.videoSize.height > 0) {
                     val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
                     builder.setSourceRectHint(sourceRect)
-                    var aspectRatio = Rational(player.videoSize.width, player.videoSize.height)
+                    val aspectRatio = Rational(player.videoSize.width, player.videoSize.height)
                     builder.setAspectRatio(aspectRatio)
                 }
             }
