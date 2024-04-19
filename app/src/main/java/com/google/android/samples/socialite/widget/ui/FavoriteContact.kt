@@ -42,9 +42,9 @@ import androidx.glance.text.TextStyle
 import com.google.android.samples.socialite.widget.model.WidgetModel
 
 @Composable
-fun FavoriteContact(model: WidgetModel, onClick: Action) {
+fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetModel, onClick: Action) {
     Column(
-        modifier = GlanceModifier.fillMaxSize().clickable(onClick)
+        modifier = modifier.fillMaxSize().clickable(onClick)
             .background(GlanceTheme.colors.widgetBackground).appWidgetBackground()
             .padding(bottom = 8.dp),
         verticalAlignment = Alignment.Vertical.Bottom,

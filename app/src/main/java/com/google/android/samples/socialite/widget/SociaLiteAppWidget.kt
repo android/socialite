@@ -54,11 +54,11 @@ class SociaLiteAppWidget : GlanceAppWidget() {
         val model = repository.loadModel(widgetId).collectAsState(Loading).value
         val context = LocalContext.current
         when (model) {
-            is Empty -> ZeroState(widgetId)
+            is Empty -> ZeroState(widgetId = widgetId)
             is Loading -> Box {}
             is WidgetModel -> FavoriteContact(
-                model,
-                actionStartActivity(
+                model = model,
+                onClick = actionStartActivity(
                     Intent(context.applicationContext, MainActivity::class.java)
                         .setAction(Intent.ACTION_VIEW)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

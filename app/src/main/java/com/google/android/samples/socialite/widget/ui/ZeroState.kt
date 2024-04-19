@@ -36,7 +36,7 @@ import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.widget.SociaLiteAppWidgetConfigActivity
 
 @Composable
-fun ZeroState(widgetId: Int) {
+fun ZeroState(modifier: GlanceModifier = GlanceModifier, widgetId: Int) {
     val widgetIdKey = ActionParameters.Key<Int>(AppWidgetManager.EXTRA_APPWIDGET_ID)
     Scaffold(
         titleBar = {
@@ -48,7 +48,7 @@ fun ZeroState(widgetId: Int) {
             )
         },
         backgroundColor = GlanceTheme.colors.widgetBackground,
-        modifier = GlanceModifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
     ) {
         Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Button(
