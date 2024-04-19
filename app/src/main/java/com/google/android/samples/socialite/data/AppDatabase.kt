@@ -25,6 +25,8 @@ import com.google.android.samples.socialite.model.Chat
 import com.google.android.samples.socialite.model.ChatAttendee
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.model.Message
+import com.google.android.samples.socialite.widget.model.WidgetModel
+import com.google.android.samples.socialite.widget.model.WidgetModelDao
 
 @Database(
     entities = [
@@ -32,6 +34,7 @@ import com.google.android.samples.socialite.model.Message
         Chat::class,
         ChatAttendee::class,
         Message::class,
+        WidgetModel::class,
     ],
     views = [ChatWithLastMessage::class],
     version = 1,
@@ -40,6 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun chatDao(): ChatDao
     abstract fun messageDao(): MessageDao
+    abstract fun widgetDao(): WidgetModelDao
 }
 
 fun RoomDatabase.wipeAndReinitializeData() = runInTransaction {

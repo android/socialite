@@ -64,5 +64,6 @@
     <string name="pause_title">Pause</string>
     <string name="ff_title">Fast forward</string>
     <string name="rw_title">Rewind</string>
+    <string name="favorite_contact_widget_name">Favorite Contact</string>
 
 </resources>
