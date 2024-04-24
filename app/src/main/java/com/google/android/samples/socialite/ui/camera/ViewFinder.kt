@@ -16,36 +16,24 @@
 
 package com.google.android.samples.socialite.ui.camera
 
-import android.view.Display
-import android.view.View
 import androidx.camera.core.Preview
-import androidx.camera.view.PreviewView
+import androidx.camera.viewfinder.surface.ImplementationMode
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import com.google.android.samples.socialite.ui.camera.viewfinder.CameraPreview
 
 @Composable
 fun ViewFinder(
     cameraState: CameraState,
     onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
-    onTapToFocus: (Display, Int, Int, Float, Float) -> Unit,
     onZoomChange: (Float) -> Unit,
 ) {
-    var viewInfo: View? by remember { mutableStateOf(null) }
-
     val transformableState = rememberTransformableState(
         onTransformation = { zoomChange, _, _ ->
             onZoomChange(zoomChange)
@@ -54,38 +42,17 @@ fun ViewFinder(
     Box(
         Modifier
             .background(Color.Black)
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { offset ->
-                        viewInfo?.let { view ->
-                            onTapToFocus(
-                                view.display,
-                                view.width,
-                                view.height,
-                                offset.x,
-                                offset.y,
-                            )
-                        }
-                    },
-                )
-            },
+            .fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Box(
             modifier = Modifier
                 .transformable(state = transformableState),
         ) {
-            CameraPreview(
+            CameraXViewfinder(
                 modifier = Modifier.fillMaxSize(),
-                implementationMode = PreviewView.ImplementationMode.COMPATIBLE,
+                implementationMode = ImplementationMode.PERFORMANCE,
                 onSurfaceProviderReady = onSurfaceProviderReady,
-                onRequestBitmapReady = {
-                    val bitmap = it.invoke()
-                },
-                setSurfaceView = { s: View ->
-                    viewInfo = s
-                },
             )
         }
     }

@@ -116,11 +116,7 @@ fun Camera(
         val rotationListener: (Int) -> Unit = { rotationValue: Int ->
             if (rotationValue != rotation) {
                 surfaceProvider?.let { provider ->
-                    viewModel.startPreview(
-                        lifecycleOwner,
-                        provider,
-                        captureMode,
-                        cameraSelector,
+                    viewModel.setTargetRotation(
                         rotationValue,
                     )
                 }
@@ -254,7 +250,6 @@ fun Camera(
                                 ViewFinder(
                                     viewFinderState.cameraState,
                                     onPreviewSurfaceProviderReady,
-                                    viewModel::tapToFocus,
                                     viewModel::setZoomScale,
                                 )
                             }
@@ -268,7 +263,6 @@ fun Camera(
                             ViewFinder(
                                 viewFinderState.cameraState,
                                 onPreviewSurfaceProviderReady,
-                                viewModel::tapToFocus,
                                 viewModel::setZoomScale,
                             )
                         }
