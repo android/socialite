@@ -116,12 +116,8 @@ fun Camera(
         val rotationListener: (Int) -> Unit = { rotationValue: Int ->
             if (rotationValue != rotation) {
                 surfaceProvider?.let { provider ->
-                    viewModel.startPreview(
-                        lifecycleOwner,
-                        provider,
-                        captureMode,
-                        cameraSelector,
-                        rotationValue,
+                    viewModel.setTargetRotation(
+                        rotationValue
                     )
                 }
             }

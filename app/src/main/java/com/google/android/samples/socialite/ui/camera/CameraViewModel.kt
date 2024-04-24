@@ -163,6 +163,11 @@ class CameraViewModel @Inject constructor(
         }
     }
 
+    fun setTargetRotation(rotation: Int) {
+        imageCaptureUseCase.targetRotation = rotation
+        videoCaptureUseCase.targetRotation = rotation
+    }
+
     fun capturePhoto(onMediaCaptured: (Media) -> Unit) {
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
