@@ -117,7 +117,7 @@ fun Camera(
             if (rotationValue != rotation) {
                 surfaceProvider?.let { provider ->
                     viewModel.setTargetRotation(
-                        rotationValue
+                        rotationValue,
                     )
                 }
             }
