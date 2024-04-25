@@ -28,6 +28,8 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.core.graphics.drawable.IconCompat;
 
+import com.google.android.samples.socialite.SocialApp;
+
 import java.util.Objects;
 
 /**
@@ -424,7 +426,7 @@ public class Person {
         static android.app.Person toAndroidPerson(Person person) {
             return new android.app.Person.Builder()
                 .setName(person.getName())
-                .setIcon((person.getIcon() != null) ? person.getIcon().toIcon() : null)
+                .setIcon((person.getIcon() != null) ? person.getIcon().toIcon(SocialApp.app) : null)
                 .setUri(person.getUri())
                 .setKey(person.getKey())
                 .setBot(person.isBot())
