@@ -18,6 +18,7 @@ package androidx.core.app;
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 
@@ -27,8 +28,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.core.graphics.drawable.IconCompat;
-
-import com.google.android.samples.socialite.SocialApp;
 
 import java.util.Objects;
 
@@ -150,8 +149,19 @@ public class Person {
     @RestrictTo(LIBRARY_GROUP_PREFIX)
     @NonNull
     @RequiresApi(28)
+    public android.app.Person toAndroidPerson(Context context) {
+        return Api28Impl.toAndroidPerson(this, context);
+    }
+
+    /**
+     * Converts this compat {@link Person} to the base Android framework {@link android.app.Person}.
+     *
+     */
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    @NonNull
+    @RequiresApi(28)
     public android.app.Person toAndroidPerson() {
-        return Api28Impl.toAndroidPerson(this);
+        return toAndroidPerson(null);
     }
 
     /**
@@ -423,10 +433,10 @@ public class Person {
 
         @SuppressWarnings("deprecation")
         @DoNotInline
-        static android.app.Person toAndroidPerson(Person person) {
+        static android.app.Person toAndroidPerson(Person person, Context context) {
             return new android.app.Person.Builder()
                 .setName(person.getName())
-                .setIcon((person.getIcon() != null) ? person.getIcon().toIcon(SocialApp.app) : null)
+                .setIcon((person.getIcon() != null) ? person.getIcon().toIcon(context) : null)
                 .setUri(person.getUri())
                 .setKey(person.getKey())
                 .setBot(person.isBot())

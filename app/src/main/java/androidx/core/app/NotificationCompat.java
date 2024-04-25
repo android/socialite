@@ -8491,14 +8491,15 @@ public class NotificationCompat {
          * is non-null, otherwise null.
          */
         public static @Nullable android.app.Notification.BubbleMetadata toPlatform(
-            @Nullable BubbleMetadata compatMetadata) {
+            @Nullable BubbleMetadata compatMetadata,
+            @NonNull Context context) {
             if (compatMetadata == null) {
                 return null;
             }
             if (Build.VERSION.SDK_INT >= 30) {
-                return Api30Impl.toPlatform(compatMetadata);
+                return Api30Impl.toPlatform(compatMetadata, context);
             } else if (Build.VERSION.SDK_INT == 29) {
-                return Api29Impl.toPlatform(compatMetadata);
+                return Api29Impl.toPlatform(compatMetadata, context);
             }
             return null;
         }
@@ -8774,7 +8775,8 @@ public class NotificationCompat {
              */
             @RequiresApi(29)
             @Nullable static android.app.Notification.BubbleMetadata toPlatform(
-                @Nullable BubbleMetadata compatMetadata) {
+                @Nullable BubbleMetadata compatMetadata,
+                @NonNull Context context) {
                 if (compatMetadata == null) {
                     return null;
                 }
@@ -8785,7 +8787,7 @@ public class NotificationCompat {
 
                 android.app.Notification.BubbleMetadata.Builder platformMetadataBuilder =
                     new android.app.Notification.BubbleMetadata.Builder()
-                        .setIcon(compatMetadata.getIcon().toIcon())
+                        .setIcon(compatMetadata.getIcon().toIcon(context))
                         .setIntent(compatMetadata.getIntent())
                         .setDeleteIntent(compatMetadata.getDeleteIntent())
                         .setAutoExpandBubble(compatMetadata.getAutoExpandBubble())
@@ -8857,7 +8859,8 @@ public class NotificationCompat {
              */
             @RequiresApi(30)
             @Nullable static android.app.Notification.BubbleMetadata toPlatform(
-                @Nullable BubbleMetadata compatMetadata) {
+                @Nullable BubbleMetadata compatMetadata,
+                @NonNull Context context) {
                 if (compatMetadata == null) {
                     return null;
                 }
@@ -8869,7 +8872,7 @@ public class NotificationCompat {
                 } else {
                     platformMetadataBuilder =
                         new android.app.Notification.BubbleMetadata.Builder(
-                            compatMetadata.getIntent(), compatMetadata.getIcon().toIcon());
+                            compatMetadata.getIntent(), compatMetadata.getIcon().toIcon(context));
                 }
                 platformMetadataBuilder
                     .setDeleteIntent(compatMetadata.getDeleteIntent())

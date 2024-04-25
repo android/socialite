@@ -251,7 +251,7 @@ class NotificationCompatBuilder implements NotificationBuilderWithBuilderAccesso
         }
         if (Build.VERSION.SDK_INT >= 28) {
             for (Person p : b.mPersonList) {
-                Api28Impl.addPerson(mBuilder, p.toAndroidPerson());
+                Api28Impl.addPerson(mBuilder, p.toAndroidPerson(mContext));
             }
         }
         if (Build.VERSION.SDK_INT >= 29) {
@@ -259,7 +259,7 @@ class NotificationCompatBuilder implements NotificationBuilderWithBuilderAccesso
                     b.mAllowSystemGeneratedContextualActions);
             // TODO: Consider roundtripping NotificationCompat.BubbleMetadata on pre-Q platforms.
             Api29Impl.setBubbleMetadata(mBuilder,
-                    NotificationCompat.BubbleMetadata.toPlatform(b.mBubbleMetadata));
+                    NotificationCompat.BubbleMetadata.toPlatform(b.mBubbleMetadata, mContext));
             if (b.mLocusId != null) {
                 Api29Impl.setLocusId(mBuilder, b.mLocusId.toLocusId());
             }
