@@ -117,6 +117,7 @@
         <!-- This activity handles configuration for the SociaLiteAppWidget -->
         <activity android:name=".widget.SociaLiteAppWidgetConfigActivity"
             android:taskAffinity=""
+            android:theme="@style/Theme.Social"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
