@@ -174,14 +174,12 @@ private fun VideoPlayer(
         // create modifier that adds pip to video player
         val pipModifier = modifier.onGloballyPositioned { layoutCoordinates ->
             val builder = PictureInPictureParams.Builder()
-            if (shouldEnterPipMode) {
+            if (shouldEnterPipMode && player != null && player.isInitialized()) {
                 // set source rect hint, aspect ratio
-                if (player != null && player.videoSize.width > 0 && player.videoSize.height > 0) {
-                    val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
-                    builder.setSourceRectHint(sourceRect)
-                    val aspectRatio = Rational(player.videoSize.width, player.videoSize.height)
-                    builder.setAspectRatio(aspectRatio)
-                }
+                val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
+                builder.setSourceRectHint(sourceRect)
+                val aspectRatio = Rational(player.videoSize.width, player.videoSize.height)
+                builder.setAspectRatio(aspectRatio)
             }
 
             builder.setActions(
@@ -367,4 +365,9 @@ internal fun Context.findActivity(): ComponentActivity {
         context = context.baseContext
     }
     throw IllegalStateException("Picture in picture should be called in the context of an Activity")
+}
+
+// Check if player is initialized by making sure the width and height are greater than zero
+fun Player.isInitialized() : Boolean {
+    return (this.videoSize.width > 0 && this.videoSize.height > 0)
 }
