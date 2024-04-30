@@ -95,7 +95,7 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
 
                             ContactRow(
                                 contact = contact,
-                                onClick = TODO("Replace with code from codelab"),
+                                onClick = { TODO("Replace with code from codelab") },
                             )
                         }
                     }
