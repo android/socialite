@@ -85,6 +85,7 @@ class CameraViewModel @Inject constructor(
 
     private val imageCaptureUseCase = ImageCapture.Builder()
         .setResolutionSelector(resolutionSelector)
+        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
         .build()
 
     private val recorder = Recorder.Builder()
