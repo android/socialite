@@ -46,7 +46,7 @@ turbine = "1.0.0"
 uiautomator = "2.2.0"
 window = "1.2.0"
 material3-adaptive-navigation-suite = "1.0.0-alpha05"
-glance = "1.1.0-alpha01"
+glance = "1.1.0-beta02"
 
 [libraries]
 accompanist-painter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
