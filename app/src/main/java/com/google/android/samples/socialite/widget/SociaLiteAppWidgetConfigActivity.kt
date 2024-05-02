@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.SocialTheme
@@ -56,11 +57,16 @@ import com.google.android.samples.socialite.ui.rememberIconPainter
 import com.google.android.samples.socialite.widget.model.WidgetModelRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 
 @AndroidEntryPoint
 class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
     @Inject
     lateinit var widgetModelRepository: WidgetModelRepository
+
+    @Inject
+    @AppCoroutineScope
+    lateinit var coroutineScope: CoroutineScope
 
     @Inject
     lateinit var chatRepository: ChatRepository
@@ -95,7 +101,7 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
 
                             ContactRow(
                                 contact = contact,
-                                onClick = TODO("Replace with code from codelab"),
+                                onClick = { TODO("Replace with code from codelab") },
                             )
                         }
                     }
