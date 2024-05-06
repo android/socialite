@@ -66,6 +66,7 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.ui.PlayerView
 import com.google.android.samples.socialite.R
 
@@ -174,7 +175,7 @@ private fun VideoPlayer(
         // create modifier that adds pip to video player
         val pipModifier = modifier.onGloballyPositioned { layoutCoordinates ->
             val builder = PictureInPictureParams.Builder()
-            if (shouldEnterPipMode && player != null && player.isInitialized()) {
+            if (shouldEnterPipMode && player != null && player.videoSize != VideoSize.UNKNOWN) {
                 // set source rect hint, aspect ratio
                 val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
                 builder.setSourceRectHint(sourceRect)
@@ -365,9 +366,4 @@ internal fun Context.findActivity(): ComponentActivity {
         context = context.baseContext
     }
     throw IllegalStateException("Picture in picture should be called in the context of an Activity")
-}
-
-// Check if player is initialized by making sure the width and height are greater than zero
-fun Player.isInitialized() : Boolean {
-    return (this.videoSize.width > 0 && this.videoSize.height > 0)
 }
