@@ -17,9 +17,13 @@
 package com.google.android.samples.socialite
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.samples.socialite.ui.Main
@@ -32,6 +36,10 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         setContent {
+
+            // setSystemBarAppearance can be removed after calling enableEdgeToEdge()
+            setSystemBarAppearance(isSystemInDarkTheme())
+
             Main(
                 shortcutParams = extractShortcutParams(intent),
             )
@@ -45,5 +53,20 @@ class MainActivity : ComponentActivity() {
         ) ?: return null
         val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
         return ShortcutParams(shortcutId, text)
+    }
+
+    private fun setSystemBarAppearance(isSystemInDarkTheme : Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (isSystemInDarkTheme) {
+                window?.insetsController?.setSystemBarsAppearance(
+                    0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                )
+            } else {
+                window?.insetsController?.setSystemBarsAppearance(
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                )
+            }
+        }
     }
 }
