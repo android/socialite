@@ -66,6 +66,7 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.ui.PlayerView
 import com.google.android.samples.socialite.R
 
@@ -174,12 +175,12 @@ private fun VideoPlayer(
         // create modifier that adds pip to video player
         val pipModifier = modifier.onGloballyPositioned { layoutCoordinates ->
             val builder = PictureInPictureParams.Builder()
-
-            if (shouldEnterPipMode) {
-                // set source rect hint, aspect ratio and remote actions
+            if (shouldEnterPipMode && player != null && player.videoSize != VideoSize.UNKNOWN) {
+                // set source rect hint, aspect ratio
                 val sourceRect = layoutCoordinates.boundsInWindow().toAndroidRectF().toRect()
                 builder.setSourceRectHint(sourceRect)
-                builder.setAspectRatio(Rational(sourceRect.width(), sourceRect.height()))
+                val aspectRatio = Rational(player.videoSize.width, player.videoSize.height)
+                builder.setAspectRatio(aspectRatio)
             }
 
             builder.setActions(

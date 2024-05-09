@@ -30,10 +30,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.samples.socialite.domain.CameraOrientationUseCase
 import com.google.android.samples.socialite.domain.CameraSettings
 import com.google.android.samples.socialite.ui.LocalCameraOrientation
+import androidx.glance.appwidget.updateAll
 import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.ui.ShortcutParams
+import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -44,6 +47,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
         val windowParams: WindowManager.LayoutParams = window.attributes
         windowParams.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT
         window.attributes = windowParams

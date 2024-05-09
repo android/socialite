@@ -22,11 +22,13 @@ import com.google.android.samples.socialite.data.MessageDao
 import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
+import com.google.android.samples.socialite.widget.model.WidgetModelRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 @Singleton
@@ -35,6 +37,7 @@ class ChatRepository @Inject internal constructor(
     private val messageDao: MessageDao,
     private val contactDao: ContactDao,
     private val notificationHelper: NotificationHelper,
+    private val widgetModelRepository: WidgetModelRepository,
     @AppCoroutineScope
     private val coroutineScope: CoroutineScope,
 ) {
@@ -95,6 +98,7 @@ class ChatRepository @Inject internal constructor(
                     false,
                 )
             }
+            widgetModelRepository.updateUnreadMessagesForContact(contactId = detail.firstContact.id, unread = true)
         }
     }
 
@@ -116,6 +120,11 @@ class ChatRepository @Inject internal constructor(
     fun activateChat(chatId: Long) {
         currentChat = chatId
         notificationHelper.dismissNotification(chatId)
+        coroutineScope.launch {
+            chatDao.detailById(currentChat).filterNotNull().collect { detail ->
+                widgetModelRepository.updateUnreadMessagesForContact(detail.firstContact.id, false)
+            }
+        }
     }
 
     fun deactivateChat(chatId: Long) {

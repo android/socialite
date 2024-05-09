@@ -73,11 +73,17 @@ dependencies {
     implementation(libs.camera.extensions)
     implementation(libs.profileinstaller)
 
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     baselineProfile(project(":baselineprofile"))
+
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material)
 
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
@@ -117,6 +123,7 @@ dependencies {
     implementation(libs.camera2)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
+    implementation(libs.camera.viewfinder.compose)
 
     implementation(libs.media3.common)
     implementation(libs.media3.effect)
