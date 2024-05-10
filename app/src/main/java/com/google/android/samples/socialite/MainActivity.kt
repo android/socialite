@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite
 
 import android.content.Intent
+import android.os.Build
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.WindowManager
@@ -47,6 +48,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
         super.onCreate(savedInstanceState)
         runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
