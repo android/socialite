@@ -70,7 +70,9 @@ class CameraXUseCase @Inject constructor(
 
     override suspend fun initializeCamera() {
         previewUseCase = Preview.Builder().build()
-        imageCaptureUseCase = ImageCapture.Builder().build()
+        imageCaptureUseCase = ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .build()
 
         val recorder = Recorder.Builder()
             .setQualitySelector(QualitySelector.from(Quality.HIGHEST))

@@ -63,7 +63,6 @@
             android:theme="@style/Theme.Social.SplashScreen"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
-            android:screenOrientation="fullUser"
             android:supportsPictureInPicture="true">
 
 

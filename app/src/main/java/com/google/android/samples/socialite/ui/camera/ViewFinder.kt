@@ -30,9 +30,9 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 fun ViewFinder(
-    cameraState: CameraState,
     onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
     onZoomChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val transformableState = rememberTransformableState(
         onTransformation = { zoomChange, _, _ ->
@@ -40,7 +40,7 @@ fun ViewFinder(
         },
     )
     Box(
-        Modifier
+        modifier = modifier
             .background(Color.Black)
             .fillMaxSize(),
         contentAlignment = Alignment.Center,

@@ -82,7 +82,7 @@ fun Camera(
 
     val cameraSettings by viewModel.cameraSettings.collectAsStateWithLifecycle()
 
-    LifecycleResumeEffect {
+    LifecycleResumeEffect(key1 = Unit) {
         val job = viewModel.mediaCapture
             .onEach { onMediaCaptured(it) }
             .launchIn(viewModel.viewModelScope)
@@ -243,9 +243,6 @@ private fun TwoPaneVerticalCameraLayout(
 
         ViewFinder(
             onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
-            onTapToFocus = { display, width, height, x, y ->
-                onCameraEvent(CameraEvent.TapToFocus(display, width, height, x, y))
-            },
             onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
             modifier = modifier
                 .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
@@ -263,9 +260,6 @@ private fun TwoPaneHorizontalCameraLayout(
     Column {
         ViewFinder(
             onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
-            onTapToFocus = { display, width, height, x, y ->
-                onCameraEvent(CameraEvent.TapToFocus(display, width, height, x, y))
-            },
             onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
             modifier = modifier
                 .weight(1f)
@@ -323,9 +317,6 @@ private fun BoxScope.FlatCameraLayout(
             .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
             .align(Alignment.Center),
         onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
-        onTapToFocus = { display, width, height, x, y ->
-            onCameraEvent(CameraEvent.TapToFocus(display, width, height, x, y))
-        },
         onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
     )
 

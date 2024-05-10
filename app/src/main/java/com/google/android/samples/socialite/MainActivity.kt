@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -26,11 +27,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.samples.socialite.domain.CameraOrientationUseCase
 import com.google.android.samples.socialite.domain.CameraSettings
 import com.google.android.samples.socialite.ui.LocalCameraOrientation
-import androidx.glance.appwidget.updateAll
 import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.ui.ShortcutParams
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
         super.onCreate(savedInstanceState)
         runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
         val windowParams: WindowManager.LayoutParams = window.attributes
