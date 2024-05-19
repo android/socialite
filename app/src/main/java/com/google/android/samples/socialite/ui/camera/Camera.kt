@@ -80,10 +80,11 @@ fun Camera(
     viewModel: CameraViewModel = hiltViewModel(),
 ) {
     val foldingState = LocalFoldingState.current
+    val orientation = LocalConfiguration.current.orientation
 
     viewModel.setCameraOrientation(
         foldingState,
-        LocalConfiguration.current.orientation == ORIENTATION_PORTRAIT,
+        orientation == ORIENTATION_PORTRAIT,
     )
 
     val cameraSettings by viewModel.cameraSettings.collectAsStateWithLifecycle()

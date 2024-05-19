@@ -47,7 +47,6 @@ import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 interface CameraUseCase {
-    suspend fun initializeCamera()
     fun createUseCaseGroup(cameraSettings: CameraSettings): UseCaseGroup
     suspend fun capturePhoto(): Uri?
     suspend fun startVideoRecording(): Media
@@ -61,23 +60,38 @@ class CameraXUseCase @Inject constructor(
     private val mediaStoreOutputOptions: MediaStoreOutputOptions,
 ) : CameraUseCase {
 
-    private lateinit var previewUseCase: Preview
-    private lateinit var imageCaptureUseCase: ImageCapture
+    private val previewUseCase: Preview = Preview.Builder().build()
+    private val imageCaptureUseCase: ImageCapture = ImageCapture.Builder()
+        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+        .build()
 
-    private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
-    private var recording: Recording? = null
-
-    override suspend fun initializeCamera() {
-        previewUseCase = Preview.Builder().build()
-        imageCaptureUseCase = ImageCapture.Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-            .build()
-
+    private val videoCaptureUseCase: VideoCapture<Recorder> = run {
         val recorder = Recorder.Builder()
             .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
             .build()
 
-        videoCaptureUseCase = VideoCapture.Builder(recorder).build()
+        VideoCapture.Builder(recorder).build()
+    }
+    private var recording: Recording? = null
+
+    override fun createUseCaseGroup(cameraSettings: CameraSettings): UseCaseGroup {
+        val useCaseGroupBuilder = UseCaseGroup.Builder()
+
+        previewUseCase.setSurfaceProvider(cameraSettings.surfaceProvider)
+
+        useCaseGroupBuilder.setViewPort(
+            ViewPort.Builder(
+                cameraSettings.aspectRatioType.ratio,
+                previewUseCase.targetRotation,
+            )
+                .build(),
+        )
+
+        useCaseGroupBuilder.addUseCase(previewUseCase)
+        useCaseGroupBuilder.addUseCase(imageCaptureUseCase)
+        useCaseGroupBuilder.addUseCase(videoCaptureUseCase)
+
+        return useCaseGroupBuilder.build()
     }
 
     override suspend fun capturePhoto(): Uri? = suspendCancellableCoroutine { continuation ->
@@ -119,26 +133,6 @@ class CameraXUseCase @Inject constructor(
     override fun stopVideoRecording() {
         recording?.stop() ?: return
         this.recording = null
-    }
-
-    override fun createUseCaseGroup(cameraSettings: CameraSettings): UseCaseGroup {
-        val useCaseGroupBuilder = UseCaseGroup.Builder()
-
-        previewUseCase.setSurfaceProvider(cameraSettings.surfaceProvider)
-
-        useCaseGroupBuilder.setViewPort(
-            ViewPort.Builder(
-                cameraSettings.aspectRatioType.ratio,
-                previewUseCase.targetRotation,
-            )
-                .build(),
-        )
-
-        useCaseGroupBuilder.addUseCase(previewUseCase)
-        useCaseGroupBuilder.addUseCase(imageCaptureUseCase)
-        useCaseGroupBuilder.addUseCase(videoCaptureUseCase)
-
-        return useCaseGroupBuilder.build()
     }
 }
 

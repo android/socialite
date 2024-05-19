@@ -77,7 +77,7 @@ fun MainNavigation(
         if (navDestination.route == CAMERA_ROUTE && foldingState == FoldingState.CLOSE) {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         } else {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 

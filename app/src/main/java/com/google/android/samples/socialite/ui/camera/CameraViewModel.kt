@@ -67,7 +67,6 @@ class CameraViewModel @Inject constructor(
     val cameraSettings: StateFlow<CameraSettings> = _cameraSettings
         .onStart {
             cameraProvider = cameraProviderManager.getCameraProvider()
-            cameraUseCase.initializeCamera()
         }
         .onEach { cameraSettings ->
             val useCaseGroup = cameraUseCase.createUseCaseGroup(cameraSettings)
