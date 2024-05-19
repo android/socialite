@@ -19,7 +19,6 @@ package com.google.android.samples.socialite.domain
 import android.content.Context
 import android.net.Uri
 import android.util.Rational
-import android.view.Surface
 import androidx.annotation.RequiresPermission
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -49,7 +48,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 
 interface CameraUseCase {
     suspend fun initializeCamera()
-    fun createCameraUseCaseGroup(cameraSettings: CameraSettings): UseCaseGroup
+    fun createUseCaseGroup(cameraSettings: CameraSettings): UseCaseGroup
     suspend fun capturePhoto(): Uri?
     suspend fun startVideoRecording(): Media
     fun stopVideoRecording()
@@ -122,7 +121,7 @@ class CameraXUseCase @Inject constructor(
         this.recording = null
     }
 
-    override fun createCameraUseCaseGroup(cameraSettings: CameraSettings): UseCaseGroup {
+    override fun createUseCaseGroup(cameraSettings: CameraSettings): UseCaseGroup {
         val useCaseGroupBuilder = UseCaseGroup.Builder()
 
         previewUseCase.setSurfaceProvider(cameraSettings.surfaceProvider)
@@ -130,14 +129,10 @@ class CameraXUseCase @Inject constructor(
         useCaseGroupBuilder.setViewPort(
             ViewPort.Builder(
                 cameraSettings.aspectRatioType.ratio,
-                cameraSettings.rotation,
+                previewUseCase.targetRotation,
             )
                 .build(),
         )
-
-        previewUseCase.targetRotation = cameraSettings.rotation
-        imageCaptureUseCase.targetRotation = cameraSettings.rotation
-        videoCaptureUseCase.targetRotation = cameraSettings.rotation
 
         useCaseGroupBuilder.addUseCase(previewUseCase)
         useCaseGroupBuilder.addUseCase(imageCaptureUseCase)
@@ -152,7 +147,6 @@ data class CameraSettings(
     val captureMode: CaptureMode = CaptureMode.PHOTO,
     val zoomScale: Float = 1f,
     val aspectRatioType: AspectRatioType = AspectRatioType.RATIO_9_16,
-    val rotation: Int = Surface.ROTATION_0,
     val foldingState: FoldingState = FoldingState.CLOSE,
     val surfaceProvider: Preview.SurfaceProvider? = null,
 )

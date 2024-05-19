@@ -17,7 +17,8 @@
 package com.google.android.samples.socialite.ui.camera
 
 import android.Manifest
-import android.view.Surface
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,10 +32,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,8 +52,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -63,10 +63,12 @@ import androidx.lifecycle.viewModelScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.samples.socialite.R
+import com.google.android.samples.socialite.domain.AspectRatioType
 import com.google.android.samples.socialite.domain.CameraSettings
 import com.google.android.samples.socialite.domain.FoldingState
 import com.google.android.samples.socialite.ui.DevicePreview
-import com.google.android.samples.socialite.ui.LocalCameraOrientation
+import com.google.android.samples.socialite.ui.LocalFoldingState
+import com.google.android.samples.socialite.ui.SocialTheme
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -77,8 +79,12 @@ fun Camera(
     modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
 ) {
-    val localCameraSettings = LocalCameraOrientation.current
-    viewModel.setCameraOrientation(localCameraSettings)
+    val foldingState = LocalFoldingState.current
+
+    viewModel.setCameraOrientation(
+        foldingState,
+        LocalConfiguration.current.orientation == ORIENTATION_PORTRAIT,
+    )
 
     val cameraSettings by viewModel.cameraSettings.collectAsStateWithLifecycle()
 
@@ -141,8 +147,7 @@ private fun CameraContent(
         modifier = modifier
             .fillMaxSize()
             .background(color = Color.Black)
-            .windowInsetsPadding(WindowInsets.navigationBars)
-            .windowInsetsPadding(WindowInsets.statusBars),
+            .windowInsetsPadding(WindowInsets.systemBars),
     ) {
         when (cameraSettings.foldingState) {
             FoldingState.HALF_OPEN -> {
@@ -162,7 +167,7 @@ private fun CameraContent(
 
         IconButton(
             onClick = onBackPressed,
-            modifier = modifier
+            modifier = Modifier
                 .size(50.dp)
                 .align(Alignment.TopStart)
                 .padding(start = 12.dp),
@@ -182,34 +187,33 @@ private fun TwoPaneCameraLayout(
     onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    when (cameraSettings.rotation) {
-        Surface.ROTATION_0, Surface.ROTATION_180 -> {
-            TwoPaneVerticalCameraLayout(
+    val configuration = LocalConfiguration.current
+    when (configuration.orientation) {
+        ORIENTATION_LANDSCAPE -> {
+            TwoPaneLandScapeCameraLayout(
                 cameraSettings = cameraSettings,
                 onCameraEvent = onCameraEvent,
-                modifier = modifier,
             )
         }
 
         else -> {
-            TwoPaneHorizontalCameraLayout(
+            TwoPanePortraitCameraLayout(
                 cameraSettings = cameraSettings,
                 onCameraEvent = onCameraEvent,
-                modifier = modifier,
             )
         }
     }
 }
 
 @Composable
-private fun TwoPaneVerticalCameraLayout(
+private fun TwoPaneLandScapeCameraLayout(
     cameraSettings: CameraSettings,
     onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row {
         Box(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
         ) {
@@ -244,15 +248,15 @@ private fun TwoPaneVerticalCameraLayout(
         ViewFinder(
             onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
             onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
-            modifier = modifier
-                .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
-                .weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat()),
         )
     }
 }
 
 @Composable
-private fun TwoPaneHorizontalCameraLayout(
+private fun TwoPanePortraitCameraLayout(
     cameraSettings: CameraSettings,
     onCameraEvent: (CameraEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -261,14 +265,14 @@ private fun TwoPaneHorizontalCameraLayout(
         ViewFinder(
             onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
             onZoomChange = { onCameraEvent(CameraEvent.ZoomChange(it)) },
-            modifier = modifier
+            modifier = Modifier
                 .weight(1f)
                 .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
                 .align(Alignment.CenterHorizontally),
         )
 
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             horizontalArrangement = Arrangement.Center,
@@ -313,7 +317,7 @@ private fun BoxScope.FlatCameraLayout(
     modifier: Modifier = Modifier,
 ) {
     ViewFinder(
-        modifier = modifier
+        modifier = Modifier
             .aspectRatio(cameraSettings.aspectRatioType.ratio.toFloat())
             .align(Alignment.Center),
         onSurfaceProviderReady = { onCameraEvent(CameraEvent.SurfaceProviderReady(it)) },
@@ -445,28 +449,38 @@ private fun CameraSwitcher(
     }
 }
 
-@Preview(device = Devices.PIXEL_FOLD)
+@Preview(
+    showSystemUi = true,
+    device = "spec:width=673dp,height=841dp,dpi=420,isRound=false,chinSize=0dp,orientation=landscape",
+)
 @Composable
-private fun HalfOpenHorizontalCameraLayoutPreView() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        TwoPaneCameraLayout(
-            cameraSettings = CameraSettings(rotation = Surface.ROTATION_270),
+private fun HalfLandScapeCameraLayoutPreView() {
+    SocialTheme {
+        CameraContent(
+            cameraSettings = CameraSettings(
+                foldingState = FoldingState.HALF_OPEN,
+                aspectRatioType = AspectRatioType.RATIO_16_9,
+            ),
             onCameraEvent = {},
+            onBackPressed = {},
         )
     }
 }
 
-@Preview(device = Devices.PIXEL_FOLD)
+@Preview(
+    showSystemUi = true,
+    device = "spec:width=673dp,height=841dp,dpi=420,isRound=false,chinSize=0dp,orientation=portrait",
+)
 @Composable
-private fun HalfOpenVerticalCameraLayoutPreView() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        TwoPaneCameraLayout(
-            cameraSettings = CameraSettings(rotation = Surface.ROTATION_0),
+private fun HalfPortraitCameraLayoutPreView() {
+    SocialTheme {
+        CameraContent(
+            cameraSettings = CameraSettings(
+                foldingState = FoldingState.HALF_OPEN,
+                aspectRatioType = AspectRatioType.RATIO_9_16,
+            ),
             onCameraEvent = {},
+            onBackPressed = {},
         )
     }
 }
@@ -474,12 +488,14 @@ private fun HalfOpenVerticalCameraLayoutPreView() {
 @DevicePreview
 @Composable
 private fun FlatCameraLayoutPreView() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        FlatCameraLayout(
-            cameraSettings = CameraSettings(captureMode = CaptureMode.VIDEO_READY),
+    SocialTheme {
+        CameraContent(
+            cameraSettings = CameraSettings(
+                foldingState = FoldingState.FLAT,
+                aspectRatioType = AspectRatioType.RATIO_4_3,
+            ),
             onCameraEvent = {},
+            onBackPressed = {},
         )
     }
 }

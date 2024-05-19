@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 interface DisplayFeaturesMonitor {
@@ -46,6 +47,7 @@ class DisplayFeaturesMonitorImpl @Inject constructor(
                     else -> FoldingState.FLAT
                 }
             }
+            .distinctUntilChanged()
 
     private fun hasHalfOpenedFoldingFeature(displayFeatures: List<FoldingFeature>): Boolean =
         displayFeatures.any { feature ->

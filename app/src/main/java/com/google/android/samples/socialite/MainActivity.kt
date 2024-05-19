@@ -18,7 +18,6 @@ package com.google.android.samples.socialite
 
 import android.content.Intent
 import android.os.Build
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -30,11 +29,11 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.samples.socialite.domain.CameraOrientationUseCase
-import com.google.android.samples.socialite.domain.CameraSettings
-import com.google.android.samples.socialite.ui.LocalCameraOrientation
+import com.google.android.samples.socialite.domain.FoldingState
+import com.google.android.samples.socialite.ui.LocalFoldingState
 import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.ui.ShortcutParams
+import com.google.android.samples.socialite.util.DisplayFeaturesMonitor
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -43,7 +42,8 @@ import kotlinx.coroutines.runBlocking
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject lateinit var cameraOrientationUseCase: CameraOrientationUseCase
+    @Inject
+    lateinit var displayFeaturesMonitor: DisplayFeaturesMonitor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -51,17 +51,16 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
         super.onCreate(savedInstanceState)
         runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
         val windowParams: WindowManager.LayoutParams = window.attributes
         windowParams.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT
         window.attributes = windowParams
         setContent {
-            val cameraOrientation by cameraOrientationUseCase().collectAsStateWithLifecycle(initialValue = CameraSettings())
+            val foldingState by displayFeaturesMonitor.foldingState.collectAsStateWithLifecycle(initialValue = FoldingState.CLOSE)
 
             CompositionLocalProvider(
-                LocalCameraOrientation provides cameraOrientation,
+                LocalFoldingState provides foldingState,
             ) {
                 Main(
                     shortcutParams = extractShortcutParams(intent),

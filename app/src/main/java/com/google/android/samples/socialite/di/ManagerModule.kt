@@ -18,8 +18,6 @@ package com.google.android.samples.socialite.di
 
 import com.google.android.samples.socialite.util.DisplayFeaturesMonitor
 import com.google.android.samples.socialite.util.DisplayFeaturesMonitorImpl
-import com.google.android.samples.socialite.util.RotationStateMonitor
-import com.google.android.samples.socialite.util.RotationStateMonitorImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,9 +26,6 @@ import dagger.hilt.android.components.ActivityComponent
 @Module
 @InstallIn(ActivityComponent::class)
 abstract class ManagerModule {
-
-    @Binds
-    abstract fun bindsRotationStateManager(rotationStateMonitor: RotationStateMonitorImpl): RotationStateMonitor
 
     @Binds
     abstract fun bindDisplayFeaturesMonitor(displayFeaturesMonitor: DisplayFeaturesMonitorImpl): DisplayFeaturesMonitor

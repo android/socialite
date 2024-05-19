@@ -18,7 +18,6 @@ package com.google.android.samples.socialite.ui.camera
 
 import android.util.Log
 import android.view.Display
-import android.view.Surface
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.DisplayOrientedMeteringPointFactory
@@ -71,7 +70,7 @@ class CameraViewModel @Inject constructor(
             cameraUseCase.initializeCamera()
         }
         .onEach { cameraSettings ->
-            val useCaseGroup = cameraUseCase.createCameraUseCaseGroup(cameraSettings)
+            val useCaseGroup = cameraUseCase.createUseCaseGroup(cameraSettings)
 
             cameraProvider.unbindAll()
             camera = cameraProvider.bindToLifecycle(
@@ -111,35 +110,36 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    fun setCameraOrientation(cameraSettings: CameraSettings) {
+    fun setCameraOrientation(
+        foldingState: FoldingState,
+        isPortrait: Boolean,
+    ) {
         _cameraSettings.update { settings ->
-            val isVerticalRotation =
-                cameraSettings.rotation == Surface.ROTATION_0 ||
-                    cameraSettings.rotation == Surface.ROTATION_180
+            val ratio = when (foldingState) {
+                FoldingState.CLOSE -> {
+                    AspectRatioType.RATIO_9_16
+                }
 
-            val aspectRatio =
-                when (cameraSettings.foldingState) {
-                    FoldingState.CLOSE, FoldingState.HALF_OPEN -> {
-                        if (isVerticalRotation) {
-                            AspectRatioType.RATIO_9_16
-                        } else {
-                            AspectRatioType.RATIO_16_9
-                        }
-                    }
-
-                    FoldingState.FLAT -> {
-                        if (isVerticalRotation) {
-                            AspectRatioType.RATIO_4_3
-                        } else {
-                            AspectRatioType.RATIO_1_1
-                        }
+                FoldingState.HALF_OPEN -> {
+                    if (isPortrait) {
+                        AspectRatioType.RATIO_16_9
+                    } else {
+                        AspectRatioType.RATIO_9_16
                     }
                 }
 
+                FoldingState.FLAT -> {
+                    if (isPortrait) {
+                        AspectRatioType.RATIO_1_1
+                    } else {
+                        AspectRatioType.RATIO_4_3
+                    }
+                }
+            }
+
             settings.copy(
-                foldingState = cameraSettings.foldingState,
-                rotation = cameraSettings.rotation,
-                aspectRatioType = aspectRatio,
+                foldingState = foldingState,
+                aspectRatioType = ratio,
             )
         }
     }
