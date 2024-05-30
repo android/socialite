@@ -20,6 +20,8 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -60,6 +62,7 @@ fun Main(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MainNavigation(
     modifier: Modifier,
@@ -78,115 +81,128 @@ fun MainNavigation(
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
-
-    NavHost(
-        navController = navController,
-        startDestination = "home",
-        popEnterTransition = {
-            scaleIn(initialScale = 1.1F) + fadeIn()
-        },
-        popExitTransition = {
-            scaleOut(targetScale = 0.9F) + fadeOut()
-        },
-        modifier = modifier,
-    ) {
-        composable(
-            route = "home",
+    SharedTransitionLayout {
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            popEnterTransition = {
+                scaleIn(initialScale = 1.1F) + fadeIn()
+            },
+            popExitTransition = {
+                scaleOut(targetScale = 0.9F) + fadeOut()
+            },
+            modifier = modifier,
         ) {
-            Home(
-                modifier = Modifier.fillMaxSize(),
-                onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
-            )
-        }
-        composable(
-            route = "chat/{chatId}?text={text}",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-                navArgument("text") { defaultValue = "" },
-            ),
-            deepLinks = listOf(
-                navDeepLink {
-                    action = Intent.ACTION_VIEW
-                    uriPattern = "https://socialite.google.com/chat/{chatId}"
-                },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            val text = backStackEntry.arguments?.getString("text")
-            ChatScreen(
-                chatId = chatId,
-                foreground = true,
-                onBackPressed = { navController.popBackStack() },
-                onCameraClick = { navController.navigate("chat/$chatId/camera") },
-                onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
-                onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
-                prefilledText = text,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-        composable(
-            route = "chat/{chatId}/camera",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            Camera(
-                onMediaCaptured = { capturedMedia: Media? ->
-                    when (capturedMedia?.mediaType) {
-                        MediaType.PHOTO -> {
-                            navController.popBackStack()
+            composable(
+                route = "home",
+            ) {
+                Home(
+                    modifier = Modifier.fillMaxSize(),
+                    onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedContentScope = this@composable
+                )
+            }
+            composable(
+                route = "chat/{chatId}?text={text}",
+                arguments = listOf(
+                    navArgument("chatId") { type = NavType.LongType },
+                    navArgument("text") { defaultValue = "" },
+                ),
+                deepLinks = listOf(
+                    navDeepLink {
+                        action = Intent.ACTION_VIEW
+                        uriPattern = "https://socialite.google.com/chat/{chatId}"
+                    },
+                ),
+            ) { backStackEntry ->
+                val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
+                val text = backStackEntry.arguments?.getString("text")
+                ChatScreen(
+                    chatId = chatId,
+                    foreground = true,
+                    onBackPressed = { navController.popBackStack() },
+                    onCameraClick = { navController.navigate("chat/$chatId/camera") },
+                    onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
+                    onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
+                    prefilledText = text,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .sharedBounds(
+                            this@SharedTransitionLayout.rememberSharedContentState(key = "Bounds${chatId}"),
+                            animatedVisibilityScope = this@composable,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ),
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedContentScope = this@composable,
+                )
+            }
+            composable(
+                route = "chat/{chatId}/camera",
+                arguments = listOf(
+                    navArgument("chatId") { type = NavType.LongType },
+                ),
+            ) { backStackEntry ->
+                val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
+                Camera(
+                    onMediaCaptured = { capturedMedia: Media? ->
+                        when (capturedMedia?.mediaType) {
+                            MediaType.PHOTO -> {
+                                navController.popBackStack()
+                            }
+
+                            MediaType.VIDEO -> {
+                                navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=$chatId")
+                            }
+
+                            else -> {
+                                // No media to use.
+                                navController.popBackStack()
+                            }
                         }
+                    },
+                    chatId = chatId,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
 
-                        MediaType.VIDEO -> {
-                            navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=$chatId")
-                        }
-
-                        else -> {
-                            // No media to use.
-                            navController.popBackStack()
-                        }
-                    }
-                },
-                chatId = chatId,
-                modifier = Modifier.fillMaxSize(),
+            // Invoke PhotoPicker to select photo or video from device gallery
+            photoPickerScreen(
+                onPhotoPicked = navController::popBackStack,
             )
-        }
 
-        // Invoke PhotoPicker to select photo or video from device gallery
-        photoPickerScreen(
-            onPhotoPicked = navController::popBackStack,
-        )
-
-        composable(
-            route = "videoEdit?uri={videoUri}&chatId={chatId}",
-            arguments = listOf(
-                navArgument("videoUri") { type = NavType.StringType },
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
-            VideoEditScreen(
-                chatId = chatId,
-                uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
-                navController = navController,
-            )
-        }
-        composable(
-            route = "videoPlayer?uri={videoUri}",
-            arguments = listOf(
-                navArgument("videoUri") { type = NavType.StringType },
-            ),
-        ) { backStackEntry ->
-            val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
-            VideoPlayerScreen(
-                uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
-            )
+            composable(
+                route = "videoEdit?uri={videoUri}&chatId={chatId}",
+                arguments = listOf(
+                    navArgument("videoUri") { type = NavType.StringType },
+                    navArgument("chatId") { type = NavType.LongType },
+                ),
+            ) { backStackEntry ->
+                val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
+                val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
+                VideoEditScreen(
+                    chatId = chatId,
+                    uri = videoUri,
+                    onCloseButtonClicked = { navController.popBackStack() },
+                    navController = navController,
+                )
+            }
+            composable(
+                route = "videoPlayer?uri={videoUri}",
+                arguments = listOf(
+                    navArgument("videoUri") { type = NavType.StringType },
+                ),
+            ) { backStackEntry ->
+                val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
+                VideoPlayerScreen(
+                    uri = videoUri,
+                    onCloseButtonClicked = { navController.popBackStack() },
+                )
+            }
         }
     }
+
 
     if (shortcutParams != null) {
         val chatId = extractChatId(shortcutParams.shortcutId)

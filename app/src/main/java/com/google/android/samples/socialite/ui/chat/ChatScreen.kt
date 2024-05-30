@@ -16,10 +16,18 @@
 
 package com.google.android.samples.socialite.ui.chat
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -108,6 +116,7 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "ChatUI"
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatScreen(
     chatId: Long,
@@ -119,6 +128,8 @@ fun ChatScreen(
     onVideoClick: (uri: String) -> Unit,
     prefilledText: String? = null,
     viewModel: ChatViewModel = hiltViewModel(),
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     LaunchedEffect(chatId) {
         viewModel.setChatId(chatId)
@@ -144,6 +155,8 @@ fun ChatScreen(
             onVideoClick = onVideoClick,
             modifier = modifier
                 .clip(RoundedCornerShape(5)),
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = animatedContentScope
         )
     }
     LifecycleEffect(
@@ -175,7 +188,7 @@ private fun LifecycleEffect(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ChatContent(
     chat: ChatDetail,
@@ -189,6 +202,8 @@ private fun ChatContent(
     onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
     modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
@@ -200,6 +215,8 @@ private fun ChatContent(
                 chat = chat,
                 scrollBehavior = scrollBehavior,
                 onBackPressed = onBackPressed,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope
             )
         },
     ) { innerPadding ->
@@ -242,39 +259,63 @@ private fun PaddingValues.copy(
     bottom = bottom ?: calculateBottomPadding(),
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ChatAppBar(
     chat: ChatDetail,
     scrollBehavior: TopAppBarScrollBehavior,
     onBackPressed: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
+
 ) {
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                // This only supports DM for now.
-                val contact = chat.attendees.first()
-                SmallContactIcon(iconUri = contact.iconUri, size = 32.dp)
-                Text(text = contact.name)
-            }
-        },
-        modifier = modifier,
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            if (onBackPressed != null) {
-                IconButton(onClick = onBackPressed) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = stringResource(R.string.back),
+    with(sharedTransitionScope) {
+        TopAppBar(
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    // This only supports DM for now.
+                    val contact = chat.attendees.first()
+                    Image(
+                        painter = rememberIconPainter(contact.iconUri),
+                        contentDescription = null,
+                        modifier = Modifier.Companion
+                            .sharedElement(
+                                sharedTransitionScope.rememberSharedContentState(key = chat.chatWithLastMessage.id),
+                                animatedVisibilityScope = animatedContentScope
+                            )
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color.LightGray),
+                    )
+                    Text(
+                        text = contact.name,
+                        modifier = Modifier.Companion.sharedBounds(
+                            sharedTransitionScope.rememberSharedContentState(key = "Text${chat.chatWithLastMessage.id}"),
+                            animatedVisibilityScope = animatedContentScope,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        )
                     )
                 }
-            }
-        },
-    )
+            },
+            modifier = modifier,
+            scrollBehavior = scrollBehavior,
+            navigationIcon = {
+                if (onBackPressed != null) {
+                    IconButton(onClick = onBackPressed) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                        )
+                    }
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -500,27 +541,34 @@ private fun PreviewInputBar() {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Preview
 @Composable
 private fun PreviewChatContent() {
-    SocialTheme {
-        ChatContent(
-            chat = ChatDetail(ChatWithLastMessage(0L), listOf(Contact.CONTACTS[0])),
-            messages = listOf(
-                ChatMessage("Hi!", null, null, 0L, false, null),
-                ChatMessage("Hello", null, null, 0L, true, null),
-                ChatMessage("world", null, null, 0L, true, null),
-                ChatMessage("!", null, null, 0L, true, null),
-                ChatMessage("Hello, world!", null, null, 0L, true, null),
-            ),
-            input = "Hello",
-            sendEnabled = true,
-            onBackPressed = {},
-            onInputChanged = {},
-            onSendClick = {},
-            onCameraClick = {},
-            onPhotoPickerClick = {},
-            onVideoClick = {},
-        )
+    SharedTransitionScope {
+        AnimatedContent(targetState = 1) {_ ->
+            SocialTheme {
+                ChatContent(
+                    chat = ChatDetail(ChatWithLastMessage(0L), listOf(Contact.CONTACTS[0])),
+                    messages = listOf(
+                        ChatMessage("Hi!", null, null, 0L, false, null),
+                        ChatMessage("Hello", null, null, 0L, true, null),
+                        ChatMessage("world", null, null, 0L, true, null),
+                        ChatMessage("!", null, null, 0L, true, null),
+                        ChatMessage("Hello, world!", null, null, 0L, true, null),
+                    ),
+                    input = "Hello",
+                    sendEnabled = true,
+                    onBackPressed = {},
+                    onInputChanged = {},
+                    onSendClick = {},
+                    onCameraClick = {},
+                    onPhotoPickerClick = {},
+                    onVideoClick = {},
+                    sharedTransitionScope = this@SharedTransitionScope,
+                    animatedContentScope = this@AnimatedContent
+                )
+            }
+        }
     }
 }
