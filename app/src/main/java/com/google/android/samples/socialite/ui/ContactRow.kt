@@ -51,75 +51,55 @@ fun ChatRow(
     chat: ChatDetail,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope
 ) {
-    with(sharedTransitionScope) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .then(
-                    if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
-                )
-                .padding(16.dp)
-                .sharedBounds(
-                    sharedTransitionScope.rememberSharedContentState(key = "Bounds${chat.chatWithLastMessage.id}"),
-                    animatedVisibilityScope = animatedContentScope,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            // This only supports DM for now.
-            val contact = chat.attendees.first()
-            Image(
-                painter = rememberIconPainter(contentUri = contact.iconUri),
-                contentDescription = null,
-                modifier = Modifier.Companion
-                    .sharedElement(
-                        sharedTransitionScope.rememberSharedContentState(key = chat.chatWithLastMessage.id),
-                        animatedVisibilityScope = animatedContentScope
-                    )
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray),
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
             )
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.Start,
-            ) {
-                Text(
-                    text = contact.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 16.sp,
-                    modifier = Modifier.Companion.sharedBounds(
-                        sharedTransitionScope.rememberSharedContentState(key = "Text${chat.chatWithLastMessage.id}"),
-                        animatedVisibilityScope = animatedContentScope,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    )
-                )
-                Text(
-                    text = chat.chatWithLastMessage.text,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 4.dp),
-                    fontWeight = FontWeight.Light,
-                    fontSize = 14.sp,
-                )
-            }
-            Column(
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = chat.chatWithLastMessage.timestamp.toReadableString(),
-                    fontSize = 14.sp,
-                )
-            }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        // This only supports DM for now.
+        val contact = chat.attendees.first()
+        Image(
+            painter = rememberIconPainter(contentUri = contact.iconUri),
+            contentDescription = null,
+            modifier = Modifier.Companion
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(Color.LightGray),
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
+                text = contact.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 16.sp,
+            )
+            Text(
+                text = chat.chatWithLastMessage.text,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 4.dp),
+                fontWeight = FontWeight.Light,
+                fontSize = 14.sp,
+            )
+        }
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = chat.chatWithLastMessage.timestamp.toReadableString(),
+                fontSize = 14.sp,
+            )
         }
     }
 }

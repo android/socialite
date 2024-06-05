@@ -17,9 +17,7 @@
 package com.google.android.samples.socialite.ui.home
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,9 +46,7 @@ internal fun ChatList(
     chats: List<ChatDetail>,
     contentPadding: PaddingValues,
     onChatClicked: (chatId: Long) -> Unit,
-    modifier: Modifier = Modifier,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope
+    modifier: Modifier = Modifier
 ) {
     @SuppressLint("InlinedApi") // Granted at install time on API <33.
     val notificationPermissionState = rememberPermissionState(
@@ -77,8 +73,6 @@ internal fun ChatList(
             ChatRow(
                 chat = chat,
                 onClick = { onChatClicked(chat.chatWithLastMessage.id) },
-                sharedTransitionScope = sharedTransitionScope,
-                animatedContentScope = animatedContentScope
             )
         }
     }

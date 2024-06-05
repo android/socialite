@@ -17,9 +17,7 @@
 package com.google.android.samples.socialite.ui.home
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -57,9 +55,7 @@ import com.google.android.samples.socialite.ui.home.timeline.Timeline
 @Composable
 fun Home(
     onChatClicked: (chatId: Long) -> Unit,
-    modifier: Modifier = Modifier,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope
+    modifier: Modifier = Modifier
 ) {
     var currentDestination by rememberSaveable { mutableStateOf(Destination.Chats) }
     NavigationSuiteScaffold(
@@ -85,9 +81,8 @@ fun Home(
     ) { HomeContent(
         currentDestination,
         modifier,
-        onChatClicked,
-        sharedTransitionScope,
-        animatedContentScope) }
+        onChatClicked
+    ) }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -95,9 +90,7 @@ fun Home(
 private fun HomeContent(
     currentDestination: Destination,
     modifier: Modifier,
-    onChatClicked: (chatId: Long) -> Unit,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope
+    onChatClicked: (chatId: Long) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -131,9 +124,7 @@ private fun HomeContent(
                     chats = chats,
                     contentPadding = innerPadding,
                     onChatClicked = onChatClicked,
-                    modifier = modifier,
-                    sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope
+                    modifier = modifier
                 )
             }
             composable(

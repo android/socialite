@@ -17,10 +17,8 @@
 package com.google.android.samples.socialite.ui
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -43,8 +41,8 @@ fun Bubble(chatId: Long) {
                     // TODO (mayurikhin): Hook up camera button in the Bubble composable
                     onPhotoPickerClick = {},
                     modifier = Modifier.fillMaxSize(),
-                    sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedContentScope = this@AnimatedContent
+                    // sharedTransitionScope = this@SharedTransitionLayout,
+                    // animatedContentScope = this@AnimatedContent
                 )
             }
         }
