@@ -116,18 +116,5 @@ fun SupportSQLiteDatabase.populateInitialData() {
                 put("timestamp", now + chatIds[index])
             },
         )
-
-        // Add second message
-        insert(
-            table = "Message",
-            conflictAlgorithm = SQLiteDatabase.CONFLICT_NONE,
-            values = ContentValues().apply {
-                put("id", (index * 2).toLong() + 1L)
-                put("chatId", chatIds[index])
-                put("senderId", contact.id)
-                put("text", "I will reply in 5 seconds")
-                put("timestamp", now + chatIds[index])
-            },
-        )
     }
 }

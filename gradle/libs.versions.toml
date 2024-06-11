@@ -48,6 +48,10 @@ uiautomator = "2.3.0"
 window = "1.2.0"
 material3-adaptive-navigation-suite = "1.0.0-alpha05"
 glance = "1.1.0-alpha01"
+secrets = "2.0.1"
+generativeai = "0.7.0"
+datastore = "1.0.0"
+
 
 [libraries]
 accompanist-painter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
@@ -105,6 +109,8 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 window = { group = "androidx.window", name = "window", version.ref = "window" }
 ktlint = "com.pinterest.ktlint:ktlint-cli:1.1.1" # Used in build.gradle.kts
+generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai"}
+datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -114,3 +120,4 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }

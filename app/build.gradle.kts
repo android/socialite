@@ -21,6 +21,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.secrets)
 }
 
 kotlin {
@@ -144,4 +145,7 @@ dependencies {
 
     implementation(libs.coil)
     implementation(libs.coil.compose)
+
+    implementation(libs.generativeai)
+    implementation(libs.datastore)
 }
