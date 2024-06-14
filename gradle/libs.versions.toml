@@ -30,8 +30,8 @@ graphics = "1.0.0-beta01"
 hilt = "2.51.1"
 hiltNavigationCompose = "1.2.0"
 junit = "4.13.2"
-kotlin = "1.9.23"
-ksp = "1.9.23-1.0.20"
+kotlin = "2.0.0"
+ksp = "2.0.0-1.0.22"
 lifecycle = "2.8.2"
 material3 = "1.2.1"
 media3 = "1.3.1"
@@ -113,5 +113,6 @@ androidTest = { id = "com.android.test", version.ref = "agp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
