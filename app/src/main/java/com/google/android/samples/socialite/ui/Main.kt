@@ -122,7 +122,7 @@ fun MainNavigation(
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
-                modifier = Modifier.fillMaxSize().safeContentPadding(),
+                modifier = Modifier.fillMaxSize(),
             )
         }
         composable(
