@@ -68,5 +68,6 @@
     <string name="ai_chatbot_setting">AI Chatbot</string>
     <string name="ai_chatbot_setting_enabled">enabled</string>
     <string name="ai_chatbot_setting_disabled">disabled</string>
+    <string name="set_api_key_toast">Set your Gemini API key</string>
 
 </resources>

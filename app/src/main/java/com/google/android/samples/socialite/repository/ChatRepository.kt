@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite.repository
 
 import android.content.Context
+import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -25,6 +26,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.content
+import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.ChatDao
 import com.google.android.samples.socialite.data.ContactDao
 import com.google.android.samples.socialite.data.MessageDao
@@ -55,6 +57,7 @@ class ChatRepository @Inject internal constructor(
     private val coroutineScope: CoroutineScope,
     @ApplicationContext private val appContext: Context,
 ) {
+    private val geminiApiKey = "YOUR_API_KEY"
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     private val enableChatbotKey = booleanPreferencesKey("enable_chatbot")
     val isBotEnabled = appContext.dataStore.data.map {
@@ -93,9 +96,8 @@ class ChatRepository @Inject internal constructor(
         // Create a generative AI Model to interact with the Gemini API.
         val generativeModel = GenerativeModel(
             modelName = "gemini-1.5-pro-latest",
-            // Set your Gemini API in as an `apiKey` variable in the local.properties file
-            // and access it via `BuildConfig.apiKey`
-            apiKey = "YOUR_API_KEY",
+            // Set your Gemini API
+            apiKey = geminiApiKey,
             // Set a system instruction to set the behavior of the model.
             systemInstruction = content {
                 text("Please respond to this chat conversation like a friendly ${detail.firstContact.replyModel}.")
@@ -250,6 +252,15 @@ class ChatRepository @Inject internal constructor(
     }
 
     fun toggleChatbotSetting() {
+        if (geminiApiKey == "YOUR_API_KEY") {
+            Toast.makeText(
+                appContext,
+                appContext.getString(R.string.set_api_key_toast),
+                Toast.LENGTH_SHORT,
+            ).show()
+            return
+        }
+
         coroutineScope.launch {
             appContext.dataStore.edit { preferences ->
                 preferences[enableChatbotKey] = (preferences[enableChatbotKey]?.not()) ?: false
