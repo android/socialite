@@ -144,4 +144,7 @@ dependencies {
 
     implementation(libs.coil)
     implementation(libs.coil.compose)
+
+    implementation(libs.generativeai)
+    implementation(libs.datastore)
 }

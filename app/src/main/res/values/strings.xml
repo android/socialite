@@ -65,5 +65,9 @@
     <string name="ff_title">Fast forward</string>
     <string name="rw_title">Rewind</string>
     <string name="favorite_contact_widget_name">Favorite Contact</string>
+    <string name="ai_chatbot_setting">AI Chatbot</string>
+    <string name="ai_chatbot_setting_enabled">enabled</string>
+    <string name="ai_chatbot_setting_disabled">disabled</string>
+    <string name="set_api_key_toast">Set your Gemini API key</string>
 
 </resources>
