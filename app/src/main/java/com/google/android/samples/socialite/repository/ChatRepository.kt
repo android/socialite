@@ -26,6 +26,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.content
+import com.google.android.samples.socialite.BuildConfig
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.ChatDao
 import com.google.android.samples.socialite.data.ContactDao
@@ -57,7 +58,6 @@ class ChatRepository @Inject internal constructor(
     private val coroutineScope: CoroutineScope,
     @ApplicationContext private val appContext: Context,
 ) {
-    private val geminiApiKey = "YOUR_API_KEY"
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     private val enableChatbotKey = booleanPreferencesKey("enable_chatbot")
     val isBotEnabled = appContext.dataStore.data.map {
@@ -96,8 +96,8 @@ class ChatRepository @Inject internal constructor(
         // Create a generative AI Model to interact with the Gemini API.
         val generativeModel = GenerativeModel(
             modelName = "gemini-1.5-pro-latest",
-            // Set your Gemini API
-            apiKey = geminiApiKey,
+            // Set your Gemini API in as an `API_KEY` variable in your local.properties file
+            apiKey = BuildConfig.API_KEY,
             // Set a system instruction to set the behavior of the model.
             systemInstruction = content {
                 text("Please respond to this chat conversation like a friendly ${detail.firstContact.replyModel}.")
@@ -113,13 +113,15 @@ class ChatRepository @Inject internal constructor(
                 )
 
                 // Send a message prompt to the model to generate a response
-                var generateContentResult = try {
-                    chat.sendMessage(text)
+                var response = try {
+                    chat.sendMessage(text).text?.trim() ?: "..."
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    null
+                    appContext.getString(
+                        R.string.gemini_error,
+                        e.message ?: appContext.getString(R.string.unknown_error),
+                    )
                 }
-                val response = generateContentResult?.text ?: "GenAI failed :(".trim()
 
                 // Save the generated response to the database
                 saveMessageAndNotify(chatId, response, detail.firstContact.id, null, null, detail, PushReason.IncomingMessage)
@@ -252,7 +254,7 @@ class ChatRepository @Inject internal constructor(
     }
 
     fun toggleChatbotSetting() {
-        if (geminiApiKey == "YOUR_API_KEY") {
+        if (BuildConfig.API_KEY == "DUMMY_API_KEY") {
             Toast.makeText(
                 appContext,
                 appContext.getString(R.string.set_api_key_toast),

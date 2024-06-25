@@ -21,10 +21,15 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.secrets)
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+secrets {
+    defaultPropertiesFileName = "secret.defaults.properties"
 }
 
 android {
