@@ -13,6 +13,11 @@ Jetpack APIs used:
  - [Room](https://developer.android.com/jetpack/androidx/releases/room) Persisting messages in a SQLite database
  - [Window](https://developer.android.com/jetpack/androidx/releases/window) Detecting foldable device states
 
+The app also integrates the Gemini API that powers chatbot capabilities:
+
+ - [Google AI Client SDK](https://developer.android.com/ai/google-ai-client-sdk) Generative AI with Gemini 1.5 Flash
+
+
 > 🚧 **Work-in-Progress:** This sample is still in the early stage of development, and we're excited to add more features over time.
 
 ## App Overview
@@ -40,6 +45,12 @@ Here are the screens that make up SociaLite:
 1. Clone the repository
 2. Open the whole project in Android Studio.
 3. Sync & Run `app` configuration
+
+### (optional) Add Gemini API:
+4. Create a Gemini API key in [Google AI studio](https://aistudio.google.com/app/apikey),
+5. Add your Gemini API key as `API_KEY` to your [`local.properties`] file,
+6. Sync & Run `app` configuration,
+7. In the app, go to Settings and tap the "AI Chatbot" button.
 
 ## Reporting Issues
 
