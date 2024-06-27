@@ -17,6 +17,8 @@
 package com.google.android.samples.socialite.repository
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -114,7 +116,21 @@ class ChatRepository @Inject internal constructor(
 
                 // Send a message prompt to the model to generate a response
                 var response = try {
-                    chat.sendMessage(text).text?.trim() ?: "..."
+                    if (mediaMimeType?.contains("image") == true) {
+                        appContext.contentResolver.openInputStream(
+                            Uri.parse(mediaUri),
+                        ).use {
+                            if (it != null) {
+                                chat.sendMessage(BitmapFactory.decodeStream(it)).text?.trim() ?: "..."
+                            } else {
+                                appContext.getString(
+                                    R.string.image_error,
+                                )
+                            }
+                        }
+                    } else {
+                        chat.sendMessage(text).text?.trim() ?: "..."
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     appContext.getString(
