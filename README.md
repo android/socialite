@@ -46,6 +46,10 @@ Here are the screens that make up SociaLite:
 2. Open the whole project in Android Studio.
 3. Sync & Run `app` configuration
 
+> Note: The Google AI client SDK for Android used in this code sample is
+recommended for prototyping only. For non-prototyping use cases, we strongly
+recommend that you use [Vertex AI for Firebase][https://firebase.google.com/docs/vertex-ai/migrate-to-vertex-ai?platform=android].
+
 ### (optional) Add Gemini API:
 4. Create a Gemini API key in [Google AI studio](https://aistudio.google.com/app/apikey),
 5. Add your Gemini API key as `API_KEY` to your [`local.properties`] file,
