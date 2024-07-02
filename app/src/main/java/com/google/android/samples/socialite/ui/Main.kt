@@ -116,7 +116,12 @@ fun MainNavigation(
             ChatScreen(
                 chatId = chatId,
                 foreground = true,
-                onBackPressed = { navController.popBackStack() },
+                onBackPressed = {
+                    if (!navController.popBackStack()) {
+                        // https://developer.android.com/guide/navigation/backstack#handle-failure
+                        activity.finish()
+                    }
+                },
                 onCameraClick = { navController.navigate("chat/$chatId/camera") },
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
