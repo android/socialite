@@ -71,8 +71,8 @@ import kotlin.math.absoluteValue
 fun Timeline(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    viewModel: TimelineViewModel = hiltViewModel(),
 ) {
-    val viewModel: TimelineViewModel = hiltViewModel()
     val media = viewModel.media
     val player = viewModel.player
     val videoRatio = viewModel.videoRatio
@@ -82,13 +82,13 @@ fun Timeline(
     } else {
         TimelineVerticalPager(
             contentPadding,
-            modifier,
-            media,
-            player,
-            viewModel::initializePlayer,
-            viewModel::releasePlayer,
-            viewModel::changePlayerItem,
-            videoRatio,
+            modifier = modifier,
+            mediaItems = media,
+            player = player,
+            onInitializePlayer = viewModel::initializePlayer,
+            onReleasePlayer = viewModel::releasePlayer,
+            onChangePlayerItem = viewModel::changePlayerItem,
+            videoRatio = videoRatio,
         )
     }
 }
@@ -97,22 +97,23 @@ fun Timeline(
 @Composable
 fun TimelineVerticalPager(
     contentPadding: PaddingValues,
-    modifier: Modifier = Modifier,
     mediaItems: List<TimelineMediaItem>,
     player: Player?,
+    videoRatio: Float?,
+    modifier: Modifier = Modifier,
     onInitializePlayer: () -> Unit = {},
     onReleasePlayer: () -> Unit = {},
     onChangePlayerItem: (uri: Uri?) -> Unit = {},
-    videoRatio: Float?,
 ) {
     val pagerState = rememberPagerState(pageCount = { mediaItems.count() })
+    val latestOnChangePlayerItem by rememberUpdatedState(onChangePlayerItem)
     LaunchedEffect(pagerState) {
         // Collect from the a snapshotFlow reading the settledPage
         snapshotFlow { pagerState.settledPage }.collect { page ->
             if (mediaItems[page].type == TimelineMediaType.VIDEO) {
-                onChangePlayerItem(Uri.parse(mediaItems[page].uri))
+                latestOnChangePlayerItem(Uri.parse(mediaItems[page].uri))
             } else {
-                onChangePlayerItem(null)
+                latestOnChangePlayerItem(null)
             }
         }
     }
@@ -172,9 +173,9 @@ fun TimelineVerticalPager(
                         .clip(RoundedCornerShape(8.dp)),
                     media = mediaItems[page],
                     player = player,
-                    page,
-                    pagerState,
-                    videoRatio,
+                    page = page,
+                    state = pagerState,
+                    videoRatio = videoRatio,
                 )
 
                 MetadataOverlay(modifier = Modifier.padding(16.dp), mediaItem = mediaItems[page])
@@ -186,12 +187,12 @@ fun TimelineVerticalPager(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TimelinePage(
-    modifier: Modifier = Modifier,
     media: TimelineMediaItem,
     player: Player,
     page: Int,
     state: PagerState,
     videoRatio: Float?,
+    modifier: Modifier = Modifier,
 ) {
     when (media.type) {
         TimelineMediaType.VIDEO -> {
@@ -230,7 +231,10 @@ fun TimelinePage(
 }
 
 @Composable
-fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
+fun MetadataOverlay(
+    mediaItem: TimelineMediaItem,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier = modifier
             .fillMaxSize()

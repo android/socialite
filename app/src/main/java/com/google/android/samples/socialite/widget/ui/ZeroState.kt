@@ -35,8 +35,13 @@ import com.google.android.samples.socialite.MainActivity
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.widget.SociaLiteAppWidgetConfigActivity
 
+// Should use GlanceModifier here instead of Modifier
+@Suppress("ktlint:compose:modifier-naming")
 @Composable
-fun ZeroState(modifier: GlanceModifier = GlanceModifier, widgetId: Int) {
+fun ZeroState(
+    widgetId: Int,
+    modifier: GlanceModifier = GlanceModifier,
+) {
     val widgetIdKey = ActionParameters.Key<Int>(AppWidgetManager.EXTRA_APPWIDGET_ID)
     Scaffold(
         titleBar = {

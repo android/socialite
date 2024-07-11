@@ -89,12 +89,12 @@ private const val TAG = "VideoEditScreen"
 fun VideoEditScreen(
     chatId: Long,
     uri: String,
-    onCloseButtonClicked: () -> Unit,
+    onCloseButtonClick: () -> Unit,
     navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: VideoEditScreenViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
-
-    val viewModel: VideoEditScreenViewModel = hiltViewModel()
     viewModel.setChatId(chatId)
 
     val isFinishedEditing = viewModel.isFinishedEditing.collectAsStateWithLifecycle()
@@ -110,9 +110,10 @@ fun VideoEditScreen(
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             VideoEditTopAppBar(
-                onSendButtonClicked = {
+                onSendButtonClick = {
                     viewModel.applyVideoTransformation(
                         context = context,
                         videoUri = uri,
@@ -122,7 +123,7 @@ fun VideoEditScreen(
                         textOverlayLargeSelected = largeOverlayTextEnabled,
                     )
                 },
-                onCloseButtonClicked = onCloseButtonClicked,
+                onCloseButtonClick = onCloseButtonClick,
             )
         },
     ) { innerPadding ->
@@ -180,8 +181,8 @@ fun VideoEditScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VideoEditTopAppBar(
-    onSendButtonClicked: () -> Unit,
-    onCloseButtonClicked: () -> Unit,
+    onSendButtonClick: () -> Unit,
+    onCloseButtonClick: () -> Unit,
 ) {
     TopAppBar(
         title = {},
@@ -190,7 +191,7 @@ private fun VideoEditTopAppBar(
             navigationIconContentColor = Color.White,
         ),
         navigationIcon = {
-            IconButton(onClick = onCloseButtonClicked) {
+            IconButton(onClick = onCloseButtonClick) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = stringResource(R.string.back),
@@ -203,7 +204,7 @@ private fun VideoEditTopAppBar(
                     containerColor = colorResource(R.color.aqua),
                     contentColor = Color.Black,
                 ),
-                onClick = onSendButtonClicked,
+                onClick = onSendButtonClick,
                 modifier = Modifier.padding(8.dp),
             ) {
                 Text(text = stringResource(id = R.string.send))
@@ -272,9 +273,10 @@ fun TextOverlayOption(
     redTextCheckedStateChange: () -> Unit,
     largeTextCheckedState: Boolean,
     largeTextCheckedStateChange: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
     ) {
         TextField(
@@ -341,11 +343,11 @@ private fun VideoEditFilterChip(
 
 @Composable
 @Preview
-fun VideoEditScreenPreview() {
+private fun VideoEditScreenPreview() {
     VideoEditScreen(
         chatId = 0L,
         uri = "",
-        onCloseButtonClicked = {},
+        onCloseButtonClick = {},
         navController = rememberNavController(),
     )
 }

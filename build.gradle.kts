@@ -33,7 +33,9 @@ allprojects {
         kotlin {
             target("**/*.kt")
             targetExclude("**/camera/viewfinder/**")
-            ktlint(libs.ktlint.get().version)
+            ktlint(libs.ktlint.get().version).customRuleSets(
+                listOf(libs.composeRules.get().toString()),
+            )
         }
         kotlinGradle {
             ktlint(libs.ktlint.get().version)

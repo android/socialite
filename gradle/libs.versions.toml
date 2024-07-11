@@ -108,7 +108,8 @@ truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 window = { group = "androidx.window", name = "window", version.ref = "window" }
-ktlint = "com.pinterest.ktlint:ktlint-cli:1.3.1" # Used in build.gradle.kts
+ktlint = "com.pinterest.ktlint:ktlint-cli:1.3.1" # Used in Spotless
+composeRules = "io.nlopez.compose.rules:ktlint:0.4.5" # Used in Spotless
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai"}
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
 

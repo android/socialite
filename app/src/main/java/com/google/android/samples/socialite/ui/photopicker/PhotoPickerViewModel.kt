@@ -37,7 +37,7 @@ class PhotoPickerViewModel @Inject constructor(
         savedStateHandle.get<Long?>("chatId") ?: throw IllegalArgumentException("chatId is null")
     }
 
-    fun onPhotoPicked(imageUri: Uri) {
+    fun onPhotoPick(imageUri: Uri) {
         viewModelScope.launch {
             // Ask permission since want to persist media access after app restart too.
             contentResolver.takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
