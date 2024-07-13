@@ -16,328 +16,234 @@
 
 package com.google.android.samples.socialite.ui.camera
 
-import android.Manifest
-import android.content.ContentValues
-import android.content.Context
-import android.os.Build
-import android.provider.MediaStore
+import android.util.Log
 import android.view.Display
-import android.widget.Toast
-import androidx.annotation.RequiresPermission
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.DisplayOrientedMeteringPointFactory
 import androidx.camera.core.FocusMeteringAction
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
-import androidx.camera.core.UseCaseGroup
-import androidx.camera.core.resolutionselector.AspectRatioStrategy
-import androidx.camera.core.resolutionselector.ResolutionSelector
-import androidx.camera.extensions.ExtensionMode
-import androidx.camera.extensions.ExtensionsManager
-import androidx.camera.video.MediaStoreOutputOptions
-import androidx.camera.video.Quality
-import androidx.camera.video.QualitySelector
-import androidx.camera.video.Recorder
-import androidx.camera.video.Recording
-import androidx.camera.video.VideoCapture
-import androidx.camera.video.VideoRecordEvent
-import androidx.concurrent.futures.await
-import androidx.core.content.ContextCompat
-import androidx.core.util.Consumer
-import androidx.lifecycle.LifecycleOwner
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.samples.socialite.domain.AspectRatioType
+import com.google.android.samples.socialite.domain.CameraSettings
+import com.google.android.samples.socialite.domain.CameraUseCase
+import com.google.android.samples.socialite.domain.FoldingState
 import com.google.android.samples.socialite.repository.ChatRepository
+import com.google.android.samples.socialite.util.CoroutineLifecycleOwner
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import java.text.SimpleDateFormat
-import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    @ApplicationContext private val application: Context,
-    private val cameraProviderManager: CameraXProcessCameraProviderManager,
+    private val cameraProviderManager: CameraProviderManager,
+    private val cameraUseCase: CameraUseCase,
     private val repository: ChatRepository,
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
+    val chatId: StateFlow<Long?> = savedStateHandle.getStateFlow("chatId", null)
+
+    private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var camera: Camera
-    private lateinit var extensionsManager: ExtensionsManager
 
-    val chatId: Long? = savedStateHandle.get("chatId")
-    var viewFinderState = MutableStateFlow(ViewFinderState())
+    private val _mediaCapture = MutableSharedFlow<Media>(replay = 0)
+    val mediaCapture: SharedFlow<Media> = _mediaCapture
 
-    val aspectRatioStrategy =
-        AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
-    var resolutionSelector = ResolutionSelector.Builder()
-        .setAspectRatioStrategy(aspectRatioStrategy)
-        .build()
-
-    private val previewUseCase = Preview.Builder()
-        .setResolutionSelector(resolutionSelector)
-        .build()
-
-    private val imageCaptureUseCase = ImageCapture.Builder()
-        .setResolutionSelector(resolutionSelector)
-        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-        .build()
-
-    private val recorder = Recorder.Builder()
-        .setAspectRatio(AspectRatio.RATIO_16_9)
-        .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
-        .build()
-
-    private val videoCaptureUseCase = VideoCapture.Builder(recorder)
-        .build()
-
-    private var currentRecording: Recording? = null
-    private lateinit var recordingState: VideoRecordEvent
-
-    fun setChatId(chatId: Long) {
-        savedStateHandle.set("chatId", chatId)
-    }
-
-    fun startPreview(
-        lifecycleOwner: LifecycleOwner,
-        surfaceProvider: Preview.SurfaceProvider,
-        captureMode: CaptureMode,
-        cameraSelector: CameraSelector,
-        rotation: Int,
-    ) {
-        viewModelScope.launch {
-            val cameraProvider = cameraProviderManager.getCameraProvider()
-            val extensionManagerJob = viewModelScope.launch {
-                extensionsManager = ExtensionsManager.getInstanceAsync(
-                    application,
-                    cameraProvider,
-                ).await()
-            }
-            var extensionsCameraSelector: CameraSelector? = null
-            val useCaseGroupBuilder = UseCaseGroup.Builder()
-
-            previewUseCase.setSurfaceProvider(surfaceProvider)
-            useCaseGroupBuilder.addUseCase(previewUseCase)
-
-            if (captureMode == CaptureMode.PHOTO) {
-                try {
-                    extensionManagerJob.join()
-
-                    // Query if extension is available.
-                    if (extensionsManager.isExtensionAvailable(
-                            cameraSelector,
-                            ExtensionMode.NIGHT,
-                        )
-                    ) {
-                        // Retrieve extension enabled camera selector
-                        extensionsCameraSelector =
-                            extensionsManager.getExtensionEnabledCameraSelector(
-                                cameraSelector,
-                                ExtensionMode.NIGHT,
-                            )
-                    }
-                } catch (e: InterruptedException) {
-                    // This should not happen unless the future is cancelled or the thread is
-                    // interrupted by applications.
-                }
-
-                imageCaptureUseCase.targetRotation = rotation
-                useCaseGroupBuilder.addUseCase(imageCaptureUseCase)
-            } else if (captureMode == CaptureMode.VIDEO_READY || captureMode == CaptureMode.VIDEO_RECORDING) {
-                videoCaptureUseCase.targetRotation = rotation
-                useCaseGroupBuilder.addUseCase(videoCaptureUseCase)
-            }
+    private val _cameraSettings = MutableStateFlow(CameraSettings())
+    val cameraSettings: StateFlow<CameraSettings> = _cameraSettings
+        .onStart {
+            cameraProvider = cameraProviderManager.getCameraProvider()
+        }
+        .onEach { cameraSettings ->
+            val useCaseGroup = cameraUseCase.createUseCaseGroup(cameraSettings)
 
             cameraProvider.unbindAll()
-            val activeCameraSelector = extensionsCameraSelector ?: cameraSelector
             camera = cameraProvider.bindToLifecycle(
-                lifecycleOwner,
-                activeCameraSelector,
-                useCaseGroupBuilder.build(),
+                CoroutineLifecycleOwner(viewModelScope.coroutineContext),
+                CameraSelector.Builder()
+                    .requireLensFacing(cameraSettings.cameraLensFacing)
+                    .build(),
+                useCaseGroup,
             )
-            viewFinderState.value.cameraState = CameraState.READY
+        }
+        .catch {
+            Log.e("CameraViewModel", "Error camera", it)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = CameraSettings(),
+        )
+
+    fun setUserEvent(cameraEvent: CameraEvent) {
+        when (cameraEvent) {
+            CameraEvent.CapturePhoto -> capturePhoto()
+            CameraEvent.StartVideoRecording -> startVideoCapture()
+            CameraEvent.StopVideoRecording -> stopVideoRecording()
+            CameraEvent.ToggleCameraFacing -> toggleCameraFacing()
+            is CameraEvent.CaptureModeChange -> setCaptureMode(cameraEvent.mode)
+            is CameraEvent.TapToFocus -> tapToFocus(
+                cameraEvent.display,
+                cameraEvent.surfaceWidth,
+                cameraEvent.surfaceHeight,
+                cameraEvent.x,
+                cameraEvent.y,
+            )
+
+            is CameraEvent.ZoomChange -> setZoomScale(cameraEvent.scale)
+            is CameraEvent.SurfaceProviderReady -> setSurfaceProvider(cameraEvent.surfaceProvider)
         }
     }
 
-    fun setTargetRotation(rotation: Int) {
-        imageCaptureUseCase.targetRotation = rotation
-        videoCaptureUseCase.targetRotation = rotation
-    }
-
-    fun capturePhoto(onMediaCaptured: (Media) -> Unit) {
-        // Create time stamped name and MediaStore entry.
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/SociaLite")
-            }
-        }
-
-        val context: Context = application
-        // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(
-                context.contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues,
-            )
-            .build()
-        imageCaptureUseCase.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(context),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    val msg = "Photo capture failed."
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    fun setCameraOrientation(
+        foldingState: FoldingState,
+        isPortrait: Boolean,
+    ) {
+        _cameraSettings.update { settings ->
+            val ratio = when (foldingState) {
+                FoldingState.CLOSE -> {
+                    AspectRatioType.RATIO_9_16
                 }
 
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = output.savedUri
-                    if (savedUri != null) {
-                        sendPhotoMessage(savedUri.toString())
-                        onMediaCaptured(Media(savedUri, MediaType.PHOTO))
+                FoldingState.HALF_OPEN -> {
+                    if (isPortrait) {
+                        AspectRatioType.RATIO_16_9
                     } else {
-                        val msg = "Photo capture failed."
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        AspectRatioType.RATIO_9_16
                     }
                 }
-            },
-        )
-    }
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
-        val name = "Socialite-recording-" +
-            SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis()) + ".mp4"
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Video.Media.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/SociaLite")
+                FoldingState.FLAT -> {
+                    if (isPortrait) {
+                        AspectRatioType.RATIO_1_1
+                    } else {
+                        AspectRatioType.RATIO_4_3
+                    }
+                }
             }
-        }
-        val context: Context = application
-        val mediaStoreOutput = MediaStoreOutputOptions.Builder(
-            context.contentResolver,
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-        )
-            .setContentValues(contentValues)
-            .build()
 
-        val captureListener = Consumer<VideoRecordEvent> { event ->
-            recordingState = event
-            if (event is VideoRecordEvent.Finalize) {
-                onMediaCaptured(Media(event.outputResults.outputUri, MediaType.VIDEO))
-            }
-        }
-
-        // configure Recorder and Start recording to the mediaStoreOutput.
-        currentRecording = videoCaptureUseCase.output
-            .prepareRecording(context, mediaStoreOutput)
-            .apply { withAudioEnabled() }
-            .start(ContextCompat.getMainExecutor(context), captureListener)
-    }
-
-    fun sendPhotoMessage(photoUri: String) {
-        viewModelScope.launch {
-            if (chatId != null) {
-                repository.sendMessage(
-                    chatId = chatId,
-                    text = "",
-                    mediaUri = photoUri,
-                    mediaMimeType = "image/jpeg",
-                )
-            }
+            settings.copy(
+                foldingState = foldingState,
+                aspectRatioType = ratio,
+            )
         }
     }
 
-    fun saveVideo() {
-        if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
-            return
-        }
-
-        val recording = currentRecording
-        if (recording != null) {
-            recording.stop()
-            currentRecording = null
+    private fun toggleCameraFacing() {
+        _cameraSettings.update { settings ->
+            settings.copy(
+                cameraLensFacing =
+                if (settings.cameraLensFacing == CameraSelector.LENS_FACING_BACK) {
+                    CameraSelector.LENS_FACING_FRONT
+                } else {
+                    CameraSelector.LENS_FACING_BACK
+                },
+            )
         }
     }
 
-    companion object {
-        const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        val aspectRatios = mapOf(AspectRatio.RATIO_16_9 to (9.0 / 16.0).toFloat())
+    private fun setCaptureMode(captureMode: CaptureMode) {
+        _cameraSettings.update { settings ->
+            settings.copy(captureMode = captureMode)
+        }
     }
 
-    fun tapToFocus(
+    private fun setSurfaceProvider(surfaceProvider: Preview.SurfaceProvider) {
+        _cameraSettings.update { settings ->
+            settings.copy(surfaceProvider = surfaceProvider)
+        }
+    }
+
+    private fun tapToFocus(
         display: Display,
         surfaceWidth: Int,
         surfaceHeight: Int,
         x: Float,
         y: Float,
     ) {
-        camera?.let { camera ->
-            val meteringPoint =
-                DisplayOrientedMeteringPointFactory(
-                    display,
-                    camera.cameraInfo,
-                    surfaceWidth.toFloat(),
-                    surfaceHeight.toFloat(),
-                ).createPoint(x, y)
+        val meteringPoint =
+            DisplayOrientedMeteringPointFactory(
+                display,
+                camera.cameraInfo,
+                surfaceWidth.toFloat(),
+                surfaceHeight.toFloat(),
+            ).createPoint(x, y)
 
-            val action = FocusMeteringAction.Builder(meteringPoint).build()
+        val action = FocusMeteringAction.Builder(meteringPoint).build()
 
-            camera.cameraControl.startFocusAndMetering(action)
+        camera.cameraControl.startFocusAndMetering(action)
+    }
+
+    private fun setZoomScale(scale: Float) {
+        val zoomState = camera.cameraInfo.zoomState.value ?: return
+        val finalScale = (zoomState.zoomRatio * scale).coerceIn(
+            zoomState.minZoomRatio,
+            zoomState.maxZoomRatio,
+        )
+
+        camera.cameraControl.setZoomRatio(finalScale)
+    }
+
+    private fun capturePhoto() {
+        viewModelScope.launch {
+            val uri = cameraUseCase.capturePhoto() ?: return@launch
+            val chaId = chatId.value ?: return@launch
+
+            repository.sendMessage(
+                chatId = chaId,
+                text = "",
+                mediaUri = uri.toString(),
+                mediaMimeType = "image/jpeg",
+            )
+            _mediaCapture.emit(Media(uri, MediaType.PHOTO))
         }
     }
 
-    fun setZoomScale(scale: Float) {
-        val zoomState = camera?.cameraInfo?.zoomState?.value
-        if (zoomState == null) return
-        val finalScale =
-            (zoomState.zoomRatio * scale).coerceIn(
-                zoomState.minZoomRatio,
-                zoomState.maxZoomRatio,
-            )
-        camera?.cameraControl?.setZoomRatio(finalScale)
+    private fun startVideoCapture() {
+        viewModelScope.launch {
+            val media = cameraUseCase.startVideoRecording()
+            _mediaCapture.emit(media)
+        }
     }
-}
 
-data class ViewFinderState(
-    var cameraState: CameraState = CameraState.NOT_READY,
-    val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
-)
-
-/**
- * Defines the current state of the camera.
- */
-enum class CameraState {
-    /**
-     * Camera hasn't been initialized.
-     */
-    NOT_READY,
-
-    /**
-     * Camera is open and presenting a preview stream.
-     */
-    READY,
-
-    /**
-     * Camera is initialized but the preview has been stopped.
-     */
-    PREVIEW_STOPPED,
+    private fun stopVideoRecording() {
+        cameraUseCase.stopVideoRecording()
+    }
 }
 
 enum class CaptureMode {
     PHOTO,
     VIDEO_READY,
     VIDEO_RECORDING,
+}
+
+sealed interface CameraEvent {
+    data object ToggleCameraFacing : CameraEvent
+    data object CapturePhoto : CameraEvent
+    data object StartVideoRecording : CameraEvent
+    data object StopVideoRecording : CameraEvent
+    data class ZoomChange(val scale: Float) : CameraEvent
+    data class CaptureModeChange(val mode: CaptureMode) : CameraEvent
+    data class SurfaceProviderReady(val surfaceProvider: Preview.SurfaceProvider) : CameraEvent
+    data class TapToFocus(
+        val display: Display,
+        val surfaceWidth: Int,
+        val surfaceHeight: Int,
+        val x: Float,
+        val y: Float,
+    ) : CameraEvent
 }

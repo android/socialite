@@ -73,4 +73,8 @@
     <string name="image_error">Can\'t open image</string>
     <string name="unknown_error">Unknown error</string>
 
+    <!--Camera Screen -->
+    <string name="photo">Photo</string>
+    <string name="video">Video</string>
+
 </resources>

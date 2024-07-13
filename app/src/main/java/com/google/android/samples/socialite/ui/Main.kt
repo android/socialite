@@ -39,10 +39,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.google.android.samples.socialite.domain.FoldingState
 import com.google.android.samples.socialite.model.extractChatId
-import com.google.android.samples.socialite.ui.camera.Camera
-import com.google.android.samples.socialite.ui.camera.Media
-import com.google.android.samples.socialite.ui.camera.MediaType
+import com.google.android.samples.socialite.ui.camera.navigation.CAMERA_ROUTE
+import com.google.android.samples.socialite.ui.camera.navigation.cameraScreen
+import com.google.android.samples.socialite.ui.camera.navigation.navigateToCamera
 import com.google.android.samples.socialite.ui.chat.ChatScreen
 import com.google.android.samples.socialite.ui.home.Home
 import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
@@ -66,13 +67,14 @@ fun MainNavigation(
     shortcutParams: ShortcutParams?,
 ) {
     val activity = LocalContext.current as Activity
+    val foldingState = LocalFoldingState.current
     val navController = rememberNavController()
 
     navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, _: Bundle? ->
         // Lock the layout of the Camera screen to portrait so that the UI layout remains
         // constant, even on orientation changes. Note that the camera is still aware of
         // orientation, and will assign the correct edge as the bottom of the photo or video.
-        if (navDestination.route?.contains("camera") == true) {
+        if (navDestination.route == CAMERA_ROUTE && foldingState == FoldingState.CLOSE) {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         } else {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -117,41 +119,18 @@ fun MainNavigation(
                 chatId = chatId,
                 foreground = true,
                 onBackPressed = { navController.popBackStack() },
-                onCameraClick = { navController.navigate("chat/$chatId/camera") },
+                onCameraClick = { navController.navigateToCamera(chatId) },
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        composable(
-            route = "chat/{chatId}/camera",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            Camera(
-                onMediaCaptured = { capturedMedia: Media? ->
-                    when (capturedMedia?.mediaType) {
-                        MediaType.PHOTO -> {
-                            navController.popBackStack()
-                        }
 
-                        MediaType.VIDEO -> {
-                            navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=$chatId")
-                        }
-
-                        else -> {
-                            // No media to use.
-                            navController.popBackStack()
-                        }
-                    }
-                },
-                chatId = chatId,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+        cameraScreen(
+            onBackPressed = navController::popBackStack,
+            onVideoEditClick = { uri -> navController.navigate(uri) },
+        )
 
         // Invoke PhotoPicker to select photo or video from device gallery
         photoPickerScreen(
