@@ -21,6 +21,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import android.view.Display
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
@@ -28,6 +29,7 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.DisplayOrientedMeteringPointFactory
+import androidx.camera.core.DynamicRange
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -43,6 +45,7 @@ import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoOutput
 import androidx.camera.video.VideoRecordEvent
 import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
@@ -69,6 +72,7 @@ class CameraViewModel @Inject constructor(
 ) : ViewModel() {
     private lateinit var camera: Camera
     private lateinit var extensionsManager: ExtensionsManager
+    private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
     val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
@@ -93,11 +97,46 @@ class CameraViewModel @Inject constructor(
         .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
         .build()
 
-    private val videoCaptureUseCase = VideoCapture.Builder(recorder)
-        .build()
-
     private var currentRecording: Recording? = null
     private lateinit var recordingState: VideoRecordEvent
+
+    init {
+        val videoCaptureBuilder = VideoCapture.Builder(recorder)
+
+        viewModelScope.launch {
+            val hdrCameraInfo = getHdrCameraInfo()
+            if (hdrCameraInfo == null) {
+                Log.i("Caren", "Not supporting HDR")
+            }
+            if (hdrCameraInfo != null) {
+                Log.i("Caren", "using hdr camera capture")
+                videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
+            }
+
+            videoCaptureUseCase = videoCaptureBuilder.build()
+        }
+    }
+
+    suspend fun getHdrCameraInfo(): DynamicRange? {
+        var supportedHdrEncoding: DynamicRange? = null
+
+        cameraProviderManager.getCameraProvider().availableCameraInfos
+            .first { cameraInfo ->
+                val videoCapabilities = Recorder.getVideoCapabilities(cameraInfo)
+                val supportedDynamicRanges =
+                    videoCapabilities.supportedDynamicRanges
+
+                for (supportedDynamicRange in supportedDynamicRanges) {
+                    Log.i("Caren", supportedDynamicRange.toString())
+                }
+                supportedHdrEncoding = supportedDynamicRanges.firstOrNull {
+                    it != DynamicRange.SDR  // Ensure an HDR encoding is found
+                }
+                return@first supportedDynamicRanges != null
+            }
+
+        return supportedHdrEncoding
+    }
 
     fun setChatId(chatId: Long) {
         savedStateHandle.set("chatId", chatId)
