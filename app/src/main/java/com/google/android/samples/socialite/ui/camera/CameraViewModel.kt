@@ -126,7 +126,7 @@ class CameraViewModel @Inject constructor(
                     videoCapabilities.supportedDynamicRanges
 
                 supportedHdrEncoding = supportedDynamicRanges.firstOrNull {
-                    it != DynamicRange.SDR  // Ensure an HDR encoding is found
+                    it != DynamicRange.SDR // Ensure an HDR encoding is found
                 }
                 return@first true
             }
