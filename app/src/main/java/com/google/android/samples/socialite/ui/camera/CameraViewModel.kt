@@ -45,7 +45,6 @@ import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
-import androidx.camera.video.VideoOutput
 import androidx.camera.video.VideoRecordEvent
 import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
@@ -62,6 +61,8 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+
+private const val TAG = "CameraViewModel"
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
@@ -105,11 +106,9 @@ class CameraViewModel @Inject constructor(
 
         viewModelScope.launch {
             val hdrCameraInfo = getHdrCameraInfo()
-            if (hdrCameraInfo == null) {
-                Log.i("Caren", "Not supporting HDR")
-            }
+
             if (hdrCameraInfo != null) {
-                Log.i("Caren", "using hdr camera capture")
+                Log.i(TAG, "Capturing HDR video")
                 videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
             }
 
@@ -117,7 +116,7 @@ class CameraViewModel @Inject constructor(
         }
     }
 
-    suspend fun getHdrCameraInfo(): DynamicRange? {
+    private suspend fun getHdrCameraInfo(): DynamicRange? {
         var supportedHdrEncoding: DynamicRange? = null
 
         cameraProviderManager.getCameraProvider().availableCameraInfos
@@ -126,13 +125,10 @@ class CameraViewModel @Inject constructor(
                 val supportedDynamicRanges =
                     videoCapabilities.supportedDynamicRanges
 
-                for (supportedDynamicRange in supportedDynamicRanges) {
-                    Log.i("Caren", supportedDynamicRange.toString())
-                }
                 supportedHdrEncoding = supportedDynamicRanges.firstOrNull {
                     it != DynamicRange.SDR  // Ensure an HDR encoding is found
                 }
-                return@first supportedDynamicRanges != null
+                return@first true
             }
 
         return supportedHdrEncoding
