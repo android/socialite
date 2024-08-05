@@ -382,7 +382,14 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
     val bitmapState = produceState<Bitmap?>(initialValue = null) {
         withContext(Dispatchers.IO) {
             val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(context, Uri.parse(videoUri))
+
+            //Locally saved files
+            if (videoUri.contains("content://")) {
+                mediaMetadataRetriever.setDataSource(context, Uri.parse(videoUri),)
+            } else {
+                //Remote url
+                mediaMetadataRetriever.setDataSource(videoUri, HashMap<String, String>())
+            }
             // Return any frame that the framework considers representative of a valid frame
             value = mediaMetadataRetriever.frameAtTime
         }
