@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -60,6 +61,7 @@ fun Main(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun MainNavigation(
     modifier: Modifier,
@@ -78,7 +80,6 @@ fun MainNavigation(
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
-
     NavHost(
         navController = navController,
         startDestination = "home",
@@ -94,8 +95,8 @@ fun MainNavigation(
             route = "home",
         ) {
             Home(
-                modifier = Modifier.fillMaxSize(),
                 onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
+                modifier = Modifier.fillMaxSize()
             )
         }
         composable(
@@ -116,12 +117,12 @@ fun MainNavigation(
             ChatScreen(
                 chatId = chatId,
                 foreground = true,
+                modifier = Modifier.fillMaxSize(),
                 onBackPressed = { navController.popBackStack() },
                 onCameraClick = { navController.navigate("chat/$chatId/camera") },
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
-                modifier = Modifier.fillMaxSize(),
             )
         }
         composable(
@@ -187,7 +188,6 @@ fun MainNavigation(
             )
         }
     }
-
     if (shortcutParams != null) {
         val chatId = extractChatId(shortcutParams.shortcutId)
         val text = shortcutParams.text
