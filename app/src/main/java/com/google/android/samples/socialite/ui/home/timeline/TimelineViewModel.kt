@@ -52,7 +52,7 @@ class TimelineViewModel @Inject constructor(
     // Width/Height ratio of the current media item, used to properly size the Surface
     var videoRatio by mutableStateOf<Float?>(null)
 
-    var timeAtPlayerPrepare : Long = 0
+    var timeAtPlayerPrepare: Long = 0
 
     private val videoSizeListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -69,7 +69,7 @@ class TimelineViewModel @Inject constructor(
     private val firstFrameRenderedListener = object : Player.Listener {
         override fun onRenderedFirstFrame() {
             super.onRenderedFirstFrame()
-            val timeToFirstRenderFrame =  System.currentTimeMillis() - timeAtPlayerPrepare
+            val timeToFirstRenderFrame = System.currentTimeMillis() - timeAtPlayerPrepare
             // Use this value in future to compare performance with and without preload manager
         }
     }
