@@ -379,6 +379,8 @@ private fun MessageBubble(
 @Composable
 private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
     val context = LocalContext.current.applicationContext
+
+    // Running on an IO thread for loading metadata from remote urls to reduce lag time
     val bitmapState = produceState<Bitmap?>(initialValue = null) {
         withContext(Dispatchers.IO) {
             val mediaMetadataRetriever = MediaMetadataRetriever()

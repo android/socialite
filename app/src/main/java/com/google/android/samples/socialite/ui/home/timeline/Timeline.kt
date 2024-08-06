@@ -244,6 +244,7 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
             val mediaMetadataRetriever = MediaMetadataRetriever()
             val context = LocalContext.current.applicationContext
 
+            // Running on an IO thread for loading metadata from remote urls to reduce lag time
             val duration: State<Long?> = produceState<Long?>(initialValue = null) {
                 withContext(Dispatchers.IO) {
                     // Remote url
