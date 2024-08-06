@@ -39,8 +39,8 @@ import kotlinx.coroutines.flow.map
 fun Settings(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    val viewModel: SettingsViewModel = hiltViewModel()
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,

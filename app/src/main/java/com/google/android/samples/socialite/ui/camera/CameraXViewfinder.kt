@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Runnable
@@ -58,9 +59,10 @@ fun CameraXViewfinder(
     implementationMode: ImplementationMode = ImplementationMode.PERFORMANCE,
     onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
 ) {
+    val latestOnSurfaceProviderReady by rememberUpdatedState(onSurfaceProviderReady)
     val viewfinderArgs by produceState<ViewfinderArgs?>(initialValue = null, implementationMode) {
         val requests = MutableStateFlow<SurfaceRequest?>(null)
-        onSurfaceProviderReady(
+        latestOnSurfaceProviderReady(
             Preview.SurfaceProvider { request ->
                 requests.update { oldRequest ->
                     oldRequest?.willNotProvideSurface()

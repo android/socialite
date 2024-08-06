@@ -53,17 +53,20 @@ import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
 @Composable
 fun Main(
     shortcutParams: ShortcutParams?,
+    modifier: Modifier = Modifier,
 ) {
-    val modifier = Modifier.fillMaxSize()
     SocialTheme {
-        MainNavigation(modifier, shortcutParams)
+        MainNavigation(
+            shortcutParams = shortcutParams,
+            modifier = modifier.fillMaxSize(),
+        )
     }
 }
 
 @Composable
 fun MainNavigation(
-    modifier: Modifier,
     shortcutParams: ShortcutParams?,
+    modifier: Modifier = Modifier,
 ) {
     val activity = LocalContext.current as Activity
     val navController = rememberNavController()
@@ -95,7 +98,7 @@ fun MainNavigation(
         ) {
             Home(
                 modifier = Modifier.fillMaxSize(),
-                onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
+                onChatClick = { chatId -> navController.navigate("chat/$chatId") },
             )
         }
         composable(
@@ -116,7 +119,7 @@ fun MainNavigation(
             ChatScreen(
                 chatId = chatId,
                 foreground = true,
-                onBackPressed = { navController.popBackStack() },
+                onBackPress = { navController.popBackStack() },
                 onCameraClick = { navController.navigate("chat/$chatId/camera") },
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
@@ -132,7 +135,7 @@ fun MainNavigation(
         ) { backStackEntry ->
             val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
             Camera(
-                onMediaCaptured = { capturedMedia: Media? ->
+                onMediaCapture = { capturedMedia: Media? ->
                     when (capturedMedia?.mediaType) {
                         MediaType.PHOTO -> {
                             navController.popBackStack()
@@ -155,7 +158,7 @@ fun MainNavigation(
 
         // Invoke PhotoPicker to select photo or video from device gallery
         photoPickerScreen(
-            onPhotoPicked = navController::popBackStack,
+            onPhotoPick = navController::popBackStack,
         )
 
         composable(
@@ -170,7 +173,7 @@ fun MainNavigation(
             VideoEditScreen(
                 chatId = chatId,
                 uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
+                onCloseButtonClick = { navController.popBackStack() },
                 navController = navController,
             )
         }
@@ -183,7 +186,7 @@ fun MainNavigation(
             val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
             VideoPlayerScreen(
                 uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
+                onCloseButtonClick = { navController.popBackStack() },
             )
         }
     }

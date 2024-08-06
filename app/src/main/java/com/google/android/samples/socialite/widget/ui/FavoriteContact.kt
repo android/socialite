@@ -41,8 +41,14 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.google.android.samples.socialite.widget.model.WidgetModel
 
+// Should use GlanceModifier here instead of Modifier
+@Suppress("ktlint:compose:modifier-naming")
 @Composable
-fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetModel, onClick: Action) {
+fun FavoriteContact(
+    model: WidgetModel,
+    onClick: Action,
+    modifier: GlanceModifier = GlanceModifier,
+) {
     Column(
         modifier = modifier.fillMaxSize().clickable(onClick)
             .background(GlanceTheme.colors.widgetBackground).appWidgetBackground()

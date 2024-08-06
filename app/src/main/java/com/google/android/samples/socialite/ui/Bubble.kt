@@ -22,19 +22,22 @@ import androidx.compose.ui.Modifier
 import com.google.android.samples.socialite.ui.chat.ChatScreen
 
 @Composable
-fun Bubble(chatId: Long) {
+fun Bubble(
+    chatId: Long,
+    modifier: Modifier = Modifier,
+) {
     SocialTheme {
         ChatScreen(
             chatId = chatId,
             foreground = false,
-            onBackPressed = null,
+            onBackPress = null,
             // TODO (donovanfm): Hook up camera button in the Bubble composable
             onCameraClick = {},
             // TODO (jolandaverhoef): Hook up play video button in the Bubble composable
             onVideoClick = {},
             // TODO (mayurikhin): Hook up camera button in the Bubble composable
             onPhotoPickerClick = {},
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize(),
         )
     }
 }

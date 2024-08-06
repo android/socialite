@@ -62,8 +62,7 @@ class ChatRepository @Inject internal constructor(
 ) {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     private val enableChatbotKey = booleanPreferencesKey("enable_chatbot")
-    val isBotEnabled = appContext.dataStore.data.map {
-            preference ->
+    val isBotEnabled = appContext.dataStore.data.map { preference ->
         preference[enableChatbotKey] ?: false
     }
 

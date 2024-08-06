@@ -28,7 +28,7 @@ fun NavController.navigateToPhotoPicker(chatId: Long, navOptions: NavOptions? = 
 }
 
 fun NavGraphBuilder.photoPickerScreen(
-    onPhotoPicked: () -> Unit,
+    onPhotoPick: () -> Unit,
 ) {
     composable(
         route = "chat/{chatId}/photoPicker",
@@ -37,7 +37,7 @@ fun NavGraphBuilder.photoPickerScreen(
         ),
     ) {
         PhotoPickerRoute(
-            onPhotoPicked = onPhotoPicked,
+            onPhotoPick = onPhotoPick,
         )
     }
 }

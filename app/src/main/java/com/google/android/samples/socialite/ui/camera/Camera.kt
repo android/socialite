@@ -72,7 +72,7 @@ import kotlinx.coroutines.asExecutor
 @Composable
 fun Camera(
     chatId: Long,
-    onMediaCaptured: (Media?) -> Unit,
+    onMediaCapture: (Media?) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
 ) {
@@ -165,7 +165,7 @@ fun Camera(
     @SuppressLint("MissingPermission")
     fun onVideoRecordingStart() {
         captureMode = CaptureMode.VIDEO_RECORDING
-        viewModel.startVideoCapture(onMediaCaptured)
+        viewModel.startVideoCapture(onMediaCapture)
     }
 
     fun onVideoRecordingFinish() {
@@ -184,7 +184,7 @@ fun Camera(
                         .height(50.dp),
                 ) {
                     IconButton(onClick = {
-                        onMediaCaptured(null)
+                        onMediaCapture(null)
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
@@ -227,7 +227,7 @@ fun Camera(
                                 ) {
                                     ShutterButton(
                                         captureMode,
-                                        { viewModel.capturePhoto(onMediaCaptured) },
+                                        { viewModel.capturePhoto(onMediaCapture) },
                                         { onVideoRecordingStart() },
                                         { onVideoRecordingFinish() },
                                     )
@@ -248,9 +248,9 @@ fun Camera(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 ViewFinder(
-                                    viewFinderState.cameraState,
-                                    onPreviewSurfaceProviderReady,
-                                    viewModel::setZoomScale,
+                                    cameraState = viewFinderState.cameraState,
+                                    onSurfaceProviderReady = onPreviewSurfaceProviderReady,
+                                    onZoomChange = viewModel::setZoomScale,
                                 )
                             }
                         }
@@ -261,9 +261,9 @@ fun Camera(
                                 .weight(1f),
                         ) {
                             ViewFinder(
-                                viewFinderState.cameraState,
-                                onPreviewSurfaceProviderReady,
-                                viewModel::setZoomScale,
+                                cameraState = viewFinderState.cameraState,
+                                onSurfaceProviderReady = onPreviewSurfaceProviderReady,
+                                onZoomChange = viewModel::setZoomScale,
                             )
                         }
                         Row(
@@ -293,7 +293,7 @@ fun Camera(
                             Spacer(modifier = Modifier.size(50.dp))
                             ShutterButton(
                                 captureMode,
-                                { viewModel.capturePhoto(onMediaCaptured) },
+                                { viewModel.capturePhoto(onMediaCapture) },
                                 { onVideoRecordingStart() },
                                 { onVideoRecordingFinish() },
                             )
@@ -305,13 +305,18 @@ fun Camera(
         }
     } else {
         CameraAndRecordAudioPermission(cameraAndRecordAudioPermissionState) {
-            onMediaCaptured(null)
+            onMediaCapture(null)
         }
     }
 }
 
 @Composable
-fun CameraControls(captureMode: CaptureMode, onPhotoButtonClick: () -> Unit, onVideoButtonClick: () -> Unit) {
+fun CameraControls(
+    captureMode: CaptureMode,
+    onPhotoButtonClick: () -> Unit,
+    onVideoButtonClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val activeButtonColor =
         ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     val inactiveButtonColor =
@@ -335,8 +340,14 @@ fun CameraControls(captureMode: CaptureMode, onPhotoButtonClick: () -> Unit, onV
 }
 
 @Composable
-fun ShutterButton(captureMode: CaptureMode, onPhotoCapture: () -> Unit, onVideoRecordingStart: () -> Unit, onVideoRecordingFinish: () -> Unit) {
-    Box(modifier = Modifier.padding(25.dp, 0.dp)) {
+fun ShutterButton(
+    captureMode: CaptureMode,
+    onPhotoCapture: () -> Unit,
+    onVideoRecordingStart: () -> Unit,
+    onVideoRecordingFinish: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier.padding(25.dp, 0.dp)) {
         if (captureMode == CaptureMode.PHOTO) {
             Button(
                 onClick = onPhotoCapture,
@@ -370,15 +381,23 @@ fun ShutterButton(captureMode: CaptureMode, onPhotoCapture: () -> Unit, onVideoR
 }
 
 @Composable
-fun CameraSwitcher(captureMode: CaptureMode, cameraSelector: CameraSelector, setCameraSelector: KFunction1<CameraSelector, Unit>) {
+fun CameraSwitcher(
+    captureMode: CaptureMode,
+    cameraSelector: CameraSelector,
+    setCameraSelector: KFunction1<CameraSelector, Unit>,
+    modifier: Modifier = Modifier,
+) {
     if (captureMode != CaptureMode.VIDEO_RECORDING) {
-        IconButton(onClick = {
-            if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
-            } else {
-                setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
-            }
-        }) {
+        IconButton(
+            onClick = {
+                if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                    setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
+                } else {
+                    setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
+                }
+            },
+            modifier = modifier,
+        ) {
             Icon(
                 imageVector = Icons.Default.Autorenew,
                 contentDescription = null,

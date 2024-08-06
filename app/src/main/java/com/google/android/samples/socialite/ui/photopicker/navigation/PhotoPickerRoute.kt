@@ -28,16 +28,16 @@ import com.google.android.samples.socialite.ui.photopicker.PhotoPickerViewModel
 @Composable
 fun PhotoPickerRoute(
     viewModel: PhotoPickerViewModel = hiltViewModel(),
-    onPhotoPicked: () -> Unit,
+    onPhotoPick: () -> Unit,
 ) {
     val photoPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickVisualMedia(),
             onResult = { uri: Uri? ->
                 if (uri != null) {
-                    viewModel.onPhotoPicked(uri)
+                    viewModel.onPhotoPick(uri)
                 }
-                onPhotoPicked()
+                onPhotoPick()
             },
         )
     LaunchedEffect(Unit) {
