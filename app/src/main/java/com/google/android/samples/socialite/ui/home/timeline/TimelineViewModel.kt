@@ -52,6 +52,8 @@ class TimelineViewModel @Inject constructor(
     // Width/Height ratio of the current media item, used to properly size the Surface
     var videoRatio by mutableStateOf<Float?>(null)
 
+    var timeAtPlayerPrepare : Long = 0
+
     private val videoSizeListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             videoRatio = if (videoSize.height > 0 && videoSize.width > 0) {
@@ -60,6 +62,15 @@ class TimelineViewModel @Inject constructor(
                 null
             }
             super.onVideoSizeChanged(videoSize)
+        }
+    }
+
+    //Used to track performance of preload manager
+    private val firstFrameRenderedListener = object : Player.Listener {
+        override fun onRenderedFirstFrame() {
+            super.onRenderedFirstFrame()
+            val timeToFirstRenderFrame =  System.currentTimeMillis() - timeAtPlayerPrepare
+            // Use this value in future to compare performance with and without preload manager
         }
     }
 
@@ -105,6 +116,7 @@ class TimelineViewModel @Inject constructor(
                 it.repeatMode = ExoPlayer.REPEAT_MODE_ONE
                 it.playWhenReady = true
                 it.addListener(videoSizeListener)
+                it.addListener(firstFrameRenderedListener)
             }
 
         videoRatio = null
@@ -129,6 +141,7 @@ class TimelineViewModel @Inject constructor(
             videoRatio = null
             if (uri != null) {
                 setMediaItem(MediaItem.fromUri(uri))
+                timeAtPlayerPrepare = System.currentTimeMillis()
                 prepare()
             } else {
                 clearMediaItems()
