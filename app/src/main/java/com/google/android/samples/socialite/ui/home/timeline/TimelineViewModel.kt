@@ -65,7 +65,7 @@ class TimelineViewModel @Inject constructor(
         }
     }
 
-    //Used to track performance of preload manager
+    // Used to track performance of preload manager
     private val firstFrameRenderedListener = object : Player.Listener {
         override fun onRenderedFirstFrame() {
             super.onRenderedFirstFrame()
