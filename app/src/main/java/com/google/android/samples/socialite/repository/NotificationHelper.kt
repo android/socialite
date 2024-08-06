@@ -28,6 +28,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.WorkerThread
 import androidx.core.app.NotificationCompat
+import androidx.core.app.PendingIntentCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.content.LocusIdCompat
@@ -143,18 +144,6 @@ class NotificationHelper @Inject constructor(@ApplicationContext context: Contex
         )
     }
 
-    private fun flagUpdateCurrent(mutable: Boolean): Int {
-        return if (mutable) {
-            if (Build.VERSION.SDK_INT >= 31) {
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-            } else {
-                PendingIntent.FLAG_UPDATE_CURRENT
-            }
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        }
-    }
-
     @WorkerThread
     fun showNotification(
         contact: Contact,
@@ -166,14 +155,15 @@ class NotificationHelper @Inject constructor(@ApplicationContext context: Contex
         val user = Person.Builder().setName(appContext.getString(R.string.sender_you)).build()
         val person = Person.Builder().setName(contact.name).setIcon(icon).build()
 
-        val pendingIntent = PendingIntent.getActivity(
+        val pendingIntent = PendingIntentCompat.getActivity(
             appContext,
             REQUEST_BUBBLE,
             // Launch BubbleActivity as the expanded bubble.
             Intent(appContext, BubbleActivity::class.java)
                 .setAction(Intent.ACTION_VIEW)
                 .setData(contact.contentUri),
-            flagUpdateCurrent(mutable = true),
+            PendingIntent.FLAG_UPDATE_CURRENT,
+            true,
         )
         // Let's add some more content to the notification in case it falls back to a normal
         // notification.
@@ -199,7 +189,7 @@ class NotificationHelper @Inject constructor(@ApplicationContext context: Contex
         val builder = NotificationCompat.Builder(appContext, CHANNEL_NEW_MESSAGES)
             // A notification can be shown as a bubble by calling setBubbleMetadata()
             .setBubbleMetadata(
-                NotificationCompat.BubbleMetadata.Builder(pendingIntent, icon)
+                NotificationCompat.BubbleMetadata.Builder(requireNotNull(pendingIntent), icon)
                     // The height of the expanded bubble.
                     .setDesiredHeight(
                         appContext.resources.getDimensionPixelSize(R.dimen.bubble_height),
@@ -232,13 +222,14 @@ class NotificationHelper @Inject constructor(@ApplicationContext context: Contex
             // The content Intent is used when the user clicks on the "Open Content" icon button on
             // the expanded bubble, as well as when the fall-back notification is clicked.
             .setContentIntent(
-                PendingIntent.getActivity(
+                PendingIntentCompat.getActivity(
                     appContext,
                     REQUEST_CONTENT,
                     Intent(appContext, MainActivity::class.java)
                         .setAction(Intent.ACTION_VIEW)
                         .setData(contact.contentUri),
-                    flagUpdateCurrent(mutable = false),
+                    PendingIntent.FLAG_UPDATE_CURRENT,
+                    false,
                 ),
             )
             // Direct Reply
@@ -247,12 +238,13 @@ class NotificationHelper @Inject constructor(@ApplicationContext context: Contex
                     .Builder(
                         IconCompat.createWithResource(appContext, R.drawable.ic_send),
                         appContext.getString(R.string.label_reply),
-                        PendingIntent.getBroadcast(
+                        PendingIntentCompat.getBroadcast(
                             appContext,
                             REQUEST_CONTENT,
                             Intent(appContext, ReplyReceiver::class.java)
                                 .setData(contact.contentUri),
-                            flagUpdateCurrent(mutable = true),
+                            PendingIntent.FLAG_UPDATE_CURRENT,
+                            true,
                         ),
                     )
                     .addRemoteInput(
