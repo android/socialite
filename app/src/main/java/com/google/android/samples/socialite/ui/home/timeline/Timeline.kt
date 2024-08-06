@@ -41,7 +41,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -66,6 +68,8 @@ import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.rememberIconPainter
 import kotlin.math.absoluteValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun Timeline(
@@ -238,15 +242,23 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
     ) {
         if (mediaItem.type == TimelineMediaType.VIDEO) {
             val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(
-                LocalContext.current,
-                Uri.parse(mediaItem.uri),
-            )
+            val context = LocalContext.current.applicationContext
 
-            val duration =
-                mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                    ?.toLong()
-            duration?.let {
+            // Running on an IO thread for loading metadata from remote urls to reduce lag time
+            val duration: State<Long?> = produceState<Long?>(initialValue = null) {
+                withContext(Dispatchers.IO) {
+                    // Remote url
+                    if (mediaItem.uri.contains("https://")) {
+                        mediaMetadataRetriever.setDataSource(mediaItem.uri, HashMap<String, String>())
+                    } else { // Locally saved files
+                        mediaMetadataRetriever.setDataSource(context, Uri.parse(mediaItem.uri))
+                    }
+                    value =
+                        mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                            ?.toLong()
+                }
+            }
+            duration.value?.let {
                 val seconds = it / 1000L
                 val minutes = seconds / 60L
                 Box(
