@@ -103,7 +103,6 @@ class CameraViewModel @Inject constructor(
 
     init {
         val videoCaptureBuilder = VideoCapture.Builder(recorder)
-
         viewModelScope.launch {
             val hdrCameraInfo = getHdrCameraInfo()
 
@@ -126,7 +125,9 @@ class CameraViewModel @Inject constructor(
                     videoCapabilities.supportedDynamicRanges
 
                 supportedHdrEncoding = supportedDynamicRanges.firstOrNull {
-                    it != DynamicRange.SDR // Ensure an HDR encoding is found
+                    // To ensure consistency between the multiple dynamic range profiles, chose
+                    // HLG 10-bit, which is supported by all devices that supports HDR.
+                    it == DynamicRange.HLG_10_BIT
                 }
                 return@first true
             }
