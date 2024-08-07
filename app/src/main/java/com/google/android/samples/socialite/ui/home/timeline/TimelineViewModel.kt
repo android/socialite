@@ -18,6 +18,7 @@ package com.google.android.samples.socialite.ui.home.timeline
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +54,7 @@ class TimelineViewModel @Inject constructor(
     var videoRatio by mutableStateOf<Float?>(null)
 
     var timeAtPlayerPrepare: Long = 0
+    private val TAG = TimelineViewModel::class.java.simpleName
 
     private val videoSizeListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -71,6 +73,7 @@ class TimelineViewModel @Inject constructor(
             super.onRenderedFirstFrame()
             val timeToFirstRenderFrame = System.currentTimeMillis() - timeAtPlayerPrepare
             // Use this value in future to compare performance with and without preload manager
+            Log.d(TAG, "First frame rendered in $timeToFirstRenderFrame ms")
         }
     }
 
