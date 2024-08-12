@@ -18,6 +18,7 @@ package com.google.android.samples.socialite.ui.home.timeline
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,12 +32,14 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import com.google.android.samples.socialite.repository.ChatRepository
+import com.google.android.samples.socialite.ui.player.preloadmanager.PreloadManagerWrapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@UnstableApi
 @HiltViewModel
 class TimelineViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
@@ -52,6 +55,10 @@ class TimelineViewModel @Inject constructor(
     // Width/Height ratio of the current media item, used to properly size the Surface
     var videoRatio by mutableStateOf<Float?>(null)
 
+    private val enablePreloadManager: Boolean = true
+    private lateinit var preloadManager: PreloadManagerWrapper
+    var timeToFirstFrame = 0L
+
     private val videoSizeListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             videoRatio = if (videoSize.height > 0 && videoSize.width > 0) {
@@ -60,6 +67,14 @@ class TimelineViewModel @Inject constructor(
                 null
             }
             super.onVideoSizeChanged(videoSize)
+        }
+    }
+
+    private val firstFrameListener = object : Player.Listener {
+        override fun onRenderedFirstFrame() {
+            timeToFirstFrame = System.currentTimeMillis() - timeToFirstFrame
+            Log.d("PreloadManager", "\t\tTime to first Frame = $timeToFirstFrame ")
+            super.onRenderedFirstFrame()
         }
     }
 
@@ -96,7 +111,8 @@ class TimelineViewModel @Inject constructor(
 
         // Reduced buffer durations since the primary use-case is for short-form videos
         val loadControl =
-            DefaultLoadControl.Builder().setBufferDurationsMs(500, 1000, 0, 500).build()
+            DefaultLoadControl.Builder().setBufferDurationsMs(5_000, 20_000, 5_00, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS)
+                .setPrioritizeTimeOverSizeThresholds(true).build()
         val newPlayer = ExoPlayer
             .Builder(application.applicationContext)
             .setLoadControl(loadControl)
@@ -105,10 +121,30 @@ class TimelineViewModel @Inject constructor(
                 it.repeatMode = ExoPlayer.REPEAT_MODE_ONE
                 it.playWhenReady = true
                 it.addListener(videoSizeListener)
+                it.addListener(firstFrameListener)
             }
 
         videoRatio = null
         player = newPlayer
+
+        if (enablePreloadManager) {
+            initPreloadManager(loadControl)
+        }
+    }
+
+    private fun initPreloadManager(loadControl: DefaultLoadControl) {
+        preloadManager =
+            PreloadManagerWrapper.build(
+                (player as ExoPlayer).applicationLooper,
+                loadControl,
+                application.applicationContext,
+            )
+        preloadManager.setPreloadWindowSize(5)
+
+        // Add videos to preload
+        if (media.isNotEmpty()) {
+            preloadManager.init(media)
+        }
     }
 
     fun releasePlayer() {
@@ -116,12 +152,14 @@ class TimelineViewModel @Inject constructor(
             removeListener(videoSizeListener)
             release()
         }
-
+        if (enablePreloadManager) {
+            preloadManager.release()
+        }
         videoRatio = null
         player = null
     }
 
-    fun changePlayerItem(uri: Uri?) {
+    fun changePlayerItem(uri: Uri?, currentPlayingIndex: Int) {
         if (player == null) return
 
         player?.apply {
@@ -129,7 +167,13 @@ class TimelineViewModel @Inject constructor(
             videoRatio = null
             if (uri != null) {
                 setMediaItem(MediaItem.fromUri(uri))
+                timeToFirstFrame = System.currentTimeMillis()
+                Log.d("PreloadManager", "Video Playing $uri ")
                 prepare()
+                if (enablePreloadManager) {
+                    preloadManager.setCurrentPlayingIndex(currentPlayingIndex)
+                    preloadManager.addMediaItem(MediaItem.fromUri(uri), currentPlayingIndex)
+                }
             } else {
                 clearMediaItems()
             }
