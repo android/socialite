@@ -51,7 +51,7 @@ import com.google.android.samples.socialite.ui.home.timeline.Timeline
 @OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class)
 @Composable
 fun Home(
-    onChatClicked: (chatId: Long) -> Unit,
+    onChatClick: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var currentDestination by rememberSaveable { mutableStateOf(Destination.Chats) }
@@ -75,14 +75,14 @@ fun Home(
                 )
             }
         },
-    ) { HomeContent(currentDestination, modifier, onChatClicked) }
+    ) { HomeContent(currentDestination, modifier, onChatClick) }
 }
 
 @Composable
 private fun HomeContent(
     currentDestination: Destination,
-    modifier: Modifier,
-    onChatClicked: (chatId: Long) -> Unit,
+    modifier: Modifier = Modifier,
+    onChatClick: (chatId: Long) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
@@ -93,7 +93,6 @@ private fun HomeContent(
         NavHost(
             navController = navController,
             startDestination = currentDestination.route,
-            modifier = modifier,
         ) {
             composable(
                 route = Destination.Timeline.route,
@@ -102,7 +101,6 @@ private fun HomeContent(
             ) {
                 Timeline(
                     contentPadding = innerPadding,
-                    modifier = modifier,
                 )
             }
             composable(
@@ -115,8 +113,7 @@ private fun HomeContent(
                 ChatList(
                     chats = chats,
                     contentPadding = innerPadding,
-                    onChatClicked = onChatClicked,
-                    modifier = modifier,
+                    onChatClick = onChatClick,
                 )
             }
             composable(

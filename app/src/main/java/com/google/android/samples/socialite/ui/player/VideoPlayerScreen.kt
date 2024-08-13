@@ -91,7 +91,7 @@ fun VideoPlayerScreen(
     uri: String,
     modifier: Modifier = Modifier,
     viewModel: VideoPlayerScreenViewModel = viewModel(),
-    onCloseButtonClicked: () -> Unit,
+    onCloseButtonClick: () -> Unit,
 ) {
     val player = viewModel.player.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -99,7 +99,7 @@ fun VideoPlayerScreen(
         shouldEnterPipMode = viewModel.shouldEnterPipMode,
         modifier = modifier,
         player = player.value,
-        onCloseButtonClicked = onCloseButtonClicked,
+        onCloseButtonClick = onCloseButtonClick,
         initializePlayer = { viewModel.initializePlayer(uri, context) },
         releasePlayer = viewModel::releasePlayer,
     )
@@ -110,7 +110,7 @@ private fun VideoPlayerScreen(
     shouldEnterPipMode: Boolean,
     modifier: Modifier = Modifier,
     player: Player? = null,
-    onCloseButtonClicked: () -> Unit = {},
+    onCloseButtonClick: () -> Unit = {},
     initializePlayer: () -> Unit = {},
     releasePlayer: () -> Unit = {},
 ) {
@@ -125,9 +125,9 @@ private fun VideoPlayerScreen(
         VideoPlayer(player, shouldEnterPipMode, Modifier.fillMaxSize())
     } else {
         Scaffold(
-            topBar = { VideoPlayerTopAppBar(onCloseButtonClicked) },
+            topBar = { VideoPlayerTopAppBar(onCloseButtonClick) },
         ) { innerPadding ->
-            Column(modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+            Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
                 VideoPlayer(player, shouldEnterPipMode, Modifier.padding(innerPadding))
             }
         }
@@ -137,16 +137,18 @@ private fun VideoPlayerScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VideoPlayerTopAppBar(
-    onCloseButtonClicked: () -> Unit,
+    onCloseButtonClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     TopAppBar(
+        modifier = modifier,
         title = {},
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Black,
             navigationIconContentColor = Color.White,
         ),
         navigationIcon = {
-            IconButton(onClick = onCloseButtonClicked) {
+            IconButton(onClick = onCloseButtonClick) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = stringResource(R.string.back),
@@ -220,7 +222,7 @@ private fun VideoPlayer(
 
 @Composable
 @Preview
-fun VideoPlayerScreenPreview() {
+private fun VideoPlayerScreenPreview() {
     VideoPlayer(player = null, shouldEnterPipMode = false)
 }
 

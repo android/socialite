@@ -44,7 +44,7 @@ import com.google.android.samples.socialite.ui.ChatRow
 internal fun ChatList(
     chats: List<ChatDetail>,
     contentPadding: PaddingValues,
-    onChatClicked: (chatId: Long) -> Unit,
+    onChatClick: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     @SuppressLint("InlinedApi") // Granted at install time on API <33.
@@ -71,7 +71,7 @@ internal fun ChatList(
         items(items = chats) { chat ->
             ChatRow(
                 chat = chat,
-                onClick = { onChatClicked(chat.chatWithLastMessage.id) },
+                onClick = { onChatClick(chat.chatWithLastMessage.id) },
             )
         }
     }

@@ -49,10 +49,10 @@ import com.google.android.samples.socialite.R
 fun CameraAndRecordAudioPermission(
     permissionsState: MultiplePermissionsState,
     modifier: Modifier = Modifier,
-    onBackClicked: () -> Unit,
+    onBackClick: () -> Unit,
 ) {
     var alreadyRequestedCameraPermissions by remember { mutableStateOf(false) }
-    fun onRequestPermissionsClicked() {
+    fun onRequestPermissionsClick() {
         permissionsState.launchMultiplePermissionRequest()
         alreadyRequestedCameraPermissions = true
     }
@@ -92,7 +92,7 @@ fun CameraAndRecordAudioPermission(
             } else {
                 if (permissionsState.shouldShowRationale) {
                     Row {
-                        Button(onClick = { onRequestPermissionsClicked() }) {
+                        Button(onClick = { onRequestPermissionsClick() }) {
                             Text(stringResource(R.string.grant_permission))
                         }
                     }
@@ -104,7 +104,7 @@ fun CameraAndRecordAudioPermission(
                 }
             }
 
-            Button(onClick = { onBackClicked() }) {
+            Button(onClick = { onBackClick() }) {
                 Text(stringResource(R.string.back))
             }
         }

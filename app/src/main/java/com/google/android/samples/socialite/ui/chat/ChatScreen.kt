@@ -72,6 +72,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -94,7 +95,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
@@ -112,11 +112,11 @@ private const val TAG = "ChatUI"
 fun ChatScreen(
     chatId: Long,
     foreground: Boolean,
-    modifier: Modifier = Modifier,
-    onBackPressed: (() -> Unit)?,
+    onBackPress: (() -> Unit)?,
     onCameraClick: () -> Unit,
     onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
+    modifier: Modifier = Modifier,
     prefilledText: String? = null,
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
@@ -136,8 +136,8 @@ fun ChatScreen(
             messages = messages,
             input = input,
             sendEnabled = sendEnabled,
-            onBackPressed = onBackPressed,
-            onInputChanged = { viewModel.updateInput(it) },
+            onBackPress = onBackPress,
+            onInputChange = { viewModel.updateInput(it) },
             onSendClick = { viewModel.send() },
             onCameraClick = onCameraClick,
             onPhotoPickerClick = onPhotoPickerClick,
@@ -158,14 +158,17 @@ private fun LifecycleEffect(
     onPause: () -> Unit = {},
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val latestOnResume by rememberUpdatedState(onResume)
+    val latestOnPause by rememberUpdatedState(onPause)
+
     DisposableEffect(lifecycle) {
         val listener = object : DefaultLifecycleObserver {
             override fun onResume(owner: LifecycleOwner) {
-                onResume()
+                latestOnResume()
             }
 
             override fun onPause(owner: LifecycleOwner) {
-                onPause()
+                latestOnPause()
             }
         }
         lifecycle.addObserver(listener)
@@ -182,8 +185,8 @@ private fun ChatContent(
     messages: List<ChatMessage>,
     input: String,
     sendEnabled: Boolean,
-    onBackPressed: (() -> Unit)?,
-    onInputChanged: (String) -> Unit,
+    onBackPress: (() -> Unit)?,
+    onInputChange: (String) -> Unit,
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
     onPhotoPickerClick: () -> Unit,
@@ -199,7 +202,7 @@ private fun ChatContent(
             ChatAppBar(
                 chat = chat,
                 scrollBehavior = scrollBehavior,
-                onBackPressed = onBackPressed,
+                onBackPress = onBackPress,
             )
         },
     ) { innerPadding ->
@@ -215,7 +218,7 @@ private fun ChatContent(
             )
             InputBar(
                 input = input,
-                onInputChanged = onInputChanged,
+                onInputChange = onInputChange,
                 onSendClick = onSendClick,
                 onCameraClick = onCameraClick,
                 onPhotoPickerClick = onPhotoPickerClick,
@@ -247,7 +250,7 @@ private fun PaddingValues.copy(
 private fun ChatAppBar(
     chat: ChatDetail,
     scrollBehavior: TopAppBarScrollBehavior,
-    onBackPressed: (() -> Unit)?,
+    onBackPress: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
@@ -265,8 +268,8 @@ private fun ChatAppBar(
         modifier = modifier,
         scrollBehavior = scrollBehavior,
         navigationIcon = {
-            if (onBackPressed != null) {
-                IconButton(onClick = onBackPressed) {
+            if (onBackPress != null) {
+                IconButton(onClick = onBackPress) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = stringResource(R.string.back),
@@ -426,7 +429,7 @@ private fun InputBar(
     input: String,
     contentPadding: PaddingValues,
     sendEnabled: Boolean,
-    onInputChanged: (String) -> Unit,
+    onInputChange: (String) -> Unit,
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
     onPhotoPickerClick: () -> Unit,
@@ -459,7 +462,7 @@ private fun InputBar(
             }
             TextField(
                 value = input,
-                onValueChange = onInputChanged,
+                onValueChange = onInputChange,
                 modifier = Modifier
                     .weight(1f)
                     .height(56.dp),
@@ -499,7 +502,7 @@ private fun PreviewInputBar() {
         InputBar(
             input = "Hello, world",
             contentPadding = PaddingValues(0.dp),
-            onInputChanged = {},
+            onInputChange = {},
             onSendClick = {},
             onCameraClick = {},
             onPhotoPickerClick = {},
@@ -523,8 +526,8 @@ private fun PreviewChatContent() {
             ),
             input = "Hello",
             sendEnabled = true,
-            onBackPressed = {},
-            onInputChanged = {},
+            onBackPress = {},
+            onInputChange = {},
             onSendClick = {},
             onCameraClick = {},
             onPhotoPickerClick = {},
