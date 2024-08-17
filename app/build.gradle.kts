@@ -30,7 +30,7 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
