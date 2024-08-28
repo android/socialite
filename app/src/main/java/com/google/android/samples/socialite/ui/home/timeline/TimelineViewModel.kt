@@ -50,13 +50,15 @@ class TimelineViewModel @Inject constructor(
 
     // Single player instance - in the future, we can implement a pool of players to improve
     // latency and allow for concurrent playback
-    var player by mutableStateOf<Player?>(null)
+    var player by mutableStateOf<ExoPlayer?>(null)
 
     // Width/Height ratio of the current media item, used to properly size the Surface
     var videoRatio by mutableStateOf<Float?>(null)
 
+    // Preload Manager for preloaded multiple videos
     private val enablePreloadManager: Boolean = true
     private lateinit var preloadManager: PreloadManagerWrapper
+
     var timeToFirstFrame = 0L
 
     private val videoSizeListener = object : Player.Listener {
@@ -166,14 +168,27 @@ class TimelineViewModel @Inject constructor(
             stop()
             videoRatio = null
             if (uri != null) {
-                setMediaItem(MediaItem.fromUri(uri))
+                // Set the right source to play
+                val mediaItem = MediaItem.fromUri(uri)
+
+                if (enablePreloadManager) {
+                    val mediaSource = preloadManager.getMediaSource(mediaItem)
+                    Log.d("PreloadManager", "Mediasource $mediaSource ")
+
+                    if (mediaSource == null) {
+                        setMediaItem(mediaItem)
+                    } else {
+                        // Use the preloaded media source
+                        setMediaSource(mediaSource)
+                    }
+                    preloadManager.setCurrentPlayingIndex(currentPlayingIndex)
+                } else {
+                    setMediaItem(mediaItem)
+                }
+
                 timeToFirstFrame = System.currentTimeMillis()
                 Log.d("PreloadManager", "Video Playing $uri ")
                 prepare()
-                if (enablePreloadManager) {
-                    preloadManager.setCurrentPlayingIndex(currentPlayingIndex)
-                    preloadManager.addMediaItem(MediaItem.fromUri(uri), currentPlayingIndex)
-                }
             } else {
                 clearMediaItems()
             }

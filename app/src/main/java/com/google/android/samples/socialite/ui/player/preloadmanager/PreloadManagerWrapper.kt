@@ -19,18 +19,19 @@ package com.google.android.samples.socialite.ui.player.preloadmanager
 import android.content.Context
 import android.os.Looper
 import androidx.annotation.MainThread
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRendererCapabilitiesList
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.preload.DefaultPreloadManager
 import androidx.media3.exoplayer.source.preload.DefaultPreloadManager.Status.STAGE_LOADED_TO_POSITION_MS
 import androidx.media3.exoplayer.source.preload.TargetPreloadStatusControl
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import com.google.android.samples.socialite.ui.home.timeline.TimelineMediaItem
-import com.google.android.samples.socialite.ui.home.timeline.TimelineMediaType
 
 /**
  * Created by Mayuri Khinvasara on 12/08/24.
@@ -44,7 +45,12 @@ private constructor(
     private val preloadWindow: ArrayDeque<Pair<MediaItem, Int>> = ArrayDeque()
 
     // Default window size for preload manager
-    private var preloadWindowSize = 5
+    private var preloadWindowMaxSize = 6
+    private var currentPlayingIndex = C.INDEX_UNSET
+    private var mediaItemsList = listOf<TimelineMediaItem>()
+
+    // Defines when to start preloading next items w.r.t current playing item
+    private val itemsRemainingToStartNextPreloading = 2
 
     /** Builds a preload manager instance with default parameters. Preload manager should use the same looper and load control as the player */
     companion object {
@@ -71,50 +77,79 @@ private constructor(
 
     /** Add initial list of videos to the preload manager. */
     fun init(mediaList: List<TimelineMediaItem>) {
-        for ((index, item) in mediaList.withIndex()) {
-            if (item.type == TimelineMediaType.VIDEO) {
-                addMediaItem((MediaItem.fromUri(item.uri)), index)
-            }
+        if (mediaList.isEmpty()) {
+            return
         }
+        setCurrentPlayingIndex(0)
+        setMediaList(mediaList)
+        preloadNextItems()
     }
 
     /** Sets the index of the current playing media. */
-    fun setCurrentPlayingIndex(currentPlayingIndex: Int) {
+    fun setCurrentPlayingIndex(currentPlayingItemIndex: Int) {
+        currentPlayingIndex = currentPlayingItemIndex
         defaultPreloadManager.setCurrentPlayingIndex(currentPlayingIndex)
+        preloadNextItems()
+    }
+
+    /** Sets the list of media items to be played. Can be set as and when new data is loaded. */
+    private fun setMediaList(mediaList: List<TimelineMediaItem>) {
+        mediaItemsList = mediaList
+    }
+
+    /** Ensure that current playing item is in the middle of the preload Window . */
+    private fun preloadNextItems() {
+        var lastPreloadedIndex = 0
+        if (!preloadWindow.isEmpty()) {
+            lastPreloadedIndex = preloadWindow.last().second
+        }
+
+        if (lastPreloadedIndex - currentPlayingIndex <= itemsRemainingToStartNextPreloading) {
+            for (i in 1 until (preloadWindowMaxSize - itemsRemainingToStartNextPreloading)) {
+                addMediaItem(index = lastPreloadedIndex + i)
+                removeMediaItem()
+            }
+            // With invalidate, preload manager will internally sort the priorities of all the media items added to it, and trigger the preload from the most important one
+            defaultPreloadManager.invalidate()
+        }
+    }
+
+    /** Remove media item from the preload window. */
+    private fun removeMediaItem() {
+        if (preloadWindow.size <= preloadWindowMaxSize) {
+            return
+        }
+        val itemAndIndex = preloadWindow.removeFirst()
+        defaultPreloadManager.remove(itemAndIndex.first)
+    }
+
+    /** Add media item from the preload window. */
+    private fun addMediaItem(index: Int) {
+        if (index < 0 || index >= mediaItemsList.size) {
+            return
+        }
+
+        val mediaItem = (MediaItem.fromUri(mediaItemsList[index].uri))
+        defaultPreloadManager.add(mediaItem, index)
+        preloadWindow.addLast(Pair(mediaItem, index))
     }
 
     /** Sets the size of the Preload Queue. */
-    fun setPreloadWindowSize(preloadWindowSize1: Int) {
-        preloadWindowSize = preloadWindowSize1
-    }
-
-    /** Add media item to the preload manager */
-    fun addMediaItem(mediaItem: MediaItem, index: Int): Boolean {
-        // item not found in list. This could happen if the list is auto purged or contents refreshed by APIs
-        if (index < 0) {
-            return false
-        }
-        // item already added , avoid duplicates
-        if (preloadWindow.contains(Pair(mediaItem, index))) {
-            return false
-        }
-
-        // Window full, purge old data added at the start of the queue
-        if (preloadWindow.size >= preloadWindowSize) {
-            defaultPreloadManager.remove(preloadWindow.first().first)
-            preloadWindow.removeFirstOrNull()
-        }
-        // Add video to preload list
-        preloadWindow.add(Pair(mediaItem, index))
-        defaultPreloadManager.add(mediaItem, index)
-        defaultPreloadManager.invalidate()
-        return true
+    fun setPreloadWindowSize(size: Int) {
+        preloadWindowMaxSize = size
     }
 
     /** Releases the preload manager. This must be called on the main thread */
     @MainThread
     fun release() {
         defaultPreloadManager.release()
+        preloadWindow.clear()
+        mediaItemsList.toMutableList().clear()
+    }
+
+    /** Retrieve the preloaded media source */
+    fun getMediaSource(mediaItem: MediaItem): MediaSource? {
+        return defaultPreloadManager.getMediaSource(mediaItem)
     }
 
     /** Customize time to preload, by default as per ranking data */
@@ -122,7 +157,7 @@ private constructor(
     class PreloadStatusControl : TargetPreloadStatusControl<Int> {
         override fun getTargetPreloadStatus(rankingData: Int): DefaultPreloadManager.Status {
             // By default preload first 5 seconds of the video
-            return DefaultPreloadManager.Status(STAGE_LOADED_TO_POSITION_MS, 5000L)
+            return DefaultPreloadManager.Status(STAGE_LOADED_TO_POSITION_MS, 3000L)
         }
     }
 }
