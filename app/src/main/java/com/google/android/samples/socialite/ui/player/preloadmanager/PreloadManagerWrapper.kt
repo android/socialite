@@ -34,7 +34,6 @@ import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import com.google.android.samples.socialite.ui.home.timeline.TimelineMediaItem
 
 /**
- * Created by Mayuri Khinvasara on 12/08/24.
  * Wrapper class to manage all functionalities of preload manager of exoplayer especially for short form content
  */
 @androidx.media3.common.util.UnstableApi
@@ -42,11 +41,15 @@ class PreloadManagerWrapper
 private constructor(
     private val defaultPreloadManager: DefaultPreloadManager,
 ) {
+    // Queue of media items to be preloaded. Can be ranked based on ranking data
     private val preloadWindow: ArrayDeque<Pair<MediaItem, Int>> = ArrayDeque()
 
-    // Default window size for preload manager
-    private var preloadWindowMaxSize = 6
+    // Default window size for preload manager. This defines how many maximum items will be preloaded at a time. If more than maximum items are added to the preload window
+    private var preloadWindowMaxSize = 5
+
     private var currentPlayingIndex = C.INDEX_UNSET
+
+    // List of all items in our current list of media items to be rendered on the UI
     private var mediaItemsList = listOf<TimelineMediaItem>()
 
     // Defines when to start preloading next items w.r.t current playing item
