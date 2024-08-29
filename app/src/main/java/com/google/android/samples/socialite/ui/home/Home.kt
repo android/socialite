@@ -28,71 +28,85 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3AdaptiveNavigationSuiteApi
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.AnimationConstants
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 
-@OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class)
 @Composable
 fun Home(
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var currentDestination by rememberSaveable { mutableStateOf(Destination.Chats) }
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = Destination.fromRoute(
+        navBackStackEntry?.destination?.route
+    ) ?: Destination.START_DESTINATION
+
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            for (destination in Destination.entries) {
-                val selected = currentDestination.route == destination.route
+            Destination.entries.forEach {
+                val isSelected = it == currentDestination
                 item(
-                    selected = selected,
-                    onClick = { currentDestination = destination },
+                    selected = isSelected,
+                    onClick = {
+                        if (!isSelected) {
+                            navController.navigate(it.route) {
+                                popUpTo(navController.graph.findStartDestination().id)
+                                launchSingleTop = true
+                            }
+                        }
+                    },
                     icon = {
                         Icon(
-                            imageVector = destination.imageVector,
-                            contentDescription = stringResource(destination.label),
+                            imageVector = it.imageVector,
+                            contentDescription = stringResource(it.label),
                         )
                     },
                     label = {
-                        Text(text = stringResource(destination.label))
+                        Text(text = stringResource(it.label))
                     },
                     alwaysShowLabel = false,
                 )
             }
         },
-    ) { HomeContent(currentDestination, modifier, onChatClicked) }
+    ) {
+        HomeContent(navController, currentDestination, modifier, onChatClicked)
+    }
 }
 
 @Composable
 private fun HomeContent(
+    navController: NavHostController,
     currentDestination: Destination,
     modifier: Modifier,
     onChatClicked: (chatId: Long) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = { HomeAppBar(title = stringResource(currentDestination.label)) },
+        topBar = {
+            HomeAppBar(title = stringResource(currentDestination.label))
+        },
     ) { innerPadding ->
-        val navController = rememberNavController()
         HomeBackground(modifier = Modifier.fillMaxSize())
         NavHost(
             navController = navController,
-            startDestination = currentDestination.route,
+            startDestination = Destination.START_DESTINATION.route,
             modifier = modifier,
         ) {
             composable(
@@ -167,5 +181,11 @@ private enum class Destination(
         route = "settings",
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
-    ),
+    );
+
+    companion object {
+        val START_DESTINATION = Chats
+
+        fun fromRoute(route: String?): Destination? = entries.find { it.route == route }
+    }
 }
