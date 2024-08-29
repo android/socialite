@@ -31,8 +31,8 @@ graphics = "1.0.0-beta01"
 hilt = "2.48.1"
 hiltNavigationCompose = "1.1.0"
 junit = "4.13.2"
-kotlin = "1.9.20"
-ksp = "1.9.20-1.0.14"
+kotlin = "2.0.0"
+ksp = "2.0.0-1.0.21"
 lifecycle = "2.7.0"
 material3 = "1.2.1"
 media3 = "1.3.1"
@@ -107,6 +107,7 @@ ktlint = "com.pinterest.ktlint:ktlint-cli:1.1.1" # Used in build.gradle.kts
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidTest = { id = "com.android.test", version.ref = "agp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
+compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
