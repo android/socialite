@@ -37,6 +37,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -46,6 +49,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.AnimationConstants
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
+import kotlinx.serialization.Serializable
 
 @Composable
 fun Home(
@@ -54,9 +58,7 @@ fun Home(
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = Destination.fromRoute(
-        navBackStackEntry?.destination?.route
-    ) ?: Destination.START_DESTINATION
+    val currentDestination = Destination.fromNavBackStackEntry(navBackStackEntry)
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -109,8 +111,7 @@ private fun HomeContent(
             startDestination = Destination.START_DESTINATION.route,
             modifier = modifier,
         ) {
-            composable(
-                route = Destination.Timeline.route,
+            composable<Route.TimelineRoute>(
                 enterTransition = { AnimationConstants.enterTransition },
                 exitTransition = { AnimationConstants.exitTransition },
             ) {
@@ -119,8 +120,7 @@ private fun HomeContent(
                     modifier = modifier,
                 )
             }
-            composable(
-                route = Destination.Chats.route,
+            composable<Route.ChatsRoute>(
                 enterTransition = { AnimationConstants.enterTransition },
                 exitTransition = { AnimationConstants.exitTransition },
             ) {
@@ -133,8 +133,7 @@ private fun HomeContent(
                     modifier = modifier,
                 )
             }
-            composable(
-                route = Destination.Settings.route,
+            composable<Route.SettingsRoute>(
                 enterTransition = { AnimationConstants.enterTransition },
                 exitTransition = { AnimationConstants.exitTransition },
             ) {
@@ -162,30 +161,48 @@ fun HomeAppBar(
     )
 }
 
+sealed interface Route {
+    @Serializable
+    data object TimelineRoute : Route
+
+    @Serializable
+    data object ChatsRoute : Route
+
+    @Serializable
+    data object SettingsRoute : Route
+}
+
 private enum class Destination(
-    val route: String,
+    val route: Route,
     @StringRes val label: Int,
     val imageVector: ImageVector,
 ) {
     Timeline(
-        route = "timeline",
+        route = Route.TimelineRoute,
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
     Chats(
-        route = "chats",
+        route = Route.ChatsRoute,
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
     ),
     Settings(
-        route = "settings",
+        route = Route.SettingsRoute,
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
-    );
+    ),
+    ;
 
     companion object {
         val START_DESTINATION = Chats
 
-        fun fromRoute(route: String?): Destination? = entries.find { it.route == route }
+        fun fromNavBackStackEntry(nbse: NavBackStackEntry?): Destination {
+            return entries.find { dest ->
+                nbse?.destination?.hierarchy?.any {
+                    it.hasRoute(dest.route::class)
+                } == true
+            } ?: START_DESTINATION
+        }
     }
 }
