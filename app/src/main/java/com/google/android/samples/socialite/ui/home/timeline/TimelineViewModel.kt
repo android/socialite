@@ -18,6 +18,8 @@ package com.google.android.samples.socialite.ui.home.timeline
 
 import android.content.Context
 import android.net.Uri
+import android.os.HandlerThread
+import android.os.Process
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
@@ -25,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
@@ -59,7 +62,11 @@ class TimelineViewModel @Inject constructor(
     private val enablePreloadManager: Boolean = true
     private lateinit var preloadManager: PreloadManagerWrapper
 
-    var timeToFirstFrame = 0L
+    // Playback thread; Internal playback / preload operations are running on the playback thread.
+    private val playerThread: HandlerThread =
+        HandlerThread("playback-thread", Process.THREAD_PRIORITY_AUDIO)
+
+    var playbackStartTimeMs = C.TIME_UNSET
 
     private val videoSizeListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -74,8 +81,8 @@ class TimelineViewModel @Inject constructor(
 
     private val firstFrameListener = object : Player.Listener {
         override fun onRenderedFirstFrame() {
-            timeToFirstFrame = System.currentTimeMillis() - timeToFirstFrame
-            Log.d("PreloadManager", "\t\tTime to first Frame = $timeToFirstFrame ")
+            val timeToFirstFrameMs = System.currentTimeMillis() - playbackStartTimeMs
+            Log.d("PreloadManager", "\t\tTime to first Frame = $timeToFirstFrameMs ")
             super.onRenderedFirstFrame()
         }
     }
@@ -115,9 +122,13 @@ class TimelineViewModel @Inject constructor(
         val loadControl =
             DefaultLoadControl.Builder().setBufferDurationsMs(5_000, 20_000, 5_00, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS)
                 .setPrioritizeTimeOverSizeThresholds(true).build()
+
+        playerThread.start()
+
         val newPlayer = ExoPlayer
             .Builder(application.applicationContext)
             .setLoadControl(loadControl)
+            .setPlaybackLooper(playerThread.looper)
             .build()
             .also {
                 it.repeatMode = ExoPlayer.REPEAT_MODE_ONE
@@ -130,14 +141,17 @@ class TimelineViewModel @Inject constructor(
         player = newPlayer
 
         if (enablePreloadManager) {
-            initPreloadManager(loadControl)
+            initPreloadManager(loadControl, playerThread)
         }
     }
 
-    private fun initPreloadManager(loadControl: DefaultLoadControl) {
+    private fun initPreloadManager(
+        loadControl: DefaultLoadControl,
+        preloadAndPlaybackThread: HandlerThread,
+    ) {
         preloadManager =
             PreloadManagerWrapper.build(
-                (player as ExoPlayer).applicationLooper,
+                preloadAndPlaybackThread.looper,
                 loadControl,
                 application.applicationContext,
             )
@@ -186,7 +200,7 @@ class TimelineViewModel @Inject constructor(
                     setMediaItem(mediaItem)
                 }
 
-                timeToFirstFrame = System.currentTimeMillis()
+                playbackStartTimeMs = System.currentTimeMillis()
                 Log.d("PreloadManager", "Video Playing $uri ")
                 prepare()
             } else {

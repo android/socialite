@@ -44,7 +44,7 @@ private constructor(
     // Queue of media items to be preloaded. Can be ranked based on ranking data
     private val preloadWindow: ArrayDeque<Pair<MediaItem, Int>> = ArrayDeque()
 
-    // Default window size for preload manager. This defines how many maximum items will be preloaded at a time. If more than maximum items are added to the preload window
+    // Default window size for preload manager. This defines how many maximum items will be preloaded at a time.
     private var preloadWindowMaxSize = 5
 
     private var currentPlayingIndex = C.INDEX_UNSET
@@ -57,6 +57,10 @@ private constructor(
 
     /** Builds a preload manager instance with default parameters. Preload manager should use the same looper and load control as the player */
     companion object {
+
+        // Thread on which the preload manager is running
+        private lateinit var playbackAndPreloadThread: Looper
+
         fun build(
             playbackLooper: Looper,
             loadControl: DefaultLoadControl,
@@ -65,6 +69,7 @@ private constructor(
             val trackSelector = DefaultTrackSelector(context)
             trackSelector.init({}, DefaultBandwidthMeter.getSingletonInstance(context))
             val renderersFactory = DefaultRenderersFactory(context)
+            playbackAndPreloadThread = playbackLooper
             val preloadManager = DefaultPreloadManager(
                 PreloadStatusControl(),
                 DefaultMediaSourceFactory(context),
@@ -100,7 +105,7 @@ private constructor(
         mediaItemsList = mediaList
     }
 
-    /** Ensure that current playing item is in the middle of the preload Window . */
+    /** Add the next set of items to preload, w.r.t to the current playing index. */
     private fun preloadNextItems() {
         var lastPreloadedIndex = 0
         if (!preloadWindow.isEmpty()) {
@@ -148,6 +153,7 @@ private constructor(
         defaultPreloadManager.release()
         preloadWindow.clear()
         mediaItemsList.toMutableList().clear()
+        playbackAndPreloadThread.quit()
     }
 
     /** Retrieve the preloaded media source */
@@ -159,7 +165,7 @@ private constructor(
     @androidx.media3.common.util.UnstableApi
     class PreloadStatusControl : TargetPreloadStatusControl<Int> {
         override fun getTargetPreloadStatus(rankingData: Int): DefaultPreloadManager.Status {
-            // By default preload first 5 seconds of the video
+            // By default preload first 3 seconds of the video
             return DefaultPreloadManager.Status(STAGE_LOADED_TO_POSITION_MS, 3000L)
         }
     }
