@@ -154,7 +154,7 @@ fun TimelineVerticalPager(
                     .fillMaxSize()
                     .padding(8.dp)
                     .clip(RoundedCornerShape(16.dp))
-                  //  .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
                     .graphicsLayer {
                         // Calculate the absolute offset for the current page from the
                         // scroll position. We use the absolute value which allows us to mirror
