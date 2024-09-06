@@ -18,6 +18,7 @@ package com.google.android.samples.socialite.ui.home
 
 import android.content.Context
 import android.widget.Toast
+import androidx.core.performance.DevicePerformance
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.data.DatabaseManager
@@ -34,7 +35,9 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
     private val repository: ChatRepository,
     private val databaseManager: DatabaseManager,
+    devicePerformance: DevicePerformance,
 ) : ViewModel() {
+    val mediaPerformanceClass = devicePerformance.mediaPerformanceClass
 
     fun clearMessages() {
         viewModelScope.launch {
