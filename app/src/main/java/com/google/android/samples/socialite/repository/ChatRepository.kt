@@ -33,6 +33,7 @@ import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.ChatDao
 import com.google.android.samples.socialite.data.ContactDao
 import com.google.android.samples.socialite.data.MessageDao
+import com.google.android.samples.socialite.data.utils.ShortsVideoList
 import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
@@ -107,6 +108,12 @@ class ChatRepository @Inject internal constructor(
         )
 
         coroutineScope.launch {
+            // Special incoming message indicating to add shorts videos to try preload in exoplayer
+            if (text == "preload") {
+                preloadShortVideos(chatId, detail, PushReason.IncomingMessage)
+                return@launch
+            }
+
             if (isBotEnabled.firstOrNull() == true) {
                 // Get the previous messages and them generative model chat
                 val pastMessages = getMessageHistory(chatId)
@@ -164,6 +171,26 @@ class ChatRepository @Inject internal constructor(
 
             widgetModelRepository.updateUnreadMessagesForContact(contactId = detail.firstContact.id, unread = true)
         }
+    }
+
+    /**
+     * Add list of short form videos as sent messages to current chat history.This is used to test the preload manager of exoplayer
+     */
+    private suspend fun preloadShortVideos(
+        chatId: Long,
+        detail: ChatDetail,
+        incomingMessage: PushReason,
+    ) {
+        for ((index, uri) in ShortsVideoList.mediaUris.withIndex())
+            saveMessageAndNotify(
+                chatId,
+                "Shorts $index",
+                0L,
+                uri,
+                "video/mp4",
+                detail,
+                incomingMessage,
+            )
     }
 
     private suspend fun saveMessageAndNotify(
