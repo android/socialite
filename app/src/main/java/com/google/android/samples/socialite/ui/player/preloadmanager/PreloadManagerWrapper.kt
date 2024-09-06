@@ -57,10 +57,6 @@ private constructor(
 
     /** Builds a preload manager instance with default parameters. Preload manager should use the same looper and load control as the player */
     companion object {
-
-        // Thread on which the preload manager is running
-        private lateinit var playbackAndPreloadThread: Looper
-
         fun build(
             playbackLooper: Looper,
             loadControl: DefaultLoadControl,
@@ -69,7 +65,6 @@ private constructor(
             val trackSelector = DefaultTrackSelector(context)
             trackSelector.init({}, DefaultBandwidthMeter.getSingletonInstance(context))
             val renderersFactory = DefaultRenderersFactory(context)
-            playbackAndPreloadThread = playbackLooper
             val preloadManager = DefaultPreloadManager(
                 PreloadStatusControl(),
                 DefaultMediaSourceFactory(context),
@@ -117,9 +112,9 @@ private constructor(
                 addMediaItem(index = lastPreloadedIndex + i)
                 removeMediaItem()
             }
-            // With invalidate, preload manager will internally sort the priorities of all the media items added to it, and trigger the preload from the most important one
-            defaultPreloadManager.invalidate()
         }
+        // With invalidate, preload manager will internally sort the priorities of all the media items added to it, and trigger the preload from the most important one.
+        defaultPreloadManager.invalidate()
     }
 
     /** Remove media item from the preload window. */
@@ -153,7 +148,6 @@ private constructor(
         defaultPreloadManager.release()
         preloadWindow.clear()
         mediaItemsList.toMutableList().clear()
-        playbackAndPreloadThread.quit()
     }
 
     /** Retrieve the preloaded media source */

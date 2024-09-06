@@ -39,6 +39,7 @@ import com.google.android.samples.socialite.ui.player.preloadmanager.PreloadMana
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlin.math.truncate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -164,13 +165,15 @@ class TimelineViewModel @Inject constructor(
     }
 
     fun releasePlayer() {
-        player?.apply {
-            removeListener(videoSizeListener)
-            release()
-        }
         if (enablePreloadManager) {
             preloadManager.release()
         }
+        player?.apply {
+            removeListener(videoSizeListener)
+            removeListener(firstFrameListener)
+            release()
+        }
+        playerThread.quit()
         videoRatio = null
         player = null
     }
