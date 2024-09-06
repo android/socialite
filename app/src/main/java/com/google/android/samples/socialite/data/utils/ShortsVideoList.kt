@@ -36,6 +36,7 @@ class ShortsVideoList {
                 "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_9.mp4",
                 "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_10.mp4",
                 "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_11.mp4",
+                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_12.mp4",
             )
     }
 

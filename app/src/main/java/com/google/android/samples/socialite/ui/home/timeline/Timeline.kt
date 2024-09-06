@@ -147,6 +147,7 @@ fun TimelineVerticalPager(
         modifier = modifier
             .padding(contentPadding)
             .fillMaxSize(),
+        beyondViewportPageCount = 2,
     ) { page ->
         if (player != null) {
             Box(
@@ -154,8 +155,8 @@ fun TimelineVerticalPager(
                     .fillMaxSize()
                     .padding(8.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .graphicsLayer {
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                /*.graphicsLayer {
                         // Calculate the absolute offset for the current page from the
                         // scroll position. We use the absolute value which allows us to mirror
                         // any effects for both directions
@@ -170,7 +171,7 @@ fun TimelineVerticalPager(
                             stop = 1f,
                             fraction = 1f - pageOffset.coerceIn(0f, 1f),
                         )
-                    },
+                    },*/
             ) {
                 TimelinePage(
                     modifier = Modifier
@@ -190,6 +191,7 @@ fun TimelineVerticalPager(
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TimelinePage(
@@ -212,6 +214,8 @@ fun TimelinePage(
                     factory = { PlayerView(it) },
                     update = { playerView ->
                         playerView.player = player
+                        playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
+                        playerView.isVerticalFadingEdgeEnabled
                     },
                     modifier = modifier.fillMaxSize(),
                 )
