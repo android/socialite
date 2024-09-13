@@ -16,12 +16,7 @@
 
 package com.google.android.samples.socialite.ui.home
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -33,23 +28,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.AnimationConstants
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
-import kotlinx.serialization.Serializable
+import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
+import com.google.android.samples.socialite.ui.navigation.Route
 
 @Composable
 fun Home(
@@ -58,11 +49,11 @@ fun Home(
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = Destination.fromNavBackStackEntry(navBackStackEntry)
+    val currentDestination = TopLevelDestination.fromNavBackStackEntry(navBackStackEntry)
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            Destination.entries.forEach {
+            TopLevelDestination.entries.forEach {
                 val isSelected = it == currentDestination
                 item(
                     selected = isSelected,
@@ -95,7 +86,7 @@ fun Home(
 @Composable
 private fun HomeContent(
     navController: NavHostController,
-    currentDestination: Destination,
+    currentDestination: TopLevelDestination,
     modifier: Modifier,
     onChatClicked: (chatId: Long) -> Unit,
 ) {
@@ -108,7 +99,7 @@ private fun HomeContent(
         HomeBackground(modifier = Modifier.fillMaxSize())
         NavHost(
             navController = navController,
-            startDestination = Destination.START_DESTINATION.route,
+            startDestination = TopLevelDestination.START_DESTINATION.route,
             modifier = modifier,
         ) {
             composable<Route.TimelineRoute>(
@@ -159,50 +150,4 @@ fun HomeAppBar(
             containerColor = Color.Transparent,
         ),
     )
-}
-
-sealed interface Route {
-    @Serializable
-    data object TimelineRoute : Route
-
-    @Serializable
-    data object ChatsRoute : Route
-
-    @Serializable
-    data object SettingsRoute : Route
-}
-
-private enum class Destination(
-    val route: Route,
-    @StringRes val label: Int,
-    val imageVector: ImageVector,
-) {
-    Timeline(
-        route = Route.TimelineRoute,
-        label = R.string.timeline,
-        imageVector = Icons.Outlined.VideoLibrary,
-    ),
-    Chats(
-        route = Route.ChatsRoute,
-        label = R.string.chats,
-        imageVector = Icons.Outlined.ChatBubbleOutline,
-    ),
-    Settings(
-        route = Route.SettingsRoute,
-        label = R.string.settings,
-        imageVector = Icons.Outlined.Settings,
-    ),
-    ;
-
-    companion object {
-        val START_DESTINATION = Chats
-
-        fun fromNavBackStackEntry(nbse: NavBackStackEntry?): Destination {
-            return entries.find { dest ->
-                nbse?.destination?.hierarchy?.any {
-                    it.hasRoute(dest.route::class)
-                } == true
-            } ?: START_DESTINATION
-        }
-    }
 }
