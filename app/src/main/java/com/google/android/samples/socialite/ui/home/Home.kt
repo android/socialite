@@ -19,7 +19,6 @@ package com.google.android.samples.socialite.ui.home
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -39,8 +38,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.ui.AnimationConstants
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
-import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 import com.google.android.samples.socialite.ui.navigation.Route
+import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 
 @Composable
 fun Home(
@@ -79,60 +78,46 @@ fun Home(
             }
         },
     ) {
-        HomeContent(navController, currentDestination, modifier, onChatClicked)
+        HomeContent(navController, modifier, onChatClicked)
     }
 }
 
 @Composable
 private fun HomeContent(
     navController: NavHostController,
-    currentDestination: TopLevelDestination,
     modifier: Modifier,
     onChatClicked: (chatId: Long) -> Unit,
 ) {
-    Scaffold(
+    NavHost(
+        navController = navController,
+        startDestination = TopLevelDestination.START_DESTINATION.route,
         modifier = modifier,
-        topBar = {
-            HomeAppBar(title = stringResource(currentDestination.label))
-        },
-    ) { innerPadding ->
-        HomeBackground(modifier = Modifier.fillMaxSize())
-        NavHost(
-            navController = navController,
-            startDestination = TopLevelDestination.START_DESTINATION.route,
-            modifier = modifier,
+    ) {
+        composable<Route.Timeline>(
+            enterTransition = { AnimationConstants.enterTransition },
+            exitTransition = { AnimationConstants.exitTransition },
         ) {
-            composable<Route.Timeline>(
-                enterTransition = { AnimationConstants.enterTransition },
-                exitTransition = { AnimationConstants.exitTransition },
-            ) {
-                Timeline(
-                    contentPadding = innerPadding,
-                    modifier = modifier,
-                )
-            }
-            composable<Route.ChatsList>(
-                enterTransition = { AnimationConstants.enterTransition },
-                exitTransition = { AnimationConstants.exitTransition },
-            ) {
-                val viewModel: HomeViewModel = hiltViewModel()
-                val chats by viewModel.chats.collectAsStateWithLifecycle()
-                ChatList(
-                    chats = chats,
-                    contentPadding = innerPadding,
-                    onChatClicked = onChatClicked,
-                    modifier = modifier,
-                )
-            }
-            composable<Route.Settings>(
-                enterTransition = { AnimationConstants.enterTransition },
-                exitTransition = { AnimationConstants.exitTransition },
-            ) {
-                Settings(
-                    contentPadding = innerPadding,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+            Timeline()
+        }
+        composable<Route.ChatsList>(
+            enterTransition = { AnimationConstants.enterTransition },
+            exitTransition = { AnimationConstants.exitTransition },
+        ) {
+            val viewModel: HomeViewModel = hiltViewModel()
+            val chats by viewModel.chats.collectAsStateWithLifecycle()
+            ChatList(
+                chats = chats,
+                onChatClicked = onChatClicked,
+                modifier = modifier,
+            )
+        }
+        composable<Route.Settings>(
+            enterTransition = { AnimationConstants.enterTransition },
+            exitTransition = { AnimationConstants.exitTransition },
+        ) {
+            Settings(
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }
