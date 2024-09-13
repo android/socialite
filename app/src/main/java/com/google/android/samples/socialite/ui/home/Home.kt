@@ -102,7 +102,7 @@ private fun HomeContent(
             startDestination = TopLevelDestination.START_DESTINATION.route,
             modifier = modifier,
         ) {
-            composable<Route.TimelineRoute>(
+            composable<Route.Timeline>(
                 enterTransition = { AnimationConstants.enterTransition },
                 exitTransition = { AnimationConstants.exitTransition },
             ) {
@@ -111,7 +111,7 @@ private fun HomeContent(
                     modifier = modifier,
                 )
             }
-            composable<Route.ChatsRoute>(
+            composable<Route.ChatsList>(
                 enterTransition = { AnimationConstants.enterTransition },
                 exitTransition = { AnimationConstants.exitTransition },
             ) {
@@ -124,7 +124,7 @@ private fun HomeContent(
                     modifier = modifier,
                 )
             }
-            composable<Route.SettingsRoute>(
+            composable<Route.Settings>(
                 enterTransition = { AnimationConstants.enterTransition },
                 exitTransition = { AnimationConstants.exitTransition },
             ) {

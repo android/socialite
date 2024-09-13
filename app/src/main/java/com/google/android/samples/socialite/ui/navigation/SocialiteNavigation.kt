@@ -30,13 +30,31 @@ import kotlinx.serialization.Serializable
 
 sealed interface Route {
     @Serializable
-    data object TimelineRoute : Route
+    data object Timeline : Route
 
     @Serializable
-    data object ChatsRoute : Route
+    data object ChatsList : Route
 
     @Serializable
-    data object SettingsRoute : Route
+    data object Settings : Route
+
+    @Serializable
+    data object Home : Route
+
+    @Serializable
+    data class ChatThread(val chatId: Long, val text: String? = null): Route
+
+    @Serializable
+    data class Camera(val chatId: Long): Route
+
+    @Serializable
+    data class PhotoPicker(val chatId: Long): Route
+
+    @Serializable
+    data class VideoEdit(val chatId: Long, val uri: String): Route
+
+    @Serializable
+    data class VideoPlayer(val uri: String): Route
 }
 
 enum class TopLevelDestination(
@@ -45,17 +63,17 @@ enum class TopLevelDestination(
     val imageVector: ImageVector,
 ) {
     Timeline(
-        route = Route.TimelineRoute,
+        route = Route.Timeline,
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
     Chats(
-        route = Route.ChatsRoute,
+        route = Route.ChatsList,
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
     ),
     Settings(
-        route = Route.SettingsRoute,
+        route = Route.Settings,
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
     ),

@@ -31,18 +31,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import androidx.navigation.toRoute
 import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
 import com.google.android.samples.socialite.ui.chat.ChatScreen
 import com.google.android.samples.socialite.ui.home.Home
+import com.google.android.samples.socialite.ui.navigation.Route
 import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
 import com.google.android.samples.socialite.ui.photopicker.navigation.photoPickerScreen
 import com.google.android.samples.socialite.ui.player.VideoPlayerScreen
@@ -79,23 +79,17 @@ fun MainNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = Route.Home,
         modifier = modifier,
     ) {
-        composable(
-            route = "home",
-        ) {
+        composable<Route.Home> {
             Home(
                 modifier = Modifier.fillMaxSize(),
-                onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
+                onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
             )
         }
-        composable(
-            route = "chat/{chatId}?text={text}",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-                navArgument("text") { defaultValue = "" },
-            ),
+
+        composable<Route.ChatThread>(
             deepLinks = listOf(
                 navDeepLink {
                     action = Intent.ACTION_VIEW
@@ -103,26 +97,23 @@ fun MainNavigation(
                 },
             ),
         ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            val text = backStackEntry.arguments?.getString("text")
+            val route: Route.ChatThread = backStackEntry.toRoute()
+            val chatId = route.chatId
             ChatScreen(
                 chatId = chatId,
                 foreground = true,
                 onBackPressed = { navController.popBackStack() },
-                onCameraClick = { navController.navigate("chat/$chatId/camera") },
+                onCameraClick = { navController.navigate(Route.Camera(chatId)) },
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
-                onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
-                prefilledText = text,
+                onVideoClick = { uri -> navController.navigate(Route.VideoPlayer(uri)) },
+                prefilledText = route.text,
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        composable(
-            route = "chat/{chatId}/camera",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
+
+        composable<Route.Camera> { backStackEntry ->
+            val route: Route.Camera = backStackEntry.toRoute()
+            val chatId = route.chatId
             Camera(
                 onMediaCaptured = { capturedMedia: Media? ->
                     when (capturedMedia?.mediaType) {
@@ -131,7 +122,7 @@ fun MainNavigation(
                         }
 
                         MediaType.VIDEO -> {
-                            navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=$chatId")
+                            navController.navigate(Route.VideoEdit(chatId, capturedMedia.uri.toString()))
                         }
 
                         else -> {
@@ -150,15 +141,10 @@ fun MainNavigation(
             onPhotoPicked = navController::popBackStack,
         )
 
-        composable(
-            route = "videoEdit?uri={videoUri}&chatId={chatId}",
-            arguments = listOf(
-                navArgument("videoUri") { type = NavType.StringType },
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
+        composable<Route.VideoEdit> { backStackEntry ->
+            val route: Route.VideoEdit = backStackEntry.toRoute()
+            val chatId = route.chatId
+            val videoUri = route.uri
             VideoEditScreen(
                 chatId = chatId,
                 uri = videoUri,
@@ -166,13 +152,10 @@ fun MainNavigation(
                 navController = navController,
             )
         }
-        composable(
-            route = "videoPlayer?uri={videoUri}",
-            arguments = listOf(
-                navArgument("videoUri") { type = NavType.StringType },
-            ),
-        ) { backStackEntry ->
-            val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
+
+        composable<Route.VideoPlayer> { backStackEntry ->
+            val route: Route.VideoPlayer = backStackEntry.toRoute()
+            val videoUri = route.uri
             VideoPlayerScreen(
                 uri = videoUri,
                 onCloseButtonClicked = { navController.popBackStack() },
@@ -183,7 +166,7 @@ fun MainNavigation(
     if (shortcutParams != null) {
         val chatId = extractChatId(shortcutParams.shortcutId)
         val text = shortcutParams.text
-        navController.navigate("chat/$chatId?text=$text")
+        navController.navigate(Route.ChatThread(chatId, text))
     }
 }
 
