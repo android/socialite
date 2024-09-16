@@ -18,27 +18,23 @@ package com.google.android.samples.socialite.ui.home
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.ui.AnimationConstants
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.navigation.Route
+import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 
 @Composable
@@ -47,37 +43,7 @@ fun Home(
     modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = TopLevelDestination.fromNavBackStackEntry(navBackStackEntry)
-
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            TopLevelDestination.entries.forEach {
-                val isSelected = it == currentDestination
-                item(
-                    selected = isSelected,
-                    onClick = {
-                        if (!isSelected) {
-                            navController.navigate(it.route) {
-                                popUpTo(navController.graph.findStartDestination().id)
-                                launchSingleTop = true
-                            }
-                        }
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = it.imageVector,
-                            contentDescription = stringResource(it.label),
-                        )
-                    },
-                    label = {
-                        Text(text = stringResource(it.label))
-                    },
-                    alwaysShowLabel = false,
-                )
-            }
-        },
-    ) {
+    SocialiteNavSuite(navController) {
         HomeContent(navController, modifier, onChatClicked)
     }
 }

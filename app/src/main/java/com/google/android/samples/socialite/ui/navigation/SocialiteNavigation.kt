@@ -21,10 +21,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.android.samples.socialite.R
 import kotlinx.serialization.Serializable
 
@@ -67,7 +76,7 @@ enum class TopLevelDestination(
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
-    Chats(
+    ChatsList(
         route = Route.ChatsList,
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
@@ -80,7 +89,7 @@ enum class TopLevelDestination(
     ;
 
     companion object {
-        val START_DESTINATION = Chats
+        val START_DESTINATION = ChatsList
 
         fun fromNavBackStackEntry(nbse: NavBackStackEntry?): TopLevelDestination {
             return entries.find { dest ->
@@ -89,5 +98,45 @@ enum class TopLevelDestination(
                 } == true
             } ?: START_DESTINATION
         }
+    }
+}
+
+@Composable
+fun SocialiteNavSuite(
+    navController: NavController,
+    content: @Composable () -> Unit
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val topLevelDestination = TopLevelDestination.fromNavBackStackEntry(navBackStackEntry)
+
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            TopLevelDestination.entries.forEach {
+                val isSelected = it == topLevelDestination
+                item(
+                    selected = isSelected,
+                    onClick = {
+                        if (!isSelected) {
+                            navController.navigate(it.route) {
+                                popUpTo(navController.graph.findStartDestination().id)
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = it.imageVector,
+                            contentDescription = stringResource(it.label),
+                        )
+                    },
+                    label = {
+                        Text(text = stringResource(it.label))
+                    },
+                    alwaysShowLabel = false,
+                )
+            }
+        },
+    ) {
+        content()
     }
 }
