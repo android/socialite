@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.ui.home
+package com.google.android.samples.socialite.ui.home.chatlist
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
@@ -28,10 +28,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -39,11 +42,23 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.ui.ChatRow
+import com.google.android.samples.socialite.ui.home.HomeAppBar
+import com.google.android.samples.socialite.ui.home.HomeBackground
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
+
+@Composable
+fun ChatList(
+    onChatClicked: (chatId: Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: ChatListViewModel = hiltViewModel()
+    val chatList by viewModel.chats.collectAsStateWithLifecycle()
+    ChatList(chatList, onChatClicked, modifier)
+}
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-internal fun ChatList(
+fun ChatList(
     chats: List<ChatDetail>,
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,

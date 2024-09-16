@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.ui.home
+package com.google.android.samples.socialite.ui.home.chatlist
 
 import androidx.lifecycle.ViewModel
 import com.google.android.samples.socialite.repository.ChatRepository
@@ -23,7 +23,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class ChatListViewModel @Inject constructor(
     repository: ChatRepository,
 ) : ViewModel() {
 

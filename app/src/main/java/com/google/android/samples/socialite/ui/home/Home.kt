@@ -22,16 +22,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.ui.AnimationConstants
+import com.google.android.samples.socialite.ui.home.chatlist.ChatList
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.navigation.Route
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
@@ -69,10 +67,7 @@ private fun HomeContent(
             enterTransition = { AnimationConstants.enterTransition },
             exitTransition = { AnimationConstants.exitTransition },
         ) {
-            val viewModel: HomeViewModel = hiltViewModel()
-            val chats by viewModel.chats.collectAsStateWithLifecycle()
             ChatList(
-                chats = chats,
                 onChatClicked = onChatClicked,
                 modifier = modifier,
             )
