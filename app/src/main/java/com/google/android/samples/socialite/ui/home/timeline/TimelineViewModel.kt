@@ -68,6 +68,8 @@ class TimelineViewModel @Inject constructor(
 
     var playbackStartTimeMs = C.TIME_UNSET
 
+    var timeToFirstFrameMs by mutableStateOf<Long?>(null)
+
     private val videoSizeListener = object : Player.Listener {
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             videoRatio = if (videoSize.height > 0 && videoSize.width > 0) {
@@ -81,8 +83,9 @@ class TimelineViewModel @Inject constructor(
 
     private val firstFrameListener = object : Player.Listener {
         override fun onRenderedFirstFrame() {
-            val timeToFirstFrameMs = System.currentTimeMillis() - playbackStartTimeMs
+             timeToFirstFrameMs = System.currentTimeMillis() - playbackStartTimeMs
             Log.d("PreloadManager", "\t\tTime to first Frame = $timeToFirstFrameMs ")
+            player
             super.onRenderedFirstFrame()
         }
     }
@@ -183,6 +186,7 @@ class TimelineViewModel @Inject constructor(
         player?.apply {
             stop()
             videoRatio = null
+            timeToFirstFrameMs = null
             if (uri != null) {
                 // Set the right source to play
                 val mediaItem = MediaItem.fromUri(uri)

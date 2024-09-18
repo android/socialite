@@ -48,15 +48,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.lerp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -69,7 +69,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.rememberIconPainter
-import kotlin.math.absoluteValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -83,6 +82,7 @@ fun Timeline(
     val media = viewModel.media
     val player = viewModel.player
     val videoRatio = viewModel.videoRatio
+    val timeToFirstFrame = viewModel.timeToFirstFrameMs
 
     if (media.isEmpty()) {
         EmptyTimeline(contentPadding, modifier)
@@ -96,6 +96,7 @@ fun Timeline(
             viewModel::releasePlayer,
             viewModel::changePlayerItem,
             videoRatio,
+            timeToFirstFrame
         )
     }
 }
@@ -111,6 +112,7 @@ fun TimelineVerticalPager(
     onReleasePlayer: () -> Unit = {},
     onChangePlayerItem: (uri: Uri?, page: Int) -> Unit = { uri: Uri?, i: Int -> },
     videoRatio: Float?,
+    timeToFirstFrame: Long?,
 ) {
     val pagerState = rememberPagerState(pageCount = { mediaItems.count() })
     LaunchedEffect(pagerState) {
@@ -145,18 +147,19 @@ fun TimelineVerticalPager(
     VerticalPager(
         state = pagerState,
         modifier = modifier
-            .padding(contentPadding)
+        //    .padding(contentPadding)
+            .padding(top = contentPadding.calculateTopPadding())
             .fillMaxSize(),
-        beyondViewportPageCount = 2,
+       beyondViewportPageCount = 2,
     ) { page ->
         if (player != null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp)
+             /*     .padding(8.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.secondaryContainer),
-                /*.graphicsLayer {
+                    .graphicsLayer {
                         // Calculate the absolute offset for the current page from the
                         // scroll position. We use the absolute value which allows us to mirror
                         // any effects for both directions
@@ -175,17 +178,18 @@ fun TimelineVerticalPager(
             ) {
                 TimelinePage(
                     modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                       .align(Alignment.Center),
+                  //      .padding(8.dp)
+                   //     .clip(RoundedCornerShape(8.dp)),
                     media = mediaItems[page],
                     player = player,
                     page,
                     pagerState,
                     videoRatio,
+                    timeToFirstFrame
                 )
 
-                MetadataOverlay(modifier = Modifier.padding(16.dp), mediaItem = mediaItems[page])
+                MetadataOverlay(modifier = Modifier.padding(16.dp), mediaItem = mediaItems[page],timeToFirstFrame)
             }
         }
     }
@@ -201,6 +205,7 @@ fun TimelinePage(
     page: Int,
     state: PagerState,
     videoRatio: Float?,
+    timeToFirstFrame: Long?,
 ) {
     when (media.type) {
         TimelineMediaType.VIDEO -> {
@@ -236,7 +241,7 @@ fun TimelinePage(
 }
 
 @Composable
-fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
+fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem, timeToFirstFrame: Long?) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -273,6 +278,21 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
                     Text(
                         modifier = Modifier.padding(8.dp),
                         text = "%d:%02d".format(minutes, seconds % 60),
+                    )
+                }
+
+                // Time to first frame display at the enter of the video
+                Box(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.Center)
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                ) {
+                    Text(
+                        modifier = Modifier.padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        text =  (if(timeToFirstFrame != null) { "$timeToFirstFrame ms" } else { "" }),
                     )
                 }
             }
