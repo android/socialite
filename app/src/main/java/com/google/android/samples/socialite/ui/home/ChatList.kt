@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite.ui.home
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,13 +40,13 @@ import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.ui.ChatRow
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun ChatList(
     chats: List<ChatDetail>,
     contentPadding: PaddingValues,
     onChatClicked: (chatId: Long) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     @SuppressLint("InlinedApi") // Granted at install time on API <33.
     val notificationPermissionState = rememberPermissionState(
