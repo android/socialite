@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -83,10 +84,28 @@ fun MainNavigation(
         navController = navController,
         startDestination = "home",
         popEnterTransition = {
-            scaleIn(initialScale = 1.1F) + fadeIn()
+            scaleIn(
+                animationSpec = tween(
+                    durationMillis = 100,
+                    delayMillis = 35,
+                ),
+                initialScale = 1.1F,
+            ) + fadeIn(
+                animationSpec = tween(
+                    durationMillis = 100,
+                    delayMillis = 35,
+                ),
+            )
         },
         popExitTransition = {
-            scaleOut(targetScale = 0.9F) + fadeOut()
+            scaleOut(
+                targetScale = 0.9F,
+            ) + fadeOut(
+                animationSpec = tween(
+                    durationMillis = 35,
+                    easing = CubicBezierEasing(0.1f, 0.1f, 0f, 1f),
+                ),
+            )
         },
         modifier = modifier,
     ) {
