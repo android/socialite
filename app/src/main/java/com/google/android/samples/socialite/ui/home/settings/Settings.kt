@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.ui.home
+package com.google.android.samples.socialite.ui.home.settings
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +33,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.samples.socialite.R
+import com.google.android.samples.socialite.ui.home.HomeAppBar
+import com.google.android.samples.socialite.ui.home.HomeBackground
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 
 @Composable
