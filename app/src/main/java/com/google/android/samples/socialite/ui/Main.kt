@@ -46,6 +46,7 @@ import com.google.android.samples.socialite.ui.home.chatlist.ChatList
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.navigation.Route
+import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
 import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
 import com.google.android.samples.socialite.ui.photopicker.navigation.photoPickerScreen
 import com.google.android.samples.socialite.ui.player.VideoPlayerScreen
@@ -86,18 +87,24 @@ fun MainNavigation(
         modifier = modifier,
     ) {
         composable<Route.ChatsList> {
-            ChatList(
-                onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
-                modifier = Modifier.fillMaxSize(),
-            )
+            SocialiteNavSuite(navController) {
+                ChatList(
+                    onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
 
         composable<Route.Timeline> {
-            Timeline(Modifier.fillMaxSize())
+            SocialiteNavSuite(navController) {
+                Timeline(Modifier.fillMaxSize())
+            }
         }
 
         composable<Route.Settings> {
-            Settings(Modifier.fillMaxSize())
+            SocialiteNavSuite(navController) {
+                Settings(Modifier.fillMaxSize())
+            }
         }
 
         composable<Route.ChatThread>(

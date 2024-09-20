@@ -118,8 +118,11 @@ fun SocialiteNavSuite(
                     onClick = {
                         if (!isSelected) {
                             navController.navigate(it.route) {
-                                popUpTo(navController.graph.findStartDestination().id)
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
                                 launchSingleTop = true
+                                restoreState = true
                             }
                         }
                     },
