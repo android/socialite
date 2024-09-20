@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -41,7 +42,9 @@ import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
 import com.google.android.samples.socialite.ui.chat.ChatScreen
-import com.google.android.samples.socialite.ui.home.Home
+import com.google.android.samples.socialite.ui.home.chatlist.ChatList
+import com.google.android.samples.socialite.ui.home.settings.Settings
+import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.navigation.Route
 import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
 import com.google.android.samples.socialite.ui.photopicker.navigation.photoPickerScreen
@@ -66,11 +69,11 @@ fun MainNavigation(
     val activity = LocalContext.current as Activity
     val navController = rememberNavController()
 
-    navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, _: Bundle? ->
+    navController.addOnDestinationChangedListener { _: NavController, destination: NavDestination, _: Bundle? ->
         // Lock the layout of the Camera screen to portrait so that the UI layout remains
         // constant, even on orientation changes. Note that the camera is still aware of
         // orientation, and will assign the correct edge as the bottom of the photo or video.
-        if (navDestination.route?.contains("camera") == true) {
+        if (destination.hasRoute<Route.Camera>()) {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         } else {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -79,14 +82,22 @@ fun MainNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = Route.Home,
+        startDestination = Route.ChatsList,
         modifier = modifier,
     ) {
-        composable<Route.Home> {
-            Home(
-                modifier = Modifier.fillMaxSize(),
+        composable<Route.ChatsList> {
+            ChatList(
                 onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
+                modifier = Modifier.fillMaxSize(),
             )
+        }
+
+        composable<Route.Timeline> {
+            Timeline(Modifier.fillMaxSize())
+        }
+
+        composable<Route.Settings> {
+            Settings(Modifier.fillMaxSize())
         }
 
         composable<Route.ChatThread>(
@@ -131,7 +142,6 @@ fun MainNavigation(
                         }
                     }
                 },
-                chatId = chatId,
                 modifier = Modifier.fillMaxSize(),
             )
         }
