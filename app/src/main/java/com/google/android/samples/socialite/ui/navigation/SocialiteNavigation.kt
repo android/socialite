@@ -23,19 +23,23 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.android.samples.socialite.R
+import com.google.android.samples.socialite.ui.navigation.TopLevelDestination.Companion.isTopLevel
 import kotlinx.serialization.Serializable
 
 sealed interface Route {
@@ -92,13 +96,36 @@ enum class TopLevelDestination(
     companion object {
         val START_DESTINATION = ChatsList
 
-        fun fromNavBackStackEntry(nbse: NavBackStackEntry?): TopLevelDestination {
+        fun fromNavDestination(destination: NavDestination?): TopLevelDestination {
             return entries.find { dest ->
-                nbse?.destination?.hierarchy?.any {
+                destination?.hierarchy?.any {
                     it.hasRoute(dest.route::class)
                 } == true
             } ?: START_DESTINATION
         }
+
+        fun NavDestination.isTopLevel(): Boolean {
+            return entries.any {
+                hasRoute(it.route::class)
+            }
+        }
+    }
+}
+
+private fun calculateNavigationLayoutType(
+    destination: NavDestination?,
+    defaultLayoutType: NavigationSuiteType
+): NavigationSuiteType {
+    return when {
+        destination == null -> defaultLayoutType
+        // Never show navigation UI on Camera.
+        destination.hasRoute<Route.Camera>() -> NavigationSuiteType.None
+        // Top level destinations can show any layout type.
+        destination.isTopLevel() -> defaultLayoutType
+        // Every other destination goes through a ChatThread. Hide the bottom nav bar
+        // since it interferes with composing chat messages.
+        defaultLayoutType == NavigationSuiteType.NavigationBar -> NavigationSuiteType.None
+        else -> defaultLayoutType
     }
 }
 
@@ -109,10 +136,17 @@ fun SocialiteNavSuite(
     content: @Composable () -> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val topLevelDestination = TopLevelDestination.fromNavBackStackEntry(navBackStackEntry)
+    val destination = navBackStackEntry?.destination
+
+    val topLevelDestination = TopLevelDestination.fromNavDestination(destination)
+    val defaultLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+        currentWindowAdaptiveInfo(),
+    )
+    val layoutType = calculateNavigationLayoutType(destination, defaultLayoutType)
 
     NavigationSuiteScaffold(
         modifier = modifier,
+        layoutType = layoutType,
         navigationSuiteItems = {
             TopLevelDestination.entries.forEach {
                 val isSelected = it == topLevelDestination
