@@ -28,6 +28,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -139,16 +142,31 @@ fun MainNavigation(
             ) { backStackEntry ->
                 val route: Route.ChatThread = backStackEntry.toRoute()
                 val chatId = route.chatId
-                ChatScreen(
-                    chatId = chatId,
-                    foreground = true,
-                    onBackPressed = { navController.popBackStack() },
-                    onCameraClick = { navController.navigate(Route.Camera(chatId)) },
-                    onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
-                    onVideoClick = { uri -> navController.navigate(Route.VideoPlayer(uri)) },
-                    prefilledText = route.text,
-                    modifier = Modifier.fillMaxSize(),
-                )
+
+                // If the calculated nav type is NavigationBar, replace it with None.
+                val navType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+                    currentWindowAdaptiveInfo()
+                ).takeIf { it != NavigationSuiteType.NavigationBar } ?: NavigationSuiteType.None
+
+                SocialiteNavSuite(
+                    navController,
+                    layoutType = navType,
+                    modifier = Modifier.sharedElement(
+                        rememberSharedContentState(key = "navsuite"),
+                        animatedVisibilityScope = this@composable
+                    ),
+                ) {
+                    ChatScreen(
+                        chatId = chatId,
+                        foreground = true,
+                        onBackPressed = { navController.popBackStack() },
+                        onCameraClick = { navController.navigate(Route.Camera(chatId)) },
+                        onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
+                        onVideoClick = { uri -> navController.navigate(Route.VideoPlayer(uri)) },
+                        prefilledText = route.text,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
 
             composable<Route.Camera> { backStackEntry ->

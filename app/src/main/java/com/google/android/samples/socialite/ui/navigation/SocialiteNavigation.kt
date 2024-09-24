@@ -23,7 +23,10 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -106,13 +109,17 @@ enum class TopLevelDestination(
 fun SocialiteNavSuite(
     navController: NavController,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit = {}
+    layoutType: NavigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+        currentWindowAdaptiveInfo(),
+    ),
+    content: @Composable () -> Unit = {},
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val topLevelDestination = TopLevelDestination.fromNavBackStackEntry(navBackStackEntry)
 
     NavigationSuiteScaffold(
         modifier = modifier,
+        layoutType = layoutType,
         navigationSuiteItems = {
             TopLevelDestination.entries.forEach {
                 val isSelected = it == topLevelDestination
