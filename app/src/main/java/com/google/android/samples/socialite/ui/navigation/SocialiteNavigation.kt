@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavBackStackEntry
@@ -104,12 +105,14 @@ enum class TopLevelDestination(
 @Composable
 fun SocialiteNavSuite(
     navController: NavController,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val topLevelDestination = TopLevelDestination.fromNavBackStackEntry(navBackStackEntry)
 
     NavigationSuiteScaffold(
+        modifier = modifier,
         navigationSuiteItems = {
             TopLevelDestination.entries.forEach {
                 val isSelected = it == topLevelDestination
