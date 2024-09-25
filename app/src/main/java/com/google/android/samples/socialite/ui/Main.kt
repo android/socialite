@@ -140,8 +140,8 @@ fun MainNavigation(
                                 navController.navigate(
                                     Route.VideoEdit(
                                         chatId,
-                                        capturedMedia.uri.toString()
-                                    )
+                                        capturedMedia.uri.toString(),
+                                    ),
                                 )
                             }
 

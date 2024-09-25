@@ -56,19 +56,19 @@ sealed interface Route {
     data object Home : Route
 
     @Serializable
-    data class ChatThread(val chatId: Long, val text: String? = null): Route
+    data class ChatThread(val chatId: Long, val text: String? = null) : Route
 
     @Serializable
-    data class Camera(val chatId: Long): Route
+    data class Camera(val chatId: Long) : Route
 
     @Serializable
-    data class PhotoPicker(val chatId: Long): Route
+    data class PhotoPicker(val chatId: Long) : Route
 
     @Serializable
-    data class VideoEdit(val chatId: Long, val uri: String): Route
+    data class VideoEdit(val chatId: Long, val uri: String) : Route
 
     @Serializable
-    data class VideoPlayer(val uri: String): Route
+    data class VideoPlayer(val uri: String) : Route
 }
 
 enum class TopLevelDestination(
@@ -114,7 +114,7 @@ enum class TopLevelDestination(
 
 private fun calculateNavigationLayoutType(
     destination: NavDestination?,
-    defaultLayoutType: NavigationSuiteType
+    defaultLayoutType: NavigationSuiteType,
 ): NavigationSuiteType {
     return when {
         destination == null -> defaultLayoutType
@@ -133,7 +133,7 @@ private fun calculateNavigationLayoutType(
 fun SocialiteNavSuite(
     navController: NavController,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val destination = navBackStackEntry?.destination
