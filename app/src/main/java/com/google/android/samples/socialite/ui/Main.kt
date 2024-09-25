@@ -98,7 +98,7 @@ fun MainNavigation(
                     navController,
                     modifier = Modifier.sharedElement(
                         rememberSharedContentState(key = "navsuite"),
-                        animatedVisibilityScope = this@composable
+                        animatedVisibilityScope = this@composable,
                     ),
                 ) {
                     ChatList(
@@ -113,7 +113,7 @@ fun MainNavigation(
                     navController,
                     modifier = Modifier.sharedElement(
                         rememberSharedContentState(key = "navsuite"),
-                        animatedVisibilityScope = this@composable
+                        animatedVisibilityScope = this@composable,
                     ),
                 ) {
                     Timeline(Modifier.fillMaxSize())
@@ -125,7 +125,7 @@ fun MainNavigation(
                     navController,
                     modifier = Modifier.sharedElement(
                         rememberSharedContentState(key = "navsuite"),
-                        animatedVisibilityScope = this@composable
+                        animatedVisibilityScope = this@composable,
                     ),
                 ) {
                     Settings(Modifier.fillMaxSize())
@@ -145,7 +145,7 @@ fun MainNavigation(
 
                 // If the calculated nav type is NavigationBar, replace it with None.
                 val navType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
-                    currentWindowAdaptiveInfo()
+                    currentWindowAdaptiveInfo(),
                 ).takeIf { it != NavigationSuiteType.NavigationBar } ?: NavigationSuiteType.None
 
                 SocialiteNavSuite(
@@ -153,7 +153,7 @@ fun MainNavigation(
                     layoutType = navType,
                     modifier = Modifier.sharedElement(
                         rememberSharedContentState(key = "navsuite"),
-                        animatedVisibilityScope = this@composable
+                        animatedVisibilityScope = this@composable,
                     ),
                 ) {
                     ChatScreen(
@@ -183,8 +183,8 @@ fun MainNavigation(
                                 navController.navigate(
                                     Route.VideoEdit(
                                         chatId,
-                                        capturedMedia.uri.toString()
-                                    )
+                                        capturedMedia.uri.toString(),
+                                    ),
                                 )
                             }
 

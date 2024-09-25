@@ -55,19 +55,19 @@ sealed interface Route {
     data object Home : Route
 
     @Serializable
-    data class ChatThread(val chatId: Long, val text: String? = null): Route
+    data class ChatThread(val chatId: Long, val text: String? = null) : Route
 
     @Serializable
-    data class Camera(val chatId: Long): Route
+    data class Camera(val chatId: Long) : Route
 
     @Serializable
-    data class PhotoPicker(val chatId: Long): Route
+    data class PhotoPicker(val chatId: Long) : Route
 
     @Serializable
-    data class VideoEdit(val chatId: Long, val uri: String): Route
+    data class VideoEdit(val chatId: Long, val uri: String) : Route
 
     @Serializable
-    data class VideoPlayer(val uri: String): Route
+    data class VideoPlayer(val uri: String) : Route
 }
 
 enum class TopLevelDestination(
