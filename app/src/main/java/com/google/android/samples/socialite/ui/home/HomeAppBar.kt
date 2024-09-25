@@ -16,23 +16,25 @@
 
 package com.google.android.samples.socialite.ui.home
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import app.cash.turbine.test
-import com.google.android.samples.socialite.awaitNotEmpty
-import com.google.android.samples.socialite.repository.createTestRepository
-import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
-import org.junit.Test
-import org.junit.runner.RunWith
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
-@RunWith(AndroidJUnit4::class)
-class HomeViewModelTest {
-
-    @Test
-    fun initialize() = runTest {
-        val viewModel = HomeViewModel(createTestRepository())
-        viewModel.chats.test {
-            assertThat(awaitNotEmpty()).hasSize(4)
-        }
-    }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeAppBar(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    TopAppBar(
+        modifier = modifier,
+        title = { Text(text = title) },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+        ),
+    )
 }
