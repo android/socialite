@@ -33,5 +33,6 @@ fun createTestRepository(): ChatRepository {
         notificationHelper = NotificationHelper(context),
         widgetModelRepository = WidgetModelRepository(database.widgetDao(), CoroutineScope(SupervisorJob() + Dispatchers.Default), context),
         coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        appContext = InstrumentationRegistry.getInstrumentation().targetContext,
     )
 }
