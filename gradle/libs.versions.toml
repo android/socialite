@@ -13,45 +13,42 @@
 # limitations under the License.
 
 [versions]
-accompanist = "0.32.0"
-activity = "1.9.0-rc01"
-agp = "8.2.2"
-benchmarkMacroJunit4 = "1.2.3"
-baselineprofile = "1.2.3"
+accompanist = "0.34.0"
+activity = "1.9.1"
+agp = "8.6.0"
+benchmarkMacroJunit4 = "1.3.0"
+baselineprofile = "1.3.0"
 camera = "1.4.0-SNAPSHOT"
 cameraViewfinderCompose = "1.0.0-SNAPSHOT"
-coil = "2.4.0"
-compose_bom = "2024.04.00"
-composeCompiler = "1.5.4" # Used in app/build.gradle.kts
-compose-foundation = "1.6.0-beta03"
-concurrent = "1.1.0"
-core = "1.12.0"
+coil = "2.7.0"
+compose_bom = "2024.08.00"
+concurrent = "1.2.0"
+core = "1.13.1"
 core-splashscreen = "1.0.1"
-espresso = "3.5.1"
-graphics = "1.0.0-alpha05"
-hilt = "2.49"
+espresso = "3.6.1"
+graphics = "1.0.0"
+hilt = "2.52"
 hiltNavigationCompose = "1.2.0"
 junit = "4.13.2"
-kotlin = "1.9.20"
-ksp = "1.9.20-1.0.14"
-lifecycle = "2.7.0"
+kotlin = "2.0.20"
+ksp = "2.0.20-1.0.24"
+lifecycle = "2.8.4"
 material3 = "1.2.1"
-media3 = "1.4.0-rc01"
-navigation = "2.8.0-alpha07"
+media3 = "1.4.1"
+navigation = "2.8.0-rc01"
 profileinstaller = "1.3.1"
 room = "2.6.1"
-spotless = "6.24.0"
-test = "1.1.5"
-truth = "1.1.3"
-turbine = "1.0.0"
+spotless = "6.25.0"
+test = "1.2.1"
+truth = "1.4.4"
+turbine = "1.1.0"
 uiautomator = "2.3.0"
-window = "1.2.0"
-material3-adaptive-navigation-suite = "1.0.0-alpha05"
-glance = "1.1.0-alpha01"
+window = "1.3.0"
+material3-adaptive-navigation-suite = "1.0.0-alpha07"
+glance = "1.1.0"
 secrets = "2.0.1"
-generativeai = "0.7.0"
-datastore = "1.0.0"
-
+generativeai = "0.9.0"
+datastore = "1.1.1"
 
 [libraries]
 accompanist-painter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
@@ -92,7 +89,6 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 lifecycle-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 media3-effect = { group = "androidx.media3", name = "media3-effect", version.ref = "media3" }
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
@@ -108,7 +104,7 @@ truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 window = { group = "androidx.window", name = "window", version.ref = "window" }
-ktlint = "com.pinterest.ktlint:ktlint-cli:1.1.1" # Used in build.gradle.kts
+ktlint = "com.pinterest.ktlint:ktlint-cli:1.2.1" # Used in build.gradle.kts
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai"}
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
 
@@ -118,6 +114,7 @@ androidTest = { id = "com.android.test", version.ref = "agp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }

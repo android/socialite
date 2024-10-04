@@ -16,18 +16,26 @@
 
 import com.diffplug.gradle.spotless.SpotlessExtension
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidTest) apply false
     alias(libs.plugins.baselineprofile) apply false
     alias(libs.plugins.kotlinAndroid) apply false
+    alias(libs.plugins.kotlinCompose) apply false
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.ksp) apply false
 }
 
-subprojects {
+allprojects {
+    // Configure Java to use our chosen language level. Kotlin will automatically pick this up.
+    // See https://kotlinlang.org/docs/gradle-configure-project.html#gradle-java-toolchains-support
+    plugins.withType<JavaBasePlugin>().configureEach {
+        extensions.configure<JavaPluginExtension> {
+            toolchain.languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
     plugins.apply(rootProject.libs.plugins.spotless.get().pluginId)
     configure<SpotlessExtension> {
         kotlin {

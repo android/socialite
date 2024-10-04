@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.baselineprofile)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinCompose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 secrets {
@@ -34,7 +30,7 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
@@ -52,19 +48,11 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
     kotlinOptions {
-        jvmTarget = "17"
         freeCompilerArgs = listOf("-Xcontext-receivers")
     }
     buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+        buildConfig = true
     }
     packaging {
         resources {
@@ -115,7 +103,6 @@ dependencies {
 
     implementation(libs.lifecycle.ktx)
     implementation(libs.lifecycle.compose)
-    implementation(libs.lifecycle.runtime.compose)
 
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)

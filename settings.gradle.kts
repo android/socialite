@@ -16,7 +16,13 @@
 
 pluginManagement {
     repositories {
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -28,8 +34,17 @@ dependencyResolutionManagement {
     repositories {
         maven {
             setUrl("https://androidx.dev/snapshots/builds/11723120/artifacts/repository")
+            content {
+                includeGroupByRegex("androidx.*")
+            }
         }
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
     }
 }
