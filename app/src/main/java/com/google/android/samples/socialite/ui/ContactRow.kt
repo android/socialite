@@ -16,6 +16,11 @@
 
 package com.google.android.samples.socialite.ui
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.google.android.samples.socialite.data.utils.toReadableString
 import com.google.android.samples.socialite.model.ChatDetail
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatRow(
     chat: ChatDetail,
@@ -61,7 +67,7 @@ fun ChatRow(
         Image(
             painter = rememberIconPainter(contentUri = contact.iconUri),
             contentDescription = null,
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(Color.LightGray),

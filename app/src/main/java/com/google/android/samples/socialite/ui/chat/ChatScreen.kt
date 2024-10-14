@@ -20,6 +20,12 @@ import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -94,7 +100,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
@@ -108,6 +113,7 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "ChatUI"
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatScreen(
     chatId: Long,
@@ -118,7 +124,7 @@ fun ChatScreen(
     onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
     prefilledText: String? = null,
-    viewModel: ChatViewModel = hiltViewModel(),
+    viewModel: ChatViewModel = hiltViewModel()
 ) {
     LaunchedEffect(chatId) {
         viewModel.setChatId(chatId)
@@ -143,7 +149,7 @@ fun ChatScreen(
             onPhotoPickerClick = onPhotoPickerClick,
             onVideoClick = onVideoClick,
             modifier = modifier
-                .clip(RoundedCornerShape(5)),
+                .clip(RoundedCornerShape(5))
         )
     }
     LifecycleEffect(
@@ -175,7 +181,7 @@ private fun LifecycleEffect(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ChatContent(
     chat: ChatDetail,
@@ -188,7 +194,7 @@ private fun ChatContent(
     onCameraClick: () -> Unit,
     onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
@@ -242,13 +248,14 @@ private fun PaddingValues.copy(
     bottom = bottom ?: calculateBottomPadding(),
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ChatAppBar(
     chat: ChatDetail,
     scrollBehavior: TopAppBarScrollBehavior,
     onBackPressed: (() -> Unit)?,
     modifier: Modifier = Modifier,
+
 ) {
     TopAppBar(
         title = {
@@ -258,8 +265,17 @@ private fun ChatAppBar(
             ) {
                 // This only supports DM for now.
                 val contact = chat.attendees.first()
-                SmallContactIcon(iconUri = contact.iconUri, size = 32.dp)
-                Text(text = contact.name)
+                Image(
+                    painter = rememberIconPainter(contact.iconUri),
+                    contentDescription = null,
+                    modifier = Modifier.Companion
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color.LightGray),
+                )
+                Text(
+                    text = contact.name,
+                )
             }
         },
         modifier = modifier,
@@ -508,27 +524,32 @@ private fun PreviewInputBar() {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Preview
 @Composable
 private fun PreviewChatContent() {
-    SocialTheme {
-        ChatContent(
-            chat = ChatDetail(ChatWithLastMessage(0L), listOf(Contact.CONTACTS[0])),
-            messages = listOf(
-                ChatMessage("Hi!", null, null, 0L, false, null),
-                ChatMessage("Hello", null, null, 0L, true, null),
-                ChatMessage("world", null, null, 0L, true, null),
-                ChatMessage("!", null, null, 0L, true, null),
-                ChatMessage("Hello, world!", null, null, 0L, true, null),
-            ),
-            input = "Hello",
-            sendEnabled = true,
-            onBackPressed = {},
-            onInputChanged = {},
-            onSendClick = {},
-            onCameraClick = {},
-            onPhotoPickerClick = {},
-            onVideoClick = {},
-        )
+    SharedTransitionScope {
+        AnimatedContent(targetState = 1) {_ ->
+            SocialTheme {
+                ChatContent(
+                    chat = ChatDetail(ChatWithLastMessage(0L), listOf(Contact.CONTACTS[0])),
+                    messages = listOf(
+                        ChatMessage("Hi!", null, null, 0L, false, null),
+                        ChatMessage("Hello", null, null, 0L, true, null),
+                        ChatMessage("world", null, null, 0L, true, null),
+                        ChatMessage("!", null, null, 0L, true, null),
+                        ChatMessage("Hello, world!", null, null, 0L, true, null),
+                    ),
+                    input = "Hello",
+                    sendEnabled = true,
+                    onBackPressed = {},
+                    onInputChanged = {},
+                    onSendClick = {},
+                    onCameraClick = {},
+                    onPhotoPickerClick = {},
+                    onVideoClick = {}
+                )
+            }
+        }
     }
 }
