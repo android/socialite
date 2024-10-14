@@ -93,9 +93,9 @@ fun Settings(
                         Text(
                             text = "${stringResource(id = R.string.ai_chatbot_setting)}: ${
                                 stringResource(
-                                    chatbotStatusResource,
+                                    chatbotStatusResource
                                 )
-                            }",
+                            }"
                         )
                     }
                 }
