@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.ui.home
+package com.google.android.samples.socialite.ui.home.settings
 
 import android.content.Context
 import android.widget.Toast
