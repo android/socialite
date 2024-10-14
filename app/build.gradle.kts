@@ -124,6 +124,9 @@ dependencies {
     implementation(libs.splashscreen)
     implementation(libs.concurrent.kts)
 
+    implementation(libs.core.performance)
+    implementation(libs.core.performance.play.services)
+
     implementation(libs.camera.core)
     implementation(libs.camera2)
     implementation(libs.camera.lifecycle)
