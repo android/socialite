@@ -25,12 +25,13 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class VideoPlayerScreenViewModel : ViewModel() {
 
     private val _player = MutableStateFlow<Player?>(null)
-    val player = _player.asStateFlow()
+    val player: StateFlow<Player?> = _player.asStateFlow()
     var shouldEnterPipMode by mutableStateOf(false)
 
     fun initializePlayer(uri: String, context: Context) {
