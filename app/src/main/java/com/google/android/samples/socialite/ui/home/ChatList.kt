@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite.ui.home
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,6 +48,8 @@ internal fun ChatList(
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    ReportDrawnWhen { chats.isNotEmpty() }
+
     @SuppressLint("InlinedApi") // Granted at install time on API <33.
     val notificationPermissionState = rememberPermissionState(
         android.Manifest.permission.POST_NOTIFICATIONS,
