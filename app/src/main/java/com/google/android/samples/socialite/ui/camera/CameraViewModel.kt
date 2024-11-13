@@ -60,6 +60,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 private const val TAG = "CameraViewModel"
@@ -74,6 +75,9 @@ class CameraViewModel @Inject constructor(
     private lateinit var camera: Camera
     private lateinit var extensionsManager: ExtensionsManager
     private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
+
+    private val _isSavingVideo = MutableStateFlow(false)
+    val isSavingVideo: StateFlow<Boolean> = _isSavingVideo
 
     val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
@@ -273,6 +277,7 @@ class CameraViewModel @Inject constructor(
             recordingState = event
             if (event is VideoRecordEvent.Finalize) {
                 onMediaCaptured(Media(event.outputResults.outputUri, MediaType.VIDEO))
+                _isSavingVideo.value = false
             }
         }
 
@@ -297,6 +302,8 @@ class CameraViewModel @Inject constructor(
     }
 
     fun saveVideo() {
+        _isSavingVideo.value = true
+
         if (currentRecording == null || recordingState is VideoRecordEvent.Finalize) {
             return
         }
