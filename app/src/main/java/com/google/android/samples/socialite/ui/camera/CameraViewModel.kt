@@ -34,6 +34,7 @@ import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
+import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.UseCaseGroup
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
@@ -60,6 +61,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 private const val TAG = "CameraViewModel"
@@ -84,9 +86,17 @@ class CameraViewModel @Inject constructor(
         .setAspectRatioStrategy(aspectRatioStrategy)
         .build()
 
+    private val _surfaceRequest = MutableStateFlow<SurfaceRequest?>(null)
+        val surfaceRequest: StateFlow<SurfaceRequest?> = _surfaceRequest
+
     private val previewUseCase = Preview.Builder()
         .setResolutionSelector(resolutionSelector)
-        .build()
+        .build().apply {
+            setSurfaceProvider { newSurfaceRequest ->
+                Log.d("JOLO", "New surface request")
+                _surfaceRequest.value = newSurfaceRequest
+            }
+        }
 
     private val imageCaptureUseCase = ImageCapture.Builder()
         .setResolutionSelector(resolutionSelector)
@@ -141,7 +151,6 @@ class CameraViewModel @Inject constructor(
 
     fun startPreview(
         lifecycleOwner: LifecycleOwner,
-        surfaceProvider: Preview.SurfaceProvider,
         captureMode: CaptureMode,
         cameraSelector: CameraSelector,
         rotation: Int,
@@ -156,9 +165,7 @@ class CameraViewModel @Inject constructor(
             }
             var extensionsCameraSelector: CameraSelector? = null
             val useCaseGroupBuilder = UseCaseGroup.Builder()
-
-            previewUseCase.setSurfaceProvider(surfaceProvider)
-            useCaseGroupBuilder.addUseCase(previewUseCase)
+                .addUseCase(previewUseCase)
 
             if (captureMode == CaptureMode.PHOTO) {
                 try {

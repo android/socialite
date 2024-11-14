@@ -34,7 +34,7 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
@@ -125,10 +125,10 @@ dependencies {
     implementation(libs.concurrent.kts)
 
     implementation(libs.camera.core)
+    implementation(libs.camera.compose)
     implementation(libs.camera2)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
-    implementation(libs.camera.viewfinder.compose)
 
     implementation(libs.media3.common)
     implementation(libs.media3.effect)

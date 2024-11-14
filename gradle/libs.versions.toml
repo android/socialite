@@ -18,12 +18,10 @@ activity = "1.9.3"
 agp = "8.2.2"
 benchmarkMacroJunit4 = "1.2.3"
 baselineprofile = "1.2.3"
-camera = "1.4.0-SNAPSHOT"
-cameraViewfinderCompose = "1.0.0-SNAPSHOT"
+camera = "1.5.0-alpha03"
 coil = "2.4.0"
 compose_bom = "2024.04.00"
 composeCompiler = "1.5.4" # Used in app/build.gradle.kts
-compose-foundation = "1.6.0-beta03"
 concurrent = "1.1.0"
 core = "1.12.0"
 core-splashscreen = "1.0.1"
@@ -60,11 +58,11 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacroJunit4" }
 camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camera" }
+camera-compose = { group = "androidx.camera", name = "camera-compose", version.ref = "camera"}
 camera-extensions = { group = "androidx.camera", name = "camera-extensions", version.ref = "camera" }
 camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camera" }
 camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camera" }
 camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camera" }
-camera-viewfinder-compose = { module = "androidx.camera:camera-viewfinder-compose", version.ref = "cameraViewfinderCompose" }
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose_bom" }
