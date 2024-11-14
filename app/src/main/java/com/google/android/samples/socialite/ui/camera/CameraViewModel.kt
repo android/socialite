@@ -87,7 +87,7 @@ class CameraViewModel @Inject constructor(
         .build()
 
     private val _surfaceRequest = MutableStateFlow<SurfaceRequest?>(null)
-        val surfaceRequest: StateFlow<SurfaceRequest?> = _surfaceRequest
+    val surfaceRequest: StateFlow<SurfaceRequest?> = _surfaceRequest
 
     private val previewUseCase = Preview.Builder()
         .setResolutionSelector(resolutionSelector)
