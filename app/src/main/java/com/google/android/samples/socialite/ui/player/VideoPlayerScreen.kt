@@ -25,10 +25,12 @@ import android.content.IntentFilter
 import android.os.Build
 import android.util.Rational
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.AndroidExternalSurface
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -61,6 +63,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
 import androidx.core.graphics.toRect
 import androidx.core.util.Consumer
+import androidx.glance.color.DynamicThemeColorProviders.onSurface
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -195,24 +198,20 @@ private fun VideoPlayer(
         }
 
         val isInPipMode = isInPipMode()
-        AndroidView(
-            factory = { PlayerView(it) },
-            update = { playerView ->
-                playerView.player = player
-                playerView.useController = !isInPipMode
-            },
-            modifier = pipModifier
-                .focusable(),
-        )
+
+        if(player != null) {
+            AndroidExternalSurface(Modifier.aspectRatio(16f / 9f).focusable()) {
+                onSurface { surface, _, _ ->
+                    player.setVideoSurface(surface)
+                }
+            }
+        }
     } else {
-        AndroidView(
-            factory = { PlayerView(it) },
-            update = { playerView ->
-                playerView.player = player
-            },
-            modifier = Modifier
-                .focusable(),
-        )
+        AndroidExternalSurface(Modifier.aspectRatio(16f / 9f).focusable()) {
+            onSurface { surface, _, _ ->
+                player?.setVideoSurface(surface)
+            }
+        }
     }
 
     BroadcastReceiver(player = player)
