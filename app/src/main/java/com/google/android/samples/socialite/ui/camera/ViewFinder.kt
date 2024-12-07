@@ -16,7 +16,8 @@
 
 package com.google.android.samples.socialite.ui.camera
 
-import androidx.camera.core.Preview
+import androidx.camera.compose.CameraXViewfinder
+import androidx.camera.core.SurfaceRequest
 import androidx.camera.viewfinder.surface.ImplementationMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -31,7 +32,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun ViewFinder(
     cameraState: CameraState,
-    onSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {},
+    surfaceRequest: SurfaceRequest?,
     onZoomChange: (Float) -> Unit,
 ) {
     val transformableState = rememberTransformableState(
@@ -49,11 +50,13 @@ fun ViewFinder(
             modifier = Modifier
                 .transformable(state = transformableState),
         ) {
-            CameraXViewfinder(
-                modifier = Modifier.fillMaxSize(),
-                implementationMode = ImplementationMode.PERFORMANCE,
-                onSurfaceProviderReady = onSurfaceProviderReady,
-            )
+            surfaceRequest?.let {
+                CameraXViewfinder(
+                    modifier = Modifier.fillMaxSize(),
+                    implementationMode = ImplementationMode.EXTERNAL,
+                    surfaceRequest = surfaceRequest,
+                )
+            }
         }
     }
 }

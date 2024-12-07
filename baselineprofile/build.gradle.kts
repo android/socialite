@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.google.android.samples.socialite.baselineprofile"
-    compileSdk = 34
+    compileSdk = 35
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
