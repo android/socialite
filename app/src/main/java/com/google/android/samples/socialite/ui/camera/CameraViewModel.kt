@@ -62,6 +62,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 private const val TAG = "CameraViewModel"
@@ -93,8 +94,7 @@ class CameraViewModel @Inject constructor(
         .setResolutionSelector(resolutionSelector)
         .build().apply {
             setSurfaceProvider { newSurfaceRequest ->
-                Log.d("JOLO", "New surface request")
-                _surfaceRequest.value = newSurfaceRequest
+                _surfaceRequest.update { newSurfaceRequest }
             }
         }
 
