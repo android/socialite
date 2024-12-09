@@ -39,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,13 +46,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.appwidget.updateAll
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.SocialTheme
 import com.google.android.samples.socialite.ui.home.HomeAppBar
 import com.google.android.samples.socialite.ui.home.HomeBackground
-import com.google.android.samples.socialite.ui.home.HomeViewModel
 import com.google.android.samples.socialite.ui.rememberIconPainter
 import com.google.android.samples.socialite.widget.model.WidgetModel
 import com.google.android.samples.socialite.widget.model.WidgetModelRepository
@@ -90,7 +87,6 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
                 ) { innerPadding ->
 
                     HomeBackground()
-                    val viewModel: HomeViewModel = hiltViewModel()
                     LazyColumn(
                         modifier = modifier,
                         contentPadding = innerPadding,

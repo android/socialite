@@ -18,8 +18,10 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
 }
@@ -34,12 +36,12 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -62,9 +64,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
     packaging {
         resources {
@@ -107,6 +106,7 @@ dependencies {
 
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.accompanist.painter)
     implementation(libs.accompanist.permissions)
