@@ -27,7 +27,7 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.preload.DefaultPreloadManager
-import androidx.media3.exoplayer.source.preload.DefaultPreloadManager.Status.STAGE_LOADED_FOR_DURATION_MS
+import androidx.media3.exoplayer.source.preload.DefaultPreloadManager.Status.STAGE_LOADED_TO_POSITION_MS
 import androidx.media3.exoplayer.source.preload.TargetPreloadStatusControl
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
@@ -160,7 +160,7 @@ private constructor(
     class PreloadStatusControl : TargetPreloadStatusControl<Int> {
         override fun getTargetPreloadStatus(rankingData: Int): DefaultPreloadManager.Status {
             // By default preload first 3 seconds of the video
-            return DefaultPreloadManager.Status(STAGE_LOADED_FOR_DURATION_MS, 3000L)
+            return DefaultPreloadManager.Status(STAGE_LOADED_TO_POSITION_MS, 3000L)
         }
     }
 }
