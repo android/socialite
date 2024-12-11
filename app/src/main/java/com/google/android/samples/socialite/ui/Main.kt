@@ -94,7 +94,7 @@ fun MainNavigation(
             },
             popEnterTransition = {
                 EnterTransition.None
-            }
+            },
         ) {
             composable<Route.ChatsList> {
                 ChatList(
