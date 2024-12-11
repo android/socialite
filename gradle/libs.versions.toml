@@ -26,6 +26,7 @@ composeCompiler = "1.5.4" # Used in app/build.gradle.kts
 compose-foundation = "1.6.0-beta03"
 concurrent = "1.1.0"
 core = "1.12.0"
+core-performance = "1.0.0"
 core-splashscreen = "1.0.1"
 espresso = "3.5.1"
 graphics = "1.0.1"
@@ -81,6 +82,8 @@ compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 concurrent-kts = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version.ref = "concurrent" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+core-performance = { group = "androidx.core", name = "core-performance", version.ref = "core-performance" }
+core-performance-play-services = { group = "androidx.core", name = "core-performance-play-services", version.ref = "core-performance" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "test" }
 glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
