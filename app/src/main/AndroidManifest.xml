@@ -27,6 +27,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!--
         minSdk for this project is 21, but the PlayServicesDevicePerformance from the
@@ -45,8 +46,26 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Social"
-        tools:targetApi="31">
+        tools:targetApi="34">
+
+        <receiver
+            android:name=".widget.SociaLiteAppWidgetReceiver"
+            android:exported="true"
+            android:label="@string/favorite_contact_widget_name">
+
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/socialite_widget_info" />
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -54,6 +73,7 @@
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:supportsPictureInPicture="true">
+
 
             <!-- This activity is the one that's shown in the launcher. -->
             <intent-filter>
@@ -117,6 +137,16 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
+
+
+        <activity android:name=".widget.SociaLiteAppWidgetConfigActivity"
+            android:taskAffinity=""
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
 
         <provider
             android:name="com.google.android.samples.socialite.AssetFileProvider"

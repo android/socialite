@@ -20,14 +20,17 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -80,16 +83,22 @@ fun MainNavigation(
     NavHost(
         navController = navController,
         startDestination = "home",
-        enterTransition = { AnimationConstants.enterTransition },
-        popEnterTransition = { AnimationConstants.enterTransition },
-        exitTransition = { AnimationConstants.exitTransition },
-        popExitTransition = { AnimationConstants.exitTransition },
+        popExitTransition = {
+            scaleOut(
+                targetScale = 0.9f,
+                transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
+            )
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        modifier = modifier,
     ) {
         composable(
             route = "home",
         ) {
             Home(
-                modifier = modifier,
+                modifier = Modifier.fillMaxSize(),
                 onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
             )
         }
@@ -116,7 +125,7 @@ fun MainNavigation(
                 onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
                 onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
                 prefilledText = text,
-                modifier = modifier,
+                modifier = Modifier.fillMaxSize(),
             )
         }
         composable(
@@ -144,6 +153,7 @@ fun MainNavigation(
                     }
                 },
                 chatId = chatId,
+                modifier = Modifier.fillMaxSize(),
             )
         }
 

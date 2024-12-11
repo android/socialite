@@ -21,6 +21,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import android.view.Display
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
@@ -28,6 +29,7 @@ import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.DisplayOrientedMeteringPointFactory
+import androidx.camera.core.DynamicRange
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -60,6 +62,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
+private const val TAG = "CameraViewModel"
+
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
@@ -69,6 +73,7 @@ class CameraViewModel @Inject constructor(
 ) : ViewModel() {
     private lateinit var camera: Camera
     private lateinit var extensionsManager: ExtensionsManager
+    private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
     val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
@@ -85,6 +90,7 @@ class CameraViewModel @Inject constructor(
 
     private val imageCaptureUseCase = ImageCapture.Builder()
         .setResolutionSelector(resolutionSelector)
+        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
         .build()
 
     private val recorder = Recorder.Builder()
@@ -92,11 +98,42 @@ class CameraViewModel @Inject constructor(
         .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
         .build()
 
-    private val videoCaptureUseCase = VideoCapture.Builder(recorder)
-        .build()
-
     private var currentRecording: Recording? = null
     private lateinit var recordingState: VideoRecordEvent
+
+    init {
+        val videoCaptureBuilder = VideoCapture.Builder(recorder)
+        viewModelScope.launch {
+            val hdrCameraInfo = getHdrCameraInfo()
+
+            if (hdrCameraInfo != null) {
+                Log.i(TAG, "Capturing HDR video")
+                videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
+            }
+
+            videoCaptureUseCase = videoCaptureBuilder.build()
+        }
+    }
+
+    private suspend fun getHdrCameraInfo(): DynamicRange? {
+        var supportedHdrEncoding: DynamicRange? = null
+
+        cameraProviderManager.getCameraProvider().availableCameraInfos
+            .first { cameraInfo ->
+                val videoCapabilities = Recorder.getVideoCapabilities(cameraInfo)
+                val supportedDynamicRanges =
+                    videoCapabilities.supportedDynamicRanges
+
+                supportedHdrEncoding = supportedDynamicRanges.firstOrNull {
+                    // To ensure consistency between the multiple dynamic range profiles, chose
+                    // HLG 10-bit, which is supported by all devices that supports HDR.
+                    it == DynamicRange.HLG_10_BIT
+                }
+                return@first true
+            }
+
+        return supportedHdrEncoding
+    }
 
     fun setChatId(chatId: Long) {
         savedStateHandle.set("chatId", chatId)
@@ -161,6 +198,11 @@ class CameraViewModel @Inject constructor(
             )
             viewFinderState.value.cameraState = CameraState.READY
         }
+    }
+
+    fun setTargetRotation(rotation: Int) {
+        imageCaptureUseCase.targetRotation = rotation
+        videoCaptureUseCase.targetRotation = rotation
     }
 
     fun capturePhoto(onMediaCaptured: (Media) -> Unit) {

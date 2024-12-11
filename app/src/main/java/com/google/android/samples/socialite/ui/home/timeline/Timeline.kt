@@ -19,7 +19,6 @@ package com.google.android.samples.socialite.ui.home.timeline
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
-import androidx.compose.foundation.AndroidExternalSurface
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,7 +27,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,7 +39,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -51,22 +51,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.rememberIconPainter
 import kotlin.math.absoluteValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun Timeline(
     contentPadding: PaddingValues,
@@ -102,7 +109,7 @@ fun TimelineVerticalPager(
     player: Player?,
     onInitializePlayer: () -> Unit = {},
     onReleasePlayer: () -> Unit = {},
-    onChangePlayerItem: (uri: Uri?) -> Unit = {},
+    onChangePlayerItem: (uri: Uri?, page: Int) -> Unit = { uri: Uri?, i: Int -> },
     videoRatio: Float?,
 ) {
     val pagerState = rememberPagerState(pageCount = { mediaItems.count() })
@@ -110,9 +117,9 @@ fun TimelineVerticalPager(
         // Collect from the a snapshotFlow reading the settledPage
         snapshotFlow { pagerState.settledPage }.collect { page ->
             if (mediaItems[page].type == TimelineMediaType.VIDEO) {
-                onChangePlayerItem(Uri.parse(mediaItems[page].uri))
+                onChangePlayerItem(Uri.parse(mediaItems[page].uri), pagerState.currentPage)
             } else {
-                onChangePlayerItem(null)
+                onChangePlayerItem(null, pagerState.currentPage)
             }
         }
     }
@@ -196,23 +203,18 @@ fun TimelinePage(
     when (media.type) {
         TimelineMediaType.VIDEO -> {
             if (page == state.settledPage) {
-                // Use a default 1:1 ratio if the video size is unknown
-                val sanitizedRatio = videoRatio ?: 1f
-                AndroidExternalSurface(
-                    modifier = modifier
-                        .aspectRatio(sanitizedRatio, sanitizedRatio < 1f)
-                        .background(Color.White),
-                ) {
-                    onSurface { surface, _, _ ->
-                        player.setVideoSurface(surface)
-
-                        // Cleanup when surface is destroyed
-                        surface.onDestroyed {
-                            player.clearVideoSurface(this)
-                            release()
-                        }
-                    }
+                // When in preview, early return a Box with the received modifier preserving layout
+                if (LocalInspectionMode.current) {
+                    Box(modifier = modifier)
+                    return
                 }
+                AndroidView(
+                    factory = { PlayerView(it) },
+                    update = { playerView ->
+                        playerView.player = player
+                    },
+                    modifier = modifier.fillMaxSize(),
+                )
             }
         }
         TimelineMediaType.PHOTO -> {
@@ -238,15 +240,23 @@ fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
     ) {
         if (mediaItem.type == TimelineMediaType.VIDEO) {
             val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(
-                LocalContext.current,
-                Uri.parse(mediaItem.uri),
-            )
+            val context = LocalContext.current.applicationContext
 
-            val duration =
-                mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                    ?.toLong()
-            duration?.let {
+            // Running on an IO thread for loading metadata from remote urls to reduce lag time
+            val duration: State<Long?> = produceState<Long?>(initialValue = null) {
+                withContext(Dispatchers.IO) {
+                    // Remote url
+                    if (mediaItem.uri.contains("https://")) {
+                        mediaMetadataRetriever.setDataSource(mediaItem.uri, HashMap<String, String>())
+                    } else { // Locally saved files
+                        mediaMetadataRetriever.setDataSource(context, Uri.parse(mediaItem.uri))
+                    }
+                    value =
+                        mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                            ?.toLong()
+                }
+            }
+            duration.value?.let {
                 val seconds = it / 1000L
                 val minutes = seconds / 60L
                 Box(

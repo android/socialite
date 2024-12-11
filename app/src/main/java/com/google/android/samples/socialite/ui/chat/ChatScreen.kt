@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -141,7 +142,8 @@ fun ChatScreen(
             onCameraClick = onCameraClick,
             onPhotoPickerClick = onPhotoPickerClick,
             onVideoClick = onVideoClick,
-            modifier = modifier,
+            modifier = modifier
+                .clip(RoundedCornerShape(5)),
         )
     }
     LifecycleEffect(
@@ -377,10 +379,18 @@ private fun MessageBubble(
 @Composable
 private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
     val context = LocalContext.current.applicationContext
+
+    // Running on an IO thread for loading metadata from remote urls to reduce lag time
     val bitmapState = produceState<Bitmap?>(initialValue = null) {
         withContext(Dispatchers.IO) {
             val mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(context, Uri.parse(videoUri))
+
+            // Remote url
+            if (videoUri.contains("https://")) {
+                mediaMetadataRetriever.setDataSource(videoUri, HashMap<String, String>())
+            } else { // Locally saved files
+                mediaMetadataRetriever.setDataSource(context, Uri.parse(videoUri))
+            }
             // Return any frame that the framework considers representative of a valid frame
             value = mediaMetadataRetriever.frameAtTime
         }

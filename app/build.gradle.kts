@@ -21,10 +21,15 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.secrets)
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+secrets {
+    defaultPropertiesFileName = "secret.defaults.properties"
 }
 
 android {
@@ -73,11 +78,17 @@ dependencies {
     implementation(libs.camera.extensions)
     implementation(libs.profileinstaller)
 
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     baselineProfile(project(":baselineprofile"))
+
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material)
 
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
@@ -88,6 +99,7 @@ dependencies {
     implementation(libs.compose.ui.text.google.fonts)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material3.adaptive)
     implementation(libs.compose.material.icons)
     androidTestImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.tooling)
@@ -119,6 +131,7 @@ dependencies {
     implementation(libs.camera2)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
+    implementation(libs.camera.viewfinder.compose)
 
     implementation(libs.media3.common)
     implementation(libs.media3.effect)
@@ -139,4 +152,7 @@ dependencies {
 
     implementation(libs.coil)
     implementation(libs.coil.compose)
+
+    implementation(libs.generativeai)
+    implementation(libs.datastore)
 }

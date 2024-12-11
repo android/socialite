@@ -27,11 +27,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.samples.socialite.R
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun Settings(
@@ -56,6 +58,29 @@ fun Settings(
                     ),
                 ) {
                     Text(text = stringResource(R.string.clear_message_history))
+                }
+            }
+
+            val chatbotStatusResource = viewModel.isBotEnabledFlow.map {
+                if (it) {
+                    R.string.ai_chatbot_setting_enabled
+                } else {
+                    R.string.ai_chatbot_setting_disabled
+                }
+            }.collectAsState(initial = R.string.ai_chatbot_setting_enabled).value
+
+            Box(modifier = Modifier.padding(32.dp)) {
+                Button(
+                    onClick = { viewModel.toggleChatbot() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                ) {
+                    Text(text = "${stringResource(id = R.string.ai_chatbot_setting)}: ${stringResource(chatbotStatusResource)}")
                 }
             }
         }

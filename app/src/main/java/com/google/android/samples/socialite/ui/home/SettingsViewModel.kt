@@ -52,4 +52,12 @@ class SettingsViewModel @Inject constructor(
             ).show()
         }
     }
+
+    val isBotEnabledFlow = repository.isBotEnabled
+
+    fun toggleChatbot() {
+        viewModelScope.launch {
+            repository.toggleChatbotSetting()
+        }
+    }
 }
