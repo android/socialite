@@ -69,6 +69,16 @@ fun Settings(
                     }
                 }
             }
+            item {
+                Box(modifier = Modifier.padding(32.dp)) {
+                    Text(
+                        text = stringResource(
+                            R.string.performance_class_level,
+                            viewModel.mediaPerformanceClass,
+                        ),
+                    )
+                }
+            }
         }
     }
 }
