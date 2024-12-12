@@ -19,6 +19,7 @@ package com.google.android.samples.socialite.ui.camera
 import android.Manifest
 import android.annotation.SuppressLint
 import android.view.Surface
+import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.view.RotationProvider
@@ -87,6 +88,18 @@ fun Camera(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
+
+    LaunchedEffect(lifecycleOwner, context) {
+        viewModel.imageCaptureState.collect { state ->
+            when (state) {
+                ImageCaptureState.IMAGE_CAPTURE_SUCCESS ->
+                    Toast.makeText(context, "Photo saved.", Toast.LENGTH_SHORT).show()
+                ImageCaptureState.IMAGE_CAPTURE_FAIL ->
+                    Toast.makeText(context, "Photo capture failed.", Toast.LENGTH_SHORT).show()
+                ImageCaptureState.PENDING -> Unit
+            }
+        }
+    }
 
     var isLayoutUnfolded by remember { mutableStateOf<Boolean?>(null) }
 
