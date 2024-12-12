@@ -50,6 +50,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -62,10 +63,10 @@ class VideoEditScreenViewModel @Inject constructor(
     private var transformedVideoFilePath = ""
 
     private val _isFinishedEditing = MutableStateFlow(false)
-    val isFinishedEditing: StateFlow<Boolean> = _isFinishedEditing
+    val isFinishedEditing: StateFlow<Boolean> = _isFinishedEditing.asStateFlow()
 
     private val _isProcessing = MutableStateFlow(false)
-    val isProcessing: StateFlow<Boolean> = _isProcessing
+    val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
 
     fun setChatId(chatId: Long) {
         this.chatId.value = chatId
