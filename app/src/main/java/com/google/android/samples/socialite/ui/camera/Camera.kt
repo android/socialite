@@ -71,7 +71,6 @@ import kotlinx.coroutines.asExecutor
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(
-    chatId: Long,
     onMediaCaptured: (Media?) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
@@ -86,8 +85,6 @@ fun Camera(
         ),
     )
 
-    viewModel.setChatId(chatId)
-
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
 
@@ -97,8 +94,8 @@ fun Camera(
         val windowInfoTracker = WindowInfoTracker.getOrCreate(context)
         windowInfoTracker.windowLayoutInfo(context).collect { newLayoutInfo ->
             try {
-                val foldingFeature = newLayoutInfo?.displayFeatures
-                    ?.firstOrNull { it is FoldingFeature } as FoldingFeature
+                val foldingFeature = newLayoutInfo.displayFeatures
+                    .filterIsInstance<FoldingFeature>().firstOrNull()
                 isLayoutUnfolded = (foldingFeature != null)
             } catch (e: Exception) {
                 // If there was an issue detecting a foldable in the open position, default
