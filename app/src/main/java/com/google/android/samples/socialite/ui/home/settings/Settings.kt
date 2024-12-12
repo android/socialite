@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.home.HomeAppBar
 import com.google.android.samples.socialite.ui.home.HomeBackground
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun Settings(
@@ -68,7 +70,33 @@ fun Settings(
                         Text(text = stringResource(R.string.clear_message_history))
                     }
                 }
+
+                // AI Chatbot
+                val chatbotStatusResource = viewModel.isBotEnabledFlow.map {
+                    if (it) {
+                        R.string.ai_chatbot_setting_enabled
+                    } else {
+                        R.string.ai_chatbot_setting_disabled
+                    }
+                }.collectAsState(initial = R.string.ai_chatbot_setting_enabled).value
+
+                Box(modifier = Modifier.padding(32.dp)) {
+                    Button(
+                        onClick = { viewModel.toggleChatbot() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                    ) {
+                        Text(text = "${stringResource(id = R.string.ai_chatbot_setting)}: ${stringResource(chatbotStatusResource)}")
+                    }
+                }
             }
+
+            // Media Performance Class
             item {
                 Box(modifier = Modifier.padding(32.dp)) {
                     Text(
