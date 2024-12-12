@@ -40,8 +40,8 @@ import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 @Composable
 fun Settings(
     modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    val viewModel: SettingsViewModel = hiltViewModel()
     Scaffold(
         modifier = modifier,
         topBar = {
