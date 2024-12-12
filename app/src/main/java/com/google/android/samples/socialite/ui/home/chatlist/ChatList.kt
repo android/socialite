@@ -50,8 +50,8 @@ import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 fun ChatList(
     onChatClicked: (chatId: Long) -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: ChatListViewModel = hiltViewModel(),
 ) {
-    val viewModel: ChatListViewModel = hiltViewModel()
     val chatList by viewModel.chats.collectAsStateWithLifecycle()
     ChatList(chatList, onChatClicked, modifier)
 }
