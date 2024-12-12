@@ -94,13 +94,13 @@ fun MainNavigation(
             popExitTransition = {
                 scaleOut(
                     targetScale = 0.9f,
-                    transformOrigin = TransformOrigin(pivotFractionX=0.5f,      pivotFractionY = 0.5f)
+                    transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
                 )
             },
             popEnterTransition = {
                 EnterTransition.None
-            }
-            ) {
+            },
+        ) {
             composable<Route.ChatsList> {
                 ChatList(
                     onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
