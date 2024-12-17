@@ -60,6 +60,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 private const val TAG = "CameraViewModel"
@@ -76,7 +78,8 @@ class CameraViewModel @Inject constructor(
     private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
     val chatId: Long? = savedStateHandle.get("chatId")
-    var viewFinderState = MutableStateFlow(ViewFinderState())
+    private val _viewFinderState = MutableStateFlow(ViewFinderState())
+    val viewFinderState: StateFlow<ViewFinderState> = _viewFinderState.asStateFlow()
 
     val aspectRatioStrategy =
         AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
@@ -196,7 +199,7 @@ class CameraViewModel @Inject constructor(
                 activeCameraSelector,
                 useCaseGroupBuilder.build(),
             )
-            viewFinderState.value.cameraState = CameraState.READY
+            _viewFinderState.value.cameraState = CameraState.READY
         }
     }
 

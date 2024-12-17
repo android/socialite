@@ -25,6 +25,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -72,7 +73,7 @@ class ChatViewModel @Inject constructor(
     }.stateInUi(emptyList())
 
     private val _input = MutableStateFlow("")
-    val input: StateFlow<String> = _input
+    val input: StateFlow<String> = _input.asStateFlow()
     private var inputPrefilled = false
 
     val sendEnabled = _input.map(::isInputValid).stateInUi(false)
