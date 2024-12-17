@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +77,8 @@ fun Camera(
     modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
 ) {
+    val isSavingVideo = viewModel.isSavingVideo.collectAsState()
+
     var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
     var cameraSelector by remember { mutableStateOf(CameraSelector.DEFAULT_BACK_CAMERA) }
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
@@ -298,6 +302,14 @@ fun Camera(
                         }
                     }
                 }
+            }
+
+            if (isSavingVideo.value) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                        .padding(8.dp),
+                )
             }
         }
     } else {
