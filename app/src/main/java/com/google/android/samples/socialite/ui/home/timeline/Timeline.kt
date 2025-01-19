@@ -36,6 +36,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +69,9 @@ import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
+import com.google.android.samples.socialite.ui.home.HomeAppBar
+import com.google.android.samples.socialite.ui.home.HomeBackground
+import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 import com.google.android.samples.socialite.ui.rememberIconPainter
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.Dispatchers
@@ -76,27 +80,33 @@ import kotlinx.coroutines.withContext
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun Timeline(
-    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: TimelineViewModel = hiltViewModel()
     val media = viewModel.media
     val player = viewModel.player
     val videoRatio = viewModel.videoRatio
-
-    if (media.isEmpty()) {
-        EmptyTimeline(contentPadding, modifier)
-    } else {
-        TimelineVerticalPager(
-            contentPadding,
-            modifier,
-            media,
-            player,
-            viewModel::initializePlayer,
-            viewModel::releasePlayer,
-            viewModel::changePlayerItem,
-            videoRatio,
-        )
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            HomeAppBar(title = stringResource(TopLevelDestination.Timeline.label))
+        },
+    ) { contentPadding ->
+        HomeBackground(modifier = Modifier.fillMaxSize())
+        if (media.isEmpty()) {
+            EmptyTimeline(contentPadding, modifier)
+        } else {
+            TimelineVerticalPager(
+                contentPadding,
+                Modifier,
+                media,
+                player,
+                viewModel::initializePlayer,
+                viewModel::releasePlayer,
+                viewModel::changePlayerItem,
+                videoRatio,
+            )
+        }
     }
 }
 

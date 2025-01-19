@@ -34,18 +34,22 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavType
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import androidx.navigation.toRoute
 import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
 import com.google.android.samples.socialite.ui.chat.ChatScreen
-import com.google.android.samples.socialite.ui.home.Home
+import com.google.android.samples.socialite.ui.home.chatlist.ChatList
+import com.google.android.samples.socialite.ui.home.settings.Settings
+import com.google.android.samples.socialite.ui.home.timeline.Timeline
+import com.google.android.samples.socialite.ui.navigation.Route
+import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
 import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
 import com.google.android.samples.socialite.ui.photopicker.navigation.photoPickerScreen
 import com.google.android.samples.socialite.ui.player.VideoPlayerScreen
@@ -69,133 +73,132 @@ fun MainNavigation(
     val activity = LocalContext.current as Activity
     val navController = rememberNavController()
 
-    navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, _: Bundle? ->
+    navController.addOnDestinationChangedListener { _: NavController, destination: NavDestination, _: Bundle? ->
         // Lock the layout of the Camera screen to portrait so that the UI layout remains
         // constant, even on orientation changes. Note that the camera is still aware of
         // orientation, and will assign the correct edge as the bottom of the photo or video.
-        if (navDestination.route?.contains("camera") == true) {
+        if (destination.hasRoute<Route.Camera>()) {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         } else {
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 
-    NavHost(
+    SocialiteNavSuite(
         navController = navController,
-        startDestination = "home",
-        popExitTransition = {
-            scaleOut(
-                targetScale = 0.9f,
-                transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
-            )
-        },
-        popEnterTransition = {
-            EnterTransition.None
-        },
         modifier = modifier,
     ) {
-        composable(
-            route = "home",
+        NavHost(
+            navController = navController,
+            startDestination = Route.ChatsList,
+            popExitTransition = {
+                scaleOut(
+                    targetScale = 0.9f,
+                    transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
+                )
+            },
+            popEnterTransition = {
+                EnterTransition.None
+            },
         ) {
-            Home(
-                modifier = Modifier.fillMaxSize(),
-                onChatClicked = { chatId -> navController.navigate("chat/$chatId") },
-            )
-        }
-        composable(
-            route = "chat/{chatId}?text={text}",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-                navArgument("text") { defaultValue = "" },
-            ),
-            deepLinks = listOf(
-                navDeepLink {
-                    action = Intent.ACTION_VIEW
-                    uriPattern = "https://socialite.google.com/chat/{chatId}"
-                },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            val text = backStackEntry.arguments?.getString("text")
-            ChatScreen(
-                chatId = chatId,
-                foreground = true,
-                onBackPressed = { navController.popBackStack() },
-                onCameraClick = { navController.navigate("chat/$chatId/camera") },
-                onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
-                onVideoClick = { uri -> navController.navigate("videoPlayer?uri=$uri") },
-                prefilledText = text,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-        composable(
-            route = "chat/{chatId}/camera",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            Camera(
-                onMediaCaptured = { capturedMedia: Media? ->
-                    when (capturedMedia?.mediaType) {
-                        MediaType.PHOTO -> {
-                            navController.popBackStack()
+            composable<Route.ChatsList> {
+                ChatList(
+                    onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+
+            composable<Route.Timeline> {
+                Timeline(Modifier.fillMaxSize())
+            }
+
+            composable<Route.Settings> {
+                Settings(Modifier.fillMaxSize())
+            }
+
+            composable<Route.ChatThread>(
+                deepLinks = listOf(
+                    navDeepLink {
+                        action = Intent.ACTION_VIEW
+                        uriPattern = "https://socialite.google.com/chat/{chatId}"
+                    },
+                ),
+            ) { backStackEntry ->
+                val route: Route.ChatThread = backStackEntry.toRoute()
+                val chatId = route.chatId
+                ChatScreen(
+                    chatId = chatId,
+                    foreground = true,
+                    onBackPressed = { navController.popBackStack() },
+                    onCameraClick = { navController.navigate(Route.Camera(chatId)) },
+                    onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
+                    onVideoClick = { uri -> navController.navigate(Route.VideoPlayer(uri)) },
+                    prefilledText = route.text,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+
+            composable<Route.Camera> { backStackEntry ->
+                val route: Route.Camera = backStackEntry.toRoute()
+                val chatId = route.chatId
+                Camera(
+                    onMediaCaptured = { capturedMedia: Media? ->
+                        when (capturedMedia?.mediaType) {
+                            MediaType.PHOTO -> {
+                                navController.popBackStack()
+                            }
+
+                            MediaType.VIDEO -> {
+                                navController.navigate(
+                                    Route.VideoEdit(
+                                        chatId,
+                                        capturedMedia.uri.toString(),
+                                    ),
+                                )
+                            }
+
+                            else -> {
+                                // No media to use.
+                                navController.popBackStack()
+                            }
                         }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
 
-                        MediaType.VIDEO -> {
-                            navController.navigate("videoEdit?uri=${capturedMedia.uri}&chatId=$chatId")
-                        }
-
-                        else -> {
-                            // No media to use.
-                            navController.popBackStack()
-                        }
-                    }
-                },
-                chatId = chatId,
-                modifier = Modifier.fillMaxSize(),
+            // Invoke PhotoPicker to select photo or video from device gallery
+            photoPickerScreen(
+                onPhotoPicked = navController::popBackStack,
             )
-        }
 
-        // Invoke PhotoPicker to select photo or video from device gallery
-        photoPickerScreen(
-            onPhotoPicked = navController::popBackStack,
-        )
+            composable<Route.VideoEdit> { backStackEntry ->
+                val route: Route.VideoEdit = backStackEntry.toRoute()
+                val chatId = route.chatId
+                val videoUri = route.uri
+                VideoEditScreen(
+                    chatId = chatId,
+                    uri = videoUri,
+                    onCloseButtonClicked = { navController.popBackStack() },
+                    navController = navController,
+                )
+            }
 
-        composable(
-            route = "videoEdit?uri={videoUri}&chatId={chatId}",
-            arguments = listOf(
-                navArgument("videoUri") { type = NavType.StringType },
-                navArgument("chatId") { type = NavType.LongType },
-            ),
-        ) { backStackEntry ->
-            val chatId = backStackEntry.arguments?.getLong("chatId") ?: 0L
-            val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
-            VideoEditScreen(
-                chatId = chatId,
-                uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
-                navController = navController,
-            )
-        }
-        composable(
-            route = "videoPlayer?uri={videoUri}",
-            arguments = listOf(
-                navArgument("videoUri") { type = NavType.StringType },
-            ),
-        ) { backStackEntry ->
-            val videoUri = backStackEntry.arguments?.getString("videoUri") ?: ""
-            VideoPlayerScreen(
-                uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
-            )
+            composable<Route.VideoPlayer> { backStackEntry ->
+                val route: Route.VideoPlayer = backStackEntry.toRoute()
+                val videoUri = route.uri
+                VideoPlayerScreen(
+                    uri = videoUri,
+                    onCloseButtonClicked = { navController.popBackStack() },
+                )
+            }
         }
     }
 
     if (shortcutParams != null) {
         val chatId = extractChatId(shortcutParams.shortcutId)
         val text = shortcutParams.text
-        navController.navigate("chat/$chatId?text=$text")
+        navController.navigate(Route.ChatThread(chatId, text))
     }
 }
 

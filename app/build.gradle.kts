@@ -18,8 +18,10 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
 }
@@ -39,7 +41,7 @@ android {
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -107,6 +109,7 @@ dependencies {
 
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.accompanist.painter)
     implementation(libs.accompanist.permissions)
@@ -123,6 +126,9 @@ dependencies {
 
     implementation(libs.splashscreen)
     implementation(libs.concurrent.kts)
+
+    implementation(libs.core.performance)
+    implementation(libs.core.performance.play.services)
 
     implementation(libs.camera.core)
     implementation(libs.camera.compose)

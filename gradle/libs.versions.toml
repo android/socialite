@@ -15,27 +15,29 @@
 [versions]
 accompanist = "0.32.0"
 activity = "1.9.3"
-agp = "8.2.2"
-benchmarkMacroJunit4 = "1.2.3"
-baselineprofile = "1.2.3"
-camera = "1.5.0-alpha03"
+agp = "8.7.3"
+benchmarkMacroJunit4 = "1.3.3"
+baselineprofile = "1.3.3"
+camera = "1.5.0-alpha05"
 coil = "2.4.0"
-compose_bom = "2024.04.00"
+compose_bom = "2024.11.00"
 composeCompiler = "1.5.4" # Used in app/build.gradle.kts
-concurrent = "1.1.0"
-core = "1.12.0"
+concurrent = "1.2.0"
+core = "1.15.0"
+core-performance = "1.0.0"
 core-splashscreen = "1.0.1"
-espresso = "3.5.1"
+espresso = "3.6.1"
 graphics = "1.0.1"
 hilt = "2.49"
 hiltNavigationCompose = "1.2.0"
 junit = "4.13.2"
-kotlin = "1.9.20"
-ksp = "1.9.20-1.0.14"
-lifecycle = "2.7.0"
+kotlin = "2.0.0"
+kotlinxSerializationJson = "1.7.3"
+ksp = "2.0.0-1.0.21"
+lifecycle = "2.8.7"
 material3 = "1.3.1"
 media3 = "1.4.0-rc01"
-navigation = "2.8.3"
+navigation = "2.8.5"
 profileinstaller = "1.4.1"
 room = "2.6.1"
 spotless = "6.24.0"
@@ -43,12 +45,12 @@ test = "1.2.1"
 truth = "1.1.3"
 turbine = "1.0.0"
 uiautomator = "2.3.0"
-window = "1.2.0"
+window = "1.3.0"
 material3-adaptive-navigation-suite = "1.3.1"
 glance = "1.1.1"
 secrets = "2.0.1"
-generativeai = "0.7.0"
-datastore = "1.0.0"
+generativeai = "0.9.0"
+datastore = "1.1.1"
 
 
 [libraries]
@@ -79,6 +81,8 @@ compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 concurrent-kts = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version.ref = "concurrent" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+core-performance = { group = "androidx.core", name = "core-performance", version.ref = "core-performance" }
+core-performance-play-services = { group = "androidx.core", name = "core-performance-play-services", version.ref = "core-performance" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "test" }
 glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
@@ -89,6 +93,7 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lifecycle-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
@@ -114,8 +119,10 @@ datastore = { group = "androidx.datastore", name = "datastore-preferences", vers
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidTest = { id = "com.android.test", version.ref = "agp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
