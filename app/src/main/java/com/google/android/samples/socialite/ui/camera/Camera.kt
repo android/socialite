@@ -106,6 +106,7 @@ fun Camera(
     }
 
     val viewFinderState by viewModel.viewFinderState.collectAsStateWithLifecycle()
+    val surfaceRequest by viewModel.surfaceRequest.collectAsStateWithLifecycle()
     var rotation by remember { mutableStateOf(Surface.ROTATION_0) }
 
     DisposableEffect(lifecycleOwner, context) {
@@ -123,40 +124,31 @@ fun Camera(
 
         rotationProvider.addListener(Dispatchers.Main.asExecutor(), rotationListener)
 
+        viewModel.startPreview(lifecycleOwner, captureMode, cameraSelector, rotation)
+
         onDispose {
             rotationProvider.removeListener(rotationListener)
         }
     }
 
-    val onPreviewSurfaceProviderReady: (Preview.SurfaceProvider) -> Unit = {
-        surfaceProvider = it
-        viewModel.startPreview(lifecycleOwner, it, captureMode, cameraSelector, rotation)
-    }
-
     fun setCaptureMode(mode: CaptureMode) {
         captureMode = mode
-        surfaceProvider?.let { provider ->
-            viewModel.startPreview(
-                lifecycleOwner,
-                provider,
-                captureMode,
-                cameraSelector,
-                rotation,
-            )
-        }
+        viewModel.startPreview(
+            lifecycleOwner,
+            captureMode,
+            cameraSelector,
+            rotation,
+        )
     }
 
     fun setCameraSelector(selector: CameraSelector) {
         cameraSelector = selector
-        surfaceProvider?.let { provider ->
-            viewModel.startPreview(
-                lifecycleOwner,
-                provider,
-                captureMode,
-                cameraSelector,
-                rotation,
-            )
-        }
+        viewModel.startPreview(
+            lifecycleOwner,
+            captureMode,
+            cameraSelector,
+            rotation,
+        )
     }
 
     @SuppressLint("MissingPermission")
@@ -246,7 +238,7 @@ fun Camera(
                             ) {
                                 ViewFinder(
                                     viewFinderState.cameraState,
-                                    onPreviewSurfaceProviderReady,
+                                    surfaceRequest,
                                     viewModel::setZoomScale,
                                 )
                             }
@@ -259,7 +251,7 @@ fun Camera(
                         ) {
                             ViewFinder(
                                 viewFinderState.cameraState,
-                                onPreviewSurfaceProviderReady,
+                                surfaceRequest,
                                 viewModel::setZoomScale,
                             )
                         }
@@ -308,7 +300,11 @@ fun Camera(
 }
 
 @Composable
-fun CameraControls(captureMode: CaptureMode, onPhotoButtonClick: () -> Unit, onVideoButtonClick: () -> Unit) {
+fun CameraControls(
+    captureMode: CaptureMode,
+    onPhotoButtonClick: () -> Unit,
+    onVideoButtonClick: () -> Unit,
+) {
     val activeButtonColor =
         ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     val inactiveButtonColor =
@@ -332,7 +328,12 @@ fun CameraControls(captureMode: CaptureMode, onPhotoButtonClick: () -> Unit, onV
 }
 
 @Composable
-fun ShutterButton(captureMode: CaptureMode, onPhotoCapture: () -> Unit, onVideoRecordingStart: () -> Unit, onVideoRecordingFinish: () -> Unit) {
+fun ShutterButton(
+    captureMode: CaptureMode,
+    onPhotoCapture: () -> Unit,
+    onVideoRecordingStart: () -> Unit,
+    onVideoRecordingFinish: () -> Unit,
+) {
     Box(modifier = Modifier.padding(25.dp, 0.dp)) {
         if (captureMode == CaptureMode.PHOTO) {
             Button(
@@ -367,15 +368,21 @@ fun ShutterButton(captureMode: CaptureMode, onPhotoCapture: () -> Unit, onVideoR
 }
 
 @Composable
-fun CameraSwitcher(captureMode: CaptureMode, cameraSelector: CameraSelector, setCameraSelector: KFunction1<CameraSelector, Unit>) {
+fun CameraSwitcher(
+    captureMode: CaptureMode,
+    cameraSelector: CameraSelector,
+    setCameraSelector: KFunction1<CameraSelector, Unit>,
+) {
     if (captureMode != CaptureMode.VIDEO_RECORDING) {
-        IconButton(onClick = {
-            if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
-            } else {
-                setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
-            }
-        }) {
+        IconButton(
+            onClick = {
+                if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                    setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
+                } else {
+                    setCameraSelector(CameraSelector.DEFAULT_BACK_CAMERA)
+                }
+            },
+        ) {
             Icon(
                 imageVector = Icons.Default.Autorenew,
                 contentDescription = null,
