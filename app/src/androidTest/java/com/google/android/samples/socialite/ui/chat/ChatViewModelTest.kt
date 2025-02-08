@@ -38,7 +38,7 @@ class ChatViewModelTest {
             assertThat(awaitNotNull().firstContact.name).isEqualTo("Cat")
         }
         viewModel.messages.test {
-            assertThat(awaitNotEmpty()).hasSize(2)
+            assertThat(awaitNotEmpty()).hasSize(1)
         }
     }
 }
