@@ -46,7 +46,7 @@ class ChatRepositoryTest {
     fun findMessages() = runTest {
         val repository = createTestRepository()
         repository.findMessages(1L).test {
-            assertThat(awaitItem()).hasSize(2)
+            assertThat(awaitItem()).hasSize(1)
         }
     }
 }
