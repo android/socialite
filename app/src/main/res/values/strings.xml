@@ -73,5 +73,12 @@
     <string name="gemini_error">Gemini error (%1$s)</string>
     <string name="image_error">Can\'t open image</string>
     <string name="unknown_error">Unknown error</string>
+    <string name="cat_reply">Meow</string>
+    <string name="dog_reply">Check out the Top 3 Modern Android Development Announcements from I/O
+        \'23!
+    </string>
+    <string name="parrot_reply">Parrot says: %1$s</string>
+    <string name="sheep_reply">Look at me!</string>
+    <string name="default_reply">Hello</string>
 
 </resources>
