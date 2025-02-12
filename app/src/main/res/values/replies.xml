@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reply_cat">Meow</string>
+    <string name="reply_dog">Check out the Top 3 Modern Android Development Announcements from I/O '23!</string>
+    <string name="reply_parrot">Hello</string>
+    <string name="reply_sheep">Look at me!</string>
+    <string name="reply_default">Hello</string>
+</resources>
