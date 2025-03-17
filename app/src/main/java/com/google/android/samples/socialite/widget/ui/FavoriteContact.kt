@@ -27,6 +27,7 @@ import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.ImageProvider
 import androidx.glance.appwidget.appWidgetBackground
+import androidx.glance.appwidget.components.Scaffold
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -39,46 +40,71 @@ import androidx.glance.layout.wrapContentHeight
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.Dimension
 import com.google.android.samples.socialite.widget.model.WidgetModel
+import android.os.Build
+import androidx.compose.ui.unit.Dp
+import androidx.glance.LocalContext
 
 @Composable
 fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetModel, onClick: Action) {
-    Column(
-        modifier = modifier.fillMaxSize().clickable(onClick)
-            .background(GlanceTheme.colors.widgetBackground).appWidgetBackground()
-            .padding(bottom = 8.dp),
-        verticalAlignment = Alignment.Vertical.Bottom,
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-    ) {
-        Image(
-            modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().defaultWeight()
-                .cornerRadius(16.dp),
-            provider = ImageProvider(model.photo.toUri()),
-            contentScale = ContentScale.Crop,
-            contentDescription = model.displayName,
-        )
+    Scaffold(modifier = modifier, horizontalPadding = 0.dp) {
         Column(
-            modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().padding(top = 4.dp),
+            modifier = modifier.fillMaxSize().clickable(onClick),
             verticalAlignment = Alignment.Vertical.Bottom,
             horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
         ) {
-            Text(
-                text = model.displayName,
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = (GlanceTheme.colors.onSurface),
-                ),
+            Image(
+                modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().defaultWeight()
+                                         .appWidgetInnerCornerRadius(16.dp),
+                provider = ImageProvider(model.photo.toUri()),
+                contentScale = ContentScale.Crop,
+                contentDescription = model.displayName,
             )
+            Column(
+                modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().padding(top = 4.dp, bottom = 4.dp),
+                verticalAlignment = Alignment.Vertical.Bottom,
+                horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+            ) {
+                Text(
+                    text = model.displayName,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        color = (GlanceTheme.colors.onSurface),
+                    ),
+                )
 
-            Text(
-                text = if (model.unreadMessages) "New Message!" else "No messages",
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = (GlanceTheme.colors.onSurface),
-                ),
-            )
+                Text(
+                    text = if (model.unreadMessages) "New Message!" else "No messages",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = (GlanceTheme.colors.onSurface),
+                    ),
+                )
+            }
         }
     }
+}
+
+/**
+ * Applies corner radius for views that are visually positioned [widgetPadding]dp inside of the
+ * widget background.
+ */
+@Composable
+fun GlanceModifier.appWidgetInnerCornerRadius(widgetPadding: Dp): GlanceModifier {
+
+    if (Build.VERSION.SDK_INT < 31) {
+        return this
+    }
+
+    val resources = LocalContext.current.resources
+    // get dimension in float (without rounding).
+    val px = resources.getDimension(android.R.dimen.system_app_widget_background_radius)
+    val widgetBackgroundRadiusDpValue = px / resources.displayMetrics.density
+    if (widgetBackgroundRadiusDpValue < widgetPadding.value) {
+        return this
+    }
+    return this.cornerRadius(Dp(widgetBackgroundRadiusDpValue - widgetPadding.value))
 }
