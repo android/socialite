@@ -20,34 +20,25 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.core.net.toUri
 import androidx.glance.GlanceId
 import androidx.glance.GlanceTheme
-import androidx.glance.LocalContext
 import androidx.glance.action.action
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.provideContent
-import androidx.glance.layout.Box
-import com.google.android.samples.socialite.MainActivity
-import com.google.android.samples.socialite.widget.model.WidgetModel
-import com.google.android.samples.socialite.widget.model.WidgetModelRepository
-import com.google.android.samples.socialite.widget.model.WidgetState.Empty
-import com.google.android.samples.socialite.widget.model.WidgetState.Loading
-import com.google.android.samples.socialite.widget.ui.FavoriteContact
-import com.google.android.samples.socialite.widget.ui.ZeroState
 import androidx.glance.appwidget.compose
+import androidx.glance.appwidget.provideContent
+import com.google.android.samples.socialite.widget.model.WidgetModel
+import com.google.android.samples.socialite.widget.ui.FavoriteContact
 
-class SociaLiteAppWidgetGeneratedPreview(val model:WidgetModel) : GlanceAppWidget() {
+class SociaLiteAppWidgetGeneratedPreview(val model: WidgetModel) : GlanceAppWidget() {
+
+    companion object {
+        val TAG = "SociaLiteWidget"
+    }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-
         provideContent {
             GlanceTheme {
                 Content(model)
@@ -56,27 +47,26 @@ class SociaLiteAppWidgetGeneratedPreview(val model:WidgetModel) : GlanceAppWidge
     }
 
     @Composable
-    private fun Content(model:WidgetModel) {
-            FavoriteContact(
-                model = model,
-                onClick = action{},
-            )
-        }
-
-    suspend fun updateWidgetPreview(context:Context) {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            val glanceManager = GlanceAppWidgetManager(context)
-            val appwidgetManager = AppWidgetManager.getInstance(context)
-
-            appwidgetManager.setWidgetPreview(
-                ComponentName(context, SociaLiteAppWidgetReceiver::class.java),
-                AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
-                compose(context)
-            )
-        }
+    private fun Content(model: WidgetModel) {
+        FavoriteContact(
+            model = model,
+            onClick = action {},
+        )
     }
 
+    suspend fun updateWidgetPreview(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            try {
+                val appwidgetManager = AppWidgetManager.getInstance(context)
+
+                appwidgetManager.setWidgetPreview(
+                    ComponentName(context, SociaLiteAppWidgetReceiver::class.java),
+                    AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
+                    compose(context),
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, e.message, e)
+            }
+        }
+    }
 }
-
-

@@ -16,20 +16,21 @@
 
 package com.google.android.samples.socialite.widget.ui
 
+import android.os.Build
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
+import androidx.glance.LocalContext
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.ImageProvider
-import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.components.Scaffold
 import androidx.glance.appwidget.cornerRadius
-import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
@@ -40,11 +41,7 @@ import androidx.glance.layout.wrapContentHeight
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.Dimension
 import com.google.android.samples.socialite.widget.model.WidgetModel
-import android.os.Build
-import androidx.compose.ui.unit.Dp
-import androidx.glance.LocalContext
 
 @Composable
 fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetModel, onClick: Action) {
@@ -56,7 +53,7 @@ fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetMode
         ) {
             Image(
                 modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().defaultWeight()
-                                         .appWidgetInnerCornerRadius(16.dp),
+                    .appWidgetInnerCornerRadius(16.dp),
                 provider = ImageProvider(model.photo.toUri()),
                 contentScale = ContentScale.Crop,
                 contentDescription = model.displayName,
@@ -94,7 +91,6 @@ fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetMode
  */
 @Composable
 fun GlanceModifier.appWidgetInnerCornerRadius(widgetPadding: Dp): GlanceModifier {
-
     if (Build.VERSION.SDK_INT < 31) {
         return this
     }
