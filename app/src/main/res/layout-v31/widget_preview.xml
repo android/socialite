@@ -22,7 +22,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@android:id/background"
-    android:background="?attr/colorSurface"
+    android:background="@color/colorAppWidgetBackground"
     android:theme="@style/MyWidgetTheme"
     >
 <LinearLayout
@@ -49,7 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="4dp"
-        android:paddingBottom="4dp"
+        android:paddingBottom="12dp"
         >
         <TextView
             android:layout_width="match_parent"

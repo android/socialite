@@ -18,7 +18,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@android:id/background"
-    android:background="?android:attr/colorBackground"
+    android:background="@color/colorAppWidgetBackground"
     android:theme="@style/MyWidgetTheme"
     >
 <LinearLayout

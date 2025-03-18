@@ -62,7 +62,7 @@ fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetMode
                 contentDescription = model.displayName,
             )
             Column(
-                modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().padding(top = 4.dp, bottom = 4.dp),
+                modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().padding(top = 4.dp, bottom = 12.dp),
                 verticalAlignment = Alignment.Vertical.Bottom,
                 horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
             ) {
