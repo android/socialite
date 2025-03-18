@@ -18,6 +18,7 @@ package com.google.android.samples.socialite.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -45,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.LocalContext
 import androidx.glance.appwidget.updateAll
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.repository.ChatRepository
@@ -97,16 +99,21 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
                                 contact = contact,
                                 onClick = {
                                     runBlocking {
-                                        widgetModelRepository.createOrUpdate(
-                                            WidgetModel(
-                                                appWidgetId,
-                                                contact.id,
-                                                contact.name,
-                                                contact.iconUri.toString(),
-                                                false,
-                                            ),
+                                        val newModel = WidgetModel(
+                                            appWidgetId,
+                                            contact.id,
+                                            contact.name,
+                                            contact.iconUri.toString(),
+                                            false,
                                         )
+
+                                        widgetModelRepository.createOrUpdate(
+                                            newModel,
+                                        )
+
                                         SociaLiteAppWidget().updateAll(this@SociaLiteAppWidgetConfigActivity)
+                                        SociaLiteAppWidgetGeneratedPreview( newModel ).updateWidgetPreview(applicationContext)
+
                                         val resultValue = Intent().putExtra(
                                             AppWidgetManager.EXTRA_APPWIDGET_ID,
                                             appWidgetId,
@@ -122,6 +129,7 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
             }
         }
     }
+
 
     @Composable
     fun ContactRow(

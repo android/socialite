@@ -42,36 +42,41 @@ import com.google.android.samples.socialite.widget.model.WidgetState.Empty
 import com.google.android.samples.socialite.widget.model.WidgetState.Loading
 import com.google.android.samples.socialite.widget.ui.FavoriteContact
 import com.google.android.samples.socialite.widget.ui.ZeroState
+import androidx.glance.appwidget.compose
 
-class SociaLiteAppWidget : GlanceAppWidget() {
+class SociaLiteAppWidgetGeneratedPreview(val model:WidgetModel) : GlanceAppWidget() {
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
-        val repository = WidgetModelRepository.get(context)
 
         provideContent {
             GlanceTheme {
-                Content(repository, widgetId)
+                Content(model)
             }
         }
     }
 
     @Composable
-    private fun Content(repository: WidgetModelRepository, widgetId: Int) {
-        val model = repository.loadModel(widgetId).collectAsState(Loading).value
-        val context = LocalContext.current
-        when (model) {
-            is Empty -> ZeroState(widgetId = widgetId)
-            is Loading -> Box {}
-            is WidgetModel -> FavoriteContact(
+    private fun Content(model:WidgetModel) {
+            FavoriteContact(
                 model = model,
-                onClick = actionStartActivity(
-                    Intent(context.applicationContext, MainActivity::class.java)
-                        .setAction(Intent.ACTION_VIEW)
-                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                        .setData("https://socialite.google.com/chat/${model.contactId}".toUri()),
-                ),
+                onClick = action{},
+            )
+        }
+
+    suspend fun updateWidgetPreview(context:Context) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            val glanceManager = GlanceAppWidgetManager(context)
+            val appwidgetManager = AppWidgetManager.getInstance(context)
+
+            appwidgetManager.setWidgetPreview(
+                ComponentName(context, SociaLiteAppWidgetReceiver::class.java),
+                AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
+                compose(context)
             )
         }
     }
 
 }
+
+
