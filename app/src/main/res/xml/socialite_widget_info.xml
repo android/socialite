@@ -19,10 +19,11 @@
     android:configure="com.google.android.samples.socialite.widget.SociaLiteAppWidgetConfigActivity"
     android:widgetFeatures="configuration_optional|reconfigurable"
     android:minHeight="128dp"
-    android:minWidth="192dp"
+    android:minWidth="128dp"
     android:updatePeriodMillis="3600000"
     android:minResizeHeight="128dp"
-    android:minResizeWidth="192dp"
+    android:minResizeWidth="128dp"
     android:previewImage="@drawable/widget_preview"
     android:initialLayout="@layout/glance_default_loading_layout">
 </appwidget-provider>
+
