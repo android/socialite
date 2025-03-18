@@ -53,7 +53,7 @@ fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetMode
         ) {
             Image(
                 modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().defaultWeight()
-                    .appWidgetInnerCornerRadius(16.dp),
+                    .appWidgetInnerCornerRadius(12.dp),
                 provider = ImageProvider(model.photo.toUri()),
                 contentScale = ContentScale.Crop,
                 contentDescription = model.displayName,
