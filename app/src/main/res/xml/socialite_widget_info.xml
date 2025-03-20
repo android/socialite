@@ -14,16 +14,22 @@
   ~ limitations under the License.
   -->
 
+<!--    Sizing values are calculated based on the information here
+     https://developer.android.com/design/ui/mobile/guides/widgets/sizing-->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:resizeMode="horizontal|vertical"
+    android:minHeight="116dp"
+    android:minWidth="110dp"
     android:configure="com.google.android.samples.socialite.widget.SociaLiteAppWidgetConfigActivity"
     android:widgetFeatures="configuration_optional|reconfigurable"
-    android:minHeight="128dp"
-    android:minWidth="128dp"
     android:updatePeriodMillis="3600000"
-    android:minResizeHeight="128dp"
-    android:minResizeWidth="128dp"
     android:previewImage="@drawable/widget_preview"
+    android:previewLayout="@layout/widget_preview"
+    android:minResizeHeight="116dp"
+    android:minResizeWidth="110dp"
+    android:maxResizeHeight="422dp"
+    android:maxResizeWidth="624dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
     android:initialLayout="@layout/glance_default_loading_layout">
 </appwidget-provider>
-

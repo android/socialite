@@ -32,6 +32,10 @@ import androidx.glance.appwidget.provideContent
 import com.google.android.samples.socialite.widget.model.WidgetModel
 import com.google.android.samples.socialite.widget.ui.FavoriteContact
 
+/**
+ * This class is used to generate a preview of the widget, and will be replaced by
+ * SociaLiteAppWidget::providePreview when Glance 1.2.0 is release.
+ */
 class SociaLiteAppWidgetGeneratedPreview(val model: WidgetModel) : GlanceAppWidget() {
 
     companion object {

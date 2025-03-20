@@ -45,6 +45,8 @@ import com.google.android.samples.socialite.widget.model.WidgetModel
 
 @Composable
 fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetModel, onClick: Action) {
+    val widgetPadding = 12.dp
+
     Scaffold(modifier = modifier, horizontalPadding = 0.dp) {
         Column(
             modifier = modifier.fillMaxSize().clickable(onClick),
@@ -53,13 +55,13 @@ fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetMode
         ) {
             Image(
                 modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().defaultWeight()
-                    .appWidgetInnerCornerRadius(12.dp),
+                    .appWidgetInnerCornerRadius(widgetPadding),
                 provider = ImageProvider(model.photo.toUri()),
                 contentScale = ContentScale.Crop,
                 contentDescription = model.displayName,
             )
             Column(
-                modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().padding(top = 4.dp, bottom = 12.dp),
+                modifier = GlanceModifier.fillMaxWidth().wrapContentHeight().padding(top = 4.dp, bottom = widgetPadding),
                 verticalAlignment = Alignment.Vertical.Bottom,
                 horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
             ) {
@@ -70,6 +72,7 @@ fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetMode
                         fontSize = 24.sp,
                         color = (GlanceTheme.colors.onSurface),
                     ),
+                    maxLines = 1,
                 )
 
                 Text(
@@ -79,6 +82,7 @@ fun FavoriteContact(modifier: GlanceModifier = GlanceModifier, model: WidgetMode
                         fontSize = 16.sp,
                         color = (GlanceTheme.colors.onSurface),
                     ),
+                    maxLines = 1,
                 )
             }
         }
