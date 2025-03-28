@@ -1,77 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (C) 2023 The Android Open Source Project
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~      http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
--->
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SociaLite</string>
-
-    <string name="timeline">Timeline</string>
-    <string name="chats">Chats</string>
-    <string name="settings">Settings</string>
-
-    <!-- Timeline -->
-    <eat-comment/>
-    <string name="timeline_empty_title">No photos or video.</string>
-    <string name="timeline_empty_message">Videos and photos from messages will display here. Add a message or refine your search.</string>
-
-    <string name="show_as_bubble">Show as Bubble</string>
-    <string name="description_icon">Profile icon</string>
-    <string name="description_voice_call">Make a voice call (dummy)</string>
-    <string name="description_send">Send</string>
-    <string name="sender_you">You</string>
-    <string name="label_reply">Reply</string>
-    <string name="description_photo">Photo</string>
-    <string name="hint_input">Type a message…</string>
-    <string name="channel_new_messages">New messages</string>
-    <string name="channel_new_messages_description">All new incoming messages.</string>
-    <string name="chat_with_contact">Chat with %s</string>
-    <string name="voice_call_explanation">This is a dummy voice call screen.</string>
-    <string name="permission_message">To be notified when you have new messages, please grant the notification permission.</string>
-    <string name="permission_rationale">Please grant the notification permission so that the app can demonstrate usage of the Notification APIs.</string>
-    <string name="permission_grant">GRANT</string>
-    <string name="camera_permission_rationale">Taking photos and videos requires access to the camera and microphone.</string>
-    <string name="camera_permission_settings">Please go to your device\'s Settings and grant these permissions.</string>
-    <string name="camera_not_available">Camera not available.</string>
-    <string name="camera_not_ready">Camera not ready. Please wait.</string>
-    <string name="grant_permission">Grant permissions</string>
-    <string name="back">Back</string>
-    <string name="message">Message</string>
-
-    <!-- Settings -->
-    <eat-comment />
-    <string name="clear_message_history">Clear message history</string>
-    <string name="performance_class_level">This device is Media Performance Class level %1$d</string>
-
-    <!-- Video Edit Screen -->
-    <string name="remove_audio">Remove audio</string>
-    <string name="send">Send</string>
-    <string name="add_text_overlay_placeholder">Add text overlay</string>
-    <string name="red_text_option">Red</string>
-    <string name="large_text_option">Large</string>
-
-    <!--Control Button strings-->
-    <string name="play_title">Play</string>
-    <string name="pause_title">Pause</string>
-    <string name="ff_title">Fast forward</string>
-    <string name="rw_title">Rewind</string>
-    <string name="favorite_contact_widget_name">Favorite Contact</string>
-    <string name="ai_chatbot_setting">AI Chatbot</string>
-    <string name="ai_chatbot_setting_enabled">enabled</string>
-    <string name="ai_chatbot_setting_disabled">disabled</string>
-    <string name="set_api_key_toast">Please set your API key in local.properties</string>
-    <string name="gemini_error">Gemini error (%1$s)</string>
-    <string name="image_error">Can\'t open image</string>
-    <string name="unknown_error">Unknown error</string>
-
+    <string name="take_photo">Take photo</string>
+    <string name="select_media">Select photo or video</string>
+    <string name="send_message">Send message</string>
+    <string name="message_image">Message image</string>
+    <string name="play_video">Play video</string>
+    <string name="contact_icon">Profile picture of %1$s</string>
+    <string name="message_input">Type a message</string>
+    <string name="new_message">New message from %1$s: %2$s</string>
 </resources>
