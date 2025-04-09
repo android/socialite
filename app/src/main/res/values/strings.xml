@@ -47,6 +47,8 @@
     <string name="grant_permission">Grant permissions</string>
     <string name="back">Back</string>
     <string name="message">Message</string>
+    <string name="option">Option</string>
+    <string name="open_in_new_window">Open in new window</string>
 
     <!-- Settings -->
     <eat-comment />

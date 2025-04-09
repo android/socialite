@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.ui
+package com.google.android.samples.socialite.ui.home.chatlist
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -39,20 +39,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.samples.socialite.data.utils.toReadableString
 import com.google.android.samples.socialite.model.ChatDetail
+import com.google.android.samples.socialite.ui.rememberIconPainter
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatRow(
     chat: ChatDetail,
-    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    isOptionMenuEnabled: Boolean = true,
+    menuItems: @Composable ColumnScope.() -> Unit = {},
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(
-                if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
-            )
-            .padding(16.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -95,5 +93,9 @@ fun ChatRow(
                 fontSize = 14.sp,
             )
         }
+        OptionMenu(
+            enabled = isOptionMenuEnabled,
+            menuItems = menuItems,
+        )
     }
 }

@@ -26,7 +26,6 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
 import com.google.android.samples.socialite.ui.Main
-import com.google.android.samples.socialite.ui.ShortcutParams
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -43,17 +42,52 @@ class MainActivity : ComponentActivity() {
         runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
         setContent {
             Main(
-                shortcutParams = extractShortcutParams(intent),
+                appArgs = extractAppArgs(intent),
             )
         }
     }
 
-    private fun extractShortcutParams(intent: Intent?): ShortcutParams? {
-        if (intent == null || intent.action != Intent.ACTION_SEND) return null
-        val shortcutId = intent.getStringExtra(
-            ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
-        ) ?: return null
-        val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
-        return ShortcutParams(shortcutId, text)
+    private fun extractAppArgs(intent: Intent?): AppArgs? {
+        return when {
+            intent == null -> null
+            intent.action == Intent.ACTION_SEND -> AppArgs.ShortcutParams.tryFrom(intent)
+            else -> AppArgs.ChatParams.tryFrom(intent)
+        }
+    }
+}
+
+sealed interface AppArgs {
+    // Parameters passed from app shortcuts
+    data class ShortcutParams(
+        val shortcutId: String,
+        val text: String,
+    ) : AppArgs {
+        companion object {
+            fun tryFrom(intent: Intent): ShortcutParams? {
+                val shortcutId = intent.getStringExtra(
+                    ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
+                ) ?: return null
+                val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
+                return ShortcutParams(shortcutId, text)
+            }
+        }
+    }
+
+    // Parameters passed from the intent to open chat in a new instance
+    data class ChatParams(
+        val chatId: Long,
+    ) : AppArgs {
+        companion object {
+            const val KEY = "ChatParams"
+            const val INVALID_CHAT_ID = -1L
+
+            fun tryFrom(intent: Intent): ChatParams? {
+                val chatId = intent.getLongExtra(KEY, INVALID_CHAT_ID)
+                return when (chatId) {
+                    INVALID_CHAT_ID -> null
+                    else -> ChatParams(chatId)
+                }
+            }
+        }
     }
 }

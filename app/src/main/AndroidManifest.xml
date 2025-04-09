@@ -48,6 +48,7 @@
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Social"
+        android:resizeableActivity="true"
         tools:targetApi="34">
 
         <receiver

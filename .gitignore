@@ -15,9 +15,12 @@
 /.idea/misc.xml
 /.idea/migrations.xml
 /.idea/gradle.xml
+/.idea/AndroidProjectSystem.xml
+/.idea/runConfigurations.xml
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+.kotlin/
