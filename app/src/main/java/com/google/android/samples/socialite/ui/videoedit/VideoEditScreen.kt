@@ -38,11 +38,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeMute
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -149,7 +150,7 @@ fun VideoEditScreen(
                     .padding(15.dp),
             ) {
                 VideoEditFilterChip(
-                    icon = Icons.Filled.VolumeMute,
+                    icon = Icons.AutoMirrored.Filled.VolumeMute,
                     selected = removeAudioEnabled,
                     onClick = { removeAudioEnabled = !removeAudioEnabled },
                     label = stringResource(id = R.string.remove_audio),
@@ -294,7 +295,6 @@ fun TextOverlayOption(
                 selected = redTextCheckedState,
                 onClick = redTextCheckedStateChange,
                 label = stringResource(id = R.string.red_text_option),
-                iconColor = Color.Red,
             )
             Spacer(modifier = Modifier.padding(10.dp))
 
@@ -315,8 +315,6 @@ private fun VideoEditFilterChip(
     selected: Boolean,
     onClick: () -> Unit,
     label: String,
-    iconColor: Color = Color.White,
-    selectedIconColor: Color = Color.Black,
 ) {
     FilterChip(
         leadingIcon = {
@@ -333,8 +331,6 @@ private fun VideoEditFilterChip(
             labelColor = Color.White,
             selectedContainerColor = colorResource(id = R.color.light_purple),
             selectedLabelColor = Color.Black,
-            iconColor = iconColor,
-            selectedLeadingIconColor = selectedIconColor,
         ),
     )
 }

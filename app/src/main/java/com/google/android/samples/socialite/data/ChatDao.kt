@@ -27,15 +27,19 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ChatDao {
 
+    @Transaction
     @Query("SELECT * FROM ChatWithLastMessage ORDER BY timestamp DESC")
     fun allDetails(): Flow<List<ChatDetail>>
 
+    @Transaction
     @Query("SELECT * FROM ChatWithLastMessage WHERE id = :id")
     suspend fun loadDetailById(id: Long): ChatDetail?
 
+    @Transaction
     @Query("SELECT * FROM ChatWithLastMessage WHERE id = :id")
     fun detailById(id: Long): Flow<ChatDetail?>
 
+    @Transaction
     @Query("SELECT * FROM ChatWithLastMessage")
     suspend fun loadAllDetails(): List<ChatDetail>
 

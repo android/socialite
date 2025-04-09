@@ -29,5 +29,5 @@ class ChatListViewModel @Inject constructor(
 
     val chats = repository
         .getChats()
-        .stateInUi(emptyList())
+        .stateInUi(this, emptyList())
 }

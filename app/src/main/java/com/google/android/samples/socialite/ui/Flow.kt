@@ -27,9 +27,9 @@ import kotlinx.coroutines.flow.stateIn
  * In context of a ViewModel, converts this [Flow] into a [StateFlow] so that it is suitable for
  * use in UI.
  */
-context(ViewModel)
 fun <T> Flow<T>.stateInUi(
+    viewModel: ViewModel,
     initialValue: T,
 ): StateFlow<T> {
-    return stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), initialValue)
+    return stateIn(viewModel.viewModelScope, SharingStarted.WhileSubscribed(5000L), initialValue)
 }

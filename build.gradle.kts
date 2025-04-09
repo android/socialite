@@ -28,6 +28,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
 }
 
+
 subprojects {
     plugins.apply(rootProject.libs.plugins.spotless.get().pluginId)
     configure<SpotlessExtension> {

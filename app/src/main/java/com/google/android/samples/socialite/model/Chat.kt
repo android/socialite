@@ -45,6 +45,7 @@ data class Chat(
     ],
     indices = [
         Index("chatId", "attendeeId", unique = true),
+        Index("attendeeId")
     ],
 )
 data class ChatAttendee(
