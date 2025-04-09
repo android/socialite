@@ -269,7 +269,7 @@ private fun ChatAppBar(
                 IconButton(onClick = onBackPressed) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
+                        contentDescription = stringResource(R.string.back),
                     )
                 }
             }
@@ -485,7 +485,7 @@ private fun InputBar(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.send),
                 )
             }
         }

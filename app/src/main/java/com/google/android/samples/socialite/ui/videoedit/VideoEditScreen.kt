@@ -246,7 +246,7 @@ private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean) {
             Icon(
                 Icons.Filled.Movie,
                 tint = Color.White,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.video_preview),
                 modifier = Modifier
                     .size(60.dp)
                     .padding(10.dp),
@@ -320,7 +320,7 @@ private fun VideoEditFilterChip(
         leadingIcon = {
             Icon(
                 imageVector = icon,
-                contentDescription = null,
+                contentDescription = label,
                 modifier = Modifier.size(FilterChipDefaults.IconSize),
             )
         },
