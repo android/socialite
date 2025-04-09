@@ -281,7 +281,7 @@ private fun ChatAppBar(
 private fun SmallContactIcon(iconUri: Uri, size: Dp) {
     Image(
         painter = rememberIconPainter(contentUri = iconUri),
-        contentDescription = null,
+        contentDescription = stringResource(R.string.description_icon),
         modifier = Modifier
             .size(size)
             .clip(CircleShape)
@@ -355,7 +355,7 @@ private fun MessageBubble(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(message.mediaUri)
                                 .build(),
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.description_photo),
                             modifier = Modifier
                                 .height(250.dp)
                                 .padding(10.dp),
@@ -404,14 +404,14 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
         ) {
             Image(
                 bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
+                contentDescription = stringResource(R.string.video_preview),
                 colorFilter = ColorFilter.tint(Color.Gray, BlendMode.Darken),
             )
 
             Icon(
                 Icons.Filled.PlayArrow,
                 tint = Color.White,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.play_title),
                 modifier = Modifier
                     .size(50.dp)
                     .align(Alignment.Center)
@@ -446,7 +446,7 @@ private fun InputBar(
             IconButton(onClick = onCameraClick) {
                 Icon(
                     imageVector = Icons.Default.PhotoCamera,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.camera_not_available),
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
