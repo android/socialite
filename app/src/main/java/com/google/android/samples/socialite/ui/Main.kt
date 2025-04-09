@@ -19,7 +19,6 @@ package com.google.android.samples.socialite.ui
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -71,7 +70,7 @@ fun Main(
 @Composable
 fun MainNavigation(
     modifier: Modifier = Modifier,
-    appArgs: AppArgs?,
+    appArgs: AppArgs? = null,
 ) {
     val activity = LocalActivity.current
     val navController = rememberNavController()
@@ -138,7 +137,6 @@ fun MainNavigation(
             ) { backStackEntry ->
                 val route: Route.ChatThread = backStackEntry.toRoute()
                 val chatId = route.chatId
-                Log.d("MainNavigation", "ChatThread: $chatId")
                 ChatScreen(
                     chatId = chatId,
                     foreground = true,

@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -119,16 +118,7 @@ fun ChatList(
                 ChatRow(
                     chat = chat,
                     isOptionMenuEnabled = !shouldUseBottomSheet,
-                    menuItems = {
-                        DropdownMenuItem(
-                            text = {
-                                Text(stringResource(R.string.open_in_new_window))
-                            },
-                            onClick = {
-                                onChatClicked(OpenChatRequest.NewInstance.from(chat))
-                            },
-                        )
-                    },
+                    onOpenChatRequest = onChatClicked,
                     modifier = Modifier
                         .fillMaxWidth()
                         .combinedClickable(
@@ -136,7 +126,9 @@ fun ChatList(
                                 selectedChatId = chat.chatWithLastMessage.id
                             },
                             onClick = {
-                                onChatClicked(OpenChatRequest.SameInstance.from(chat))
+                                onChatClicked(
+                                    OpenChatRequest.SameInstance(chat.chatWithLastMessage.id)
+                                )
                             },
                         ),
                 )

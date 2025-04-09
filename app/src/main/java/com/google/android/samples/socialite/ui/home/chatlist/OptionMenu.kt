@@ -25,11 +25,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -45,12 +42,21 @@ fun shouldUseBottomSheet(adaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiv
 fun OptionMenu(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    menuItems: @Composable ColumnScope.() -> Unit = {},
+    isExpanded: Boolean = false,
+    onClick: () -> Unit = {},
+    onDismissRequest: () -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit = {},
 ) {
-    Box(modifier = modifier) {
-        if (enabled) {
-            OptionMenuButton(menuItems)
-        } else {
+    if (enabled) {
+        OptionMenuButton(
+            modifier = modifier,
+            isExpanded = isExpanded,
+            onClick = onClick,
+            onDismissRequest = onDismissRequest,
+            content = content,
+        )
+    } else {
+        Box(modifier = modifier.minimumInteractiveComponentSize()) {
             OptionMenuIcon()
         }
     }
@@ -58,17 +64,21 @@ fun OptionMenu(
 
 @Composable
 private fun OptionMenuButton(
-    menuItems: @Composable ColumnScope.() -> Unit = {},
+    modifier: Modifier = Modifier,
+    isExpanded: Boolean = false,
+    onClick: () -> Unit = {},
+    onDismissRequest: () -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit = {},
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
     IconButton(
-        onClick = { isExpanded = !isExpanded },
+        onClick = onClick,
+        modifier = modifier,
     ) {
         OptionMenuIcon()
         DropdownMenu(
             expanded = isExpanded,
-            onDismissRequest = { isExpanded = false },
-            content = menuItems,
+            onDismissRequest = onDismissRequest,
+            content = content,
         )
     }
 }

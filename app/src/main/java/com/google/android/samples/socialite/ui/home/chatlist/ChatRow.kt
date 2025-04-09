@@ -21,22 +21,28 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.utils.toReadableString
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.ui.rememberIconPainter
@@ -47,7 +53,7 @@ fun ChatRow(
     chat: ChatDetail,
     modifier: Modifier = Modifier,
     isOptionMenuEnabled: Boolean = true,
-    menuItems: @Composable ColumnScope.() -> Unit = {},
+    onOpenChatRequest: (OpenChatRequest) -> Unit = {},
 ) {
     Row(
         modifier = modifier,
@@ -93,9 +99,37 @@ fun ChatRow(
                 fontSize = 14.sp,
             )
         }
-        OptionMenu(
+        ChatRowOptionMenu(
+            chat = chat,
             enabled = isOptionMenuEnabled,
-            menuItems = menuItems,
+            onOpenChatRequest = onOpenChatRequest,
+        )
+    }
+}
+
+@Composable
+private fun ChatRowOptionMenu(
+    chat: ChatDetail,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = false,
+    onOpenChatRequest: (request: OpenChatRequest) -> Unit = {},
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    OptionMenu(
+        modifier = modifier,
+        isExpanded = isExpanded,
+        enabled = enabled,
+        onDismissRequest = { isExpanded = false },
+        onClick = { isExpanded = !isExpanded },
+    ) {
+        DropdownMenuItem(
+            text = {
+                Text(stringResource(R.string.open_in_new_window))
+            },
+            onClick = {
+                onOpenChatRequest(OpenChatRequest.NewInstance.from(chat))
+                isExpanded = false
+            },
         )
     }
 }
