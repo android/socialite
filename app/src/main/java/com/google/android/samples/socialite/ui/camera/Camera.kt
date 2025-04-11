@@ -38,7 +38,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -102,7 +101,7 @@ fun Camera(
                 val foldingFeature = newLayoutInfo.displayFeatures
                     .filterIsInstance<FoldingFeature>().firstOrNull()
                 isLayoutUnfolded = (foldingFeature != null)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // If there was an issue detecting a foldable in the open position, default
                 // to isLayoutUnfolded being false.
                 isLayoutUnfolded = false
