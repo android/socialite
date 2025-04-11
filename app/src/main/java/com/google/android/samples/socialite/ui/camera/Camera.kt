@@ -38,6 +38,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,19 +58,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.samples.socialite.R
 import kotlin.reflect.KFunction1
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 
+@SuppressLint("CheckResult")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(
@@ -108,7 +112,7 @@ fun Camera(
 
     val viewFinderState by viewModel.viewFinderState.collectAsStateWithLifecycle()
     val surfaceRequest by viewModel.surfaceRequest.collectAsStateWithLifecycle()
-    var rotation by remember { mutableStateOf(Surface.ROTATION_0) }
+    var rotation by remember { mutableIntStateOf(Surface.ROTATION_0) }
 
     DisposableEffect(lifecycleOwner, context) {
         val rotationProvider = RotationProvider(context)
@@ -385,8 +389,8 @@ fun CameraSwitcher(
             },
         ) {
             Icon(
-                imageVector = Icons.Default.Autorenew,
-                contentDescription = null,
+                imageVector = Icons.Filled.Autorenew,
+                contentDescription = stringResource(R.string.settings),
                 tint = Color.White,
                 modifier = Modifier
                     .height(75.dp)

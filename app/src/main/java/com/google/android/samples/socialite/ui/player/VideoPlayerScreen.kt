@@ -148,7 +148,7 @@ private fun VideoPlayerTopAppBar(
         navigationIcon = {
             IconButton(onClick = onCloseButtonClicked) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(R.string.back),
                 )
             }

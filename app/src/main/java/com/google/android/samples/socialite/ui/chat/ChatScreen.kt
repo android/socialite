@@ -48,11 +48,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -268,7 +268,7 @@ private fun ChatAppBar(
             if (onBackPressed != null) {
                 IconButton(onClick = onBackPressed) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = Icons.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back),
                     )
                 }
@@ -445,14 +445,14 @@ private fun InputBar(
         ) {
             IconButton(onClick = onCameraClick) {
                 Icon(
-                    imageVector = Icons.Default.PhotoCamera,
+                    imageVector = Icons.Filled.PhotoCamera,
                     contentDescription = stringResource(R.string.camera_not_available),
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
             IconButton(onClick = onPhotoPickerClick) {
                 Icon(
-                    imageVector = Icons.Default.PhotoLibrary,
+                    imageVector = Icons.Filled.PhotoLibrary,
                     contentDescription = "Select Photo or video",
                     tint = MaterialTheme.colorScheme.primary,
                 )
@@ -484,7 +484,7 @@ private fun InputBar(
                 enabled = sendEnabled,
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    imageVector = Icons.Filled.Send,
                     contentDescription = stringResource(R.string.send),
                 )
             }
