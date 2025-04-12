@@ -21,3 +21,41 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# build files
+*.apk
+*.ap_
+*.aab
+*.aar
+*.dex
+*.class
+
+# 日志文件
+*.log
+
+# 虚拟机崩溃日志
+hs_err_pid*
+
+# Android Studio
+/.idea/jarRepositories.xml
+/.idea/inspectionProfiles
+/.idea/dictionaries
+/.idea/.name
+/.idea/vcs.xml
+/.idea/shelf
+/.idea/tasks.xml
+/.idea/usage.statistics.xml
+/.idea/jsLibraryMappings.xml
+/.idea/misc.xml
+
+# Gradle
+.gradle/
+build/
+**/build/
+**/outputs/
+
+# local
+.gradletasknamecache
+
+# system
+Thumbs.db

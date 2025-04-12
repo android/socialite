@@ -48,11 +48,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -82,7 +82,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -90,11 +89,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
@@ -268,7 +268,7 @@ private fun ChatAppBar(
             if (onBackPressed != null) {
                 IconButton(onClick = onBackPressed) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back),
                     )
                 }
@@ -281,7 +281,7 @@ private fun ChatAppBar(
 private fun SmallContactIcon(iconUri: Uri, size: Dp) {
     Image(
         painter = rememberIconPainter(contentUri = iconUri),
-        contentDescription = null,
+        contentDescription = stringResource(R.string.description_icon),
         modifier = Modifier
             .size(size)
             .clip(CircleShape)
@@ -355,7 +355,7 @@ private fun MessageBubble(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(message.mediaUri)
                                 .build(),
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.description_photo),
                             modifier = Modifier
                                 .height(250.dp)
                                 .padding(10.dp),
@@ -389,7 +389,7 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
             if (videoUri.contains("https://")) {
                 mediaMetadataRetriever.setDataSource(videoUri, HashMap<String, String>())
             } else { // Locally saved files
-                mediaMetadataRetriever.setDataSource(context, Uri.parse(videoUri))
+                mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
             }
             // Return any frame that the framework considers representative of a valid frame
             value = mediaMetadataRetriever.frameAtTime
@@ -404,14 +404,14 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
         ) {
             Image(
                 bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
+                contentDescription = stringResource(R.string.video_preview),
                 colorFilter = ColorFilter.tint(Color.Gray, BlendMode.Darken),
             )
 
             Icon(
                 Icons.Filled.PlayArrow,
                 tint = Color.White,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.play_title),
                 modifier = Modifier
                     .size(50.dp)
                     .align(Alignment.Center)
@@ -445,14 +445,14 @@ private fun InputBar(
         ) {
             IconButton(onClick = onCameraClick) {
                 Icon(
-                    imageVector = Icons.Default.PhotoCamera,
-                    contentDescription = null,
+                    imageVector = Icons.Filled.PhotoCamera,
+                    contentDescription = stringResource(R.string.camera_not_available),
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
             IconButton(onClick = onPhotoPickerClick) {
                 Icon(
-                    imageVector = Icons.Default.PhotoLibrary,
+                    imageVector = Icons.Filled.PhotoLibrary,
                     contentDescription = "Select Photo or video",
                     tint = MaterialTheme.colorScheme.primary,
                 )
@@ -484,8 +484,8 @@ private fun InputBar(
                 enabled = sendEnabled,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = null,
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = stringResource(R.string.send),
                 )
             }
         }

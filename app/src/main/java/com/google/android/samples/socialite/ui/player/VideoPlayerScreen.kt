@@ -16,6 +16,7 @@
 
 package com.google.android.samples.socialite.ui.player
 
+import android.annotation.SuppressLint
 import android.app.PictureInPictureParams
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -148,7 +149,7 @@ private fun VideoPlayerTopAppBar(
         navigationIcon = {
             IconButton(onClick = onCloseButtonClicked) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(R.string.back),
                 )
             }
@@ -295,6 +296,7 @@ fun isInPipMode(): Boolean {
  * Uses Disposable Effect to add a listener for onUserLeaveHint - allowing us to add PiP pre
  * Android 12
  */
+@SuppressLint("ImplicitSamInstance")
 @Composable
 fun PipListenerPreAPI12(shouldEnterPipMode: Boolean) {
     // Using the rememberUpdatedState ensures that the updated version of shouldEnterPipMode is

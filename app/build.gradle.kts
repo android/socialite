@@ -27,7 +27,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 secrets {
@@ -55,15 +55,21 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
         freeCompilerArgs = listOf("-Xcontext-receivers")
+        freeCompilerArgs += listOf(
+            "-Xmetadata-version=2.0.0",
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+        )
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
@@ -79,6 +85,7 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.camera.extensions)
     implementation(libs.profileinstaller)
+
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)

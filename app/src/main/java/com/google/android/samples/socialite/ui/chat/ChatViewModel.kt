@@ -45,7 +45,7 @@ class ChatViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private val _messages = chatId.flatMapLatest { id -> repository.findMessages(id) }
 
-    val chat = _chat.stateInUi(null)
+    val chat = _chat.stateInUi(this, null)
 
     val messages = combine(_messages, attendees) { messages, attendees ->
         // Build a list of `ChatMessage` from this list of `Message`.
@@ -69,13 +69,13 @@ class ChatViewModel @Inject constructor(
                 )
             }
         }
-    }.stateInUi(emptyList())
+    }.stateInUi(this, emptyList())
 
     private val _input = MutableStateFlow("")
     val input: StateFlow<String> = _input
     private var inputPrefilled = false
 
-    val sendEnabled = _input.map(::isInputValid).stateInUi(false)
+    val sendEnabled = _input.map(::isInputValid).stateInUi(this, false)
 
     /**
      * We want to update the notification when the corresponding chat screen is open. Setting this
