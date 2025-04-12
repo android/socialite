@@ -47,16 +47,13 @@ sealed interface Route {
     data object Timeline : Route
 
     @Serializable
-    data object ChatsList : Route
-
-    @Serializable
     data object Settings : Route
 
     @Serializable
     data object Home : Route
 
     @Serializable
-    data class ChatThread(val chatId: Long, val text: String? = null) : Route
+    data class Chats(val chatId: Long?, val text: String? = null) : Route
 
     @Serializable
     data class Camera(val chatId: Long) : Route
@@ -81,8 +78,8 @@ enum class TopLevelDestination(
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
-    ChatsList(
-        route = Route.ChatsList,
+    ChatsListDetail(
+        route = Route.Chats(null, null),
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
     ),
@@ -94,7 +91,7 @@ enum class TopLevelDestination(
     ;
 
     companion object {
-        val START_DESTINATION = ChatsList
+        val START_DESTINATION = ChatsListDetail
 
         fun fromNavDestination(destination: NavDestination?): TopLevelDestination {
             return entries.find { dest ->
@@ -122,7 +119,7 @@ private fun calculateNavigationLayoutType(
         destination.hasRoute<Route.Camera>() -> NavigationSuiteType.None
         // Top level destinations can show any layout type.
         destination.isTopLevel() -> defaultLayoutType
-        // Every other destination goes through a ChatThread. Hide the bottom nav bar
+        // Every other destination goes through a ChatsListDetail. Hide the bottom nav bar
         // since it interferes with composing chat messages.
         defaultLayoutType == NavigationSuiteType.NavigationBar -> NavigationSuiteType.None
         else -> defaultLayoutType
