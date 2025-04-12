@@ -180,7 +180,6 @@ fun Camera(
                         onMediaCaptured(null)
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
                             tint = Color.White,
                         )
