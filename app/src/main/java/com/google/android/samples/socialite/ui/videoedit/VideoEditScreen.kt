@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -92,6 +93,7 @@ private data class VideoPreviewConfig(
     val removeAudioEnabled: Boolean,
     val rgbAdjustmentEffectEnabled: Boolean,
     val periodicVignetteEffectEnabled: Boolean,
+    val styleTransferEffectEnabled: Boolean,
     val overlayText: String,
     val redOverlayTextEnabled: Boolean,
     val largeOverlayTextEnabled: Boolean,
@@ -120,6 +122,7 @@ fun VideoEditScreen(
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
     var rgbAdjustmentEffectEnabled by rememberSaveable { mutableStateOf(false) }
     var periodicVignetteEffectEnabled by rememberSaveable { mutableStateOf(false) }
+    var styleTransferEffectEnabled by rememberSaveable { mutableStateOf(false) }
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
@@ -128,6 +131,7 @@ fun VideoEditScreen(
         removeAudioEnabled,
         rgbAdjustmentEffectEnabled,
         periodicVignetteEffectEnabled,
+        styleTransferEffectEnabled,
         overlayText,
         redOverlayTextEnabled,
         largeOverlayTextEnabled,
@@ -137,6 +141,7 @@ fun VideoEditScreen(
             removeAudioEnabled = removeAudioEnabled,
             rgbAdjustmentEffectEnabled = rgbAdjustmentEffectEnabled,
             periodicVignetteEffectEnabled = periodicVignetteEffectEnabled,
+            styleTransferEffectEnabled = styleTransferEffectEnabled,
             overlayText = overlayText,
             redOverlayTextEnabled = redOverlayTextEnabled,
             largeOverlayTextEnabled = largeOverlayTextEnabled,
@@ -153,6 +158,7 @@ fun VideoEditScreen(
                         removeAudio = removeAudioEnabled,
                         rgbAdjustmentEffectSelected = rgbAdjustmentEffectEnabled,
                         periodicVignetteEffectSelected = periodicVignetteEffectEnabled,
+                        styleTransferEffectSelected = styleTransferEffectEnabled,
                         textOverlayText = overlayText,
                         textOverlayRedSelected = redOverlayTextEnabled,
                         textOverlayLargeSelected = largeOverlayTextEnabled,
@@ -182,6 +188,7 @@ fun VideoEditScreen(
                     removeAudio = previewConfig.removeAudioEnabled,
                     rgbAdjustmentEffectSelected = previewConfig.rgbAdjustmentEffectEnabled,
                     periodicVignetteEffectSelected = previewConfig.periodicVignetteEffectEnabled,
+                    styleTransferEffectSelected = previewConfig.styleTransferEffectEnabled,
                     textOverlayText = previewConfig.overlayText,
                     textOverlayRedSelected = previewConfig.redOverlayTextEnabled,
                     textOverlayLargeSelected = previewConfig.largeOverlayTextEnabled,
@@ -215,6 +222,12 @@ fun VideoEditScreen(
                     selected = periodicVignetteEffectEnabled,
                     onClick = { periodicVignetteEffectEnabled = !periodicVignetteEffectEnabled },
                     label = stringResource(id = R.string.add_periodic_vignette_effect),
+                )
+                VideoEditFilterChip(
+                    icon = Icons.Filled.Style,
+                    selected = styleTransferEffectEnabled,
+                    onClick = { styleTransferEffectEnabled = !styleTransferEffectEnabled },
+                    label = stringResource(id = R.string.add_style_transfer_effect),
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 TextOverlayOption(

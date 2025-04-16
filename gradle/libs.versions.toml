@@ -52,6 +52,9 @@ glance = "1.1.1"
 secrets = "2.0.1"
 generativeai = "0.9.0"
 datastore = "1.1.1"
+litertSupportApi = "1.2.0"
+litert = "1.2.0"
+litertGpu = "1.2.0"
 
 
 [libraries]
@@ -116,6 +119,9 @@ window = { group = "androidx.window", name = "window", version.ref = "window" }
 ktlint = "com.pinterest.ktlint:ktlint-cli:1.1.1" # Used in build.gradle.kts
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai"}
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
+litert-support-api = { group = "com.google.ai.edge.litert", name = "litert-support-api", version.ref = "litertSupportApi" }
+litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
+litert-gpu = { group = "com.google.ai.edge.litert", name = "litert-gpu", version.ref = "litertGpu" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

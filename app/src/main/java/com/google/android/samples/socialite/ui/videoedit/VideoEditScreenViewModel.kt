@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite.ui.videoedit
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaMetadataRetriever
 import android.text.Spannable
@@ -57,6 +58,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import androidx.media3.effect.ByteBufferGlEffect
 import androidx.media3.effect.GlEffect
 import androidx.media3.effect.RgbAdjustment
 
@@ -111,6 +113,7 @@ class VideoEditScreenViewModel @Inject constructor(
         removeAudio: Boolean,
         rgbAdjustmentEffectSelected: Boolean,
         periodicVignetteEffectSelected: Boolean,
+        styleTransferEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -122,8 +125,10 @@ class VideoEditScreenViewModel @Inject constructor(
 
         val videoEffects =
             buildVideoEffectsList(
+                context = context,
                 rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
                 periodicVignetteEffectSelected = periodicVignetteEffectSelected,
+                styleTransferEffectSelected = styleTransferEffectSelected,
                 textOverlayText = textOverlayText,
                 textOverlayRedSelected = textOverlayRedSelected,
                 textOverlayLargeSelected = textOverlayLargeSelected,
@@ -153,6 +158,7 @@ class VideoEditScreenViewModel @Inject constructor(
         videoUri: String, removeAudio: Boolean,
         rgbAdjustmentEffectSelected: Boolean,
         periodicVignetteEffectSelected: Boolean,
+        styleTransferEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -172,8 +178,10 @@ class VideoEditScreenViewModel @Inject constructor(
         }
         val videoEffects =
             buildVideoEffectsList(
+                context = context,
                 rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
                 periodicVignetteEffectSelected = periodicVignetteEffectSelected,
+                styleTransferEffectSelected = styleTransferEffectSelected,
                 textOverlayText = textOverlayText,
                 textOverlayRedSelected = textOverlayRedSelected,
                 textOverlayLargeSelected = textOverlayLargeSelected,
@@ -189,8 +197,10 @@ class VideoEditScreenViewModel @Inject constructor(
 
     @OptIn(UnstableApi::class)
     private fun buildVideoEffectsList(
+        context: Context,
         rgbAdjustmentEffectSelected: Boolean,
         periodicVignetteEffectSelected: Boolean,
+        styleTransferEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -254,6 +264,9 @@ class VideoEditScreenViewModel @Inject constructor(
                     )
                 },
             )
+        }
+        if (styleTransferEffectSelected) {
+            videoEffects.add(ByteBufferGlEffect<Bitmap>(StyleTransferEffect(context, "style.jpg")))
         }
 
         return videoEffects

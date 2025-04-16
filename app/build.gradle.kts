@@ -85,6 +85,9 @@ dependencies {
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
+    implementation(libs.litert)
+    implementation(libs.litert.gpu)
+    implementation(libs.litert.support.api)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
