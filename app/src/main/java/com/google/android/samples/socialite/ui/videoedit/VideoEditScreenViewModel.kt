@@ -110,6 +110,7 @@ class VideoEditScreenViewModel @Inject constructor(
         videoUri: String,
         removeAudio: Boolean,
         rgbAdjustmentEffectSelected: Boolean,
+        periodicVignetteEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -122,6 +123,7 @@ class VideoEditScreenViewModel @Inject constructor(
         val videoEffects =
             buildVideoEffectsList(
                 rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
+                periodicVignetteEffectSelected = periodicVignetteEffectSelected,
                 textOverlayText = textOverlayText,
                 textOverlayRedSelected = textOverlayRedSelected,
                 textOverlayLargeSelected = textOverlayLargeSelected,
@@ -150,6 +152,7 @@ class VideoEditScreenViewModel @Inject constructor(
         context: Context,
         videoUri: String, removeAudio: Boolean,
         rgbAdjustmentEffectSelected: Boolean,
+        periodicVignetteEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -170,6 +173,7 @@ class VideoEditScreenViewModel @Inject constructor(
         val videoEffects =
             buildVideoEffectsList(
                 rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
+                periodicVignetteEffectSelected = periodicVignetteEffectSelected,
                 textOverlayText = textOverlayText,
                 textOverlayRedSelected = textOverlayRedSelected,
                 textOverlayLargeSelected = textOverlayLargeSelected,
@@ -186,6 +190,7 @@ class VideoEditScreenViewModel @Inject constructor(
     @OptIn(UnstableApi::class)
     private fun buildVideoEffectsList(
         rgbAdjustmentEffectSelected: Boolean,
+        periodicVignetteEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -233,6 +238,21 @@ class VideoEditScreenViewModel @Inject constructor(
                     .setRedScale(1.5f)
                     .setGreenScale(1.2f)
                     .setBlueScale(0.8f).build(),
+            )
+        }
+        if (periodicVignetteEffectSelected) {
+            videoEffects.add(
+                GlEffect { context: Context?, useHdr: Boolean ->
+                    PeriodicVignetteShaderProgram(
+                        context,
+                        useHdr,
+                        0.5f,
+                        0.5f,
+                        0f,
+                        0.7f,
+                        0.7f,
+                    )
+                },
             )
         }
 

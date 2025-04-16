@@ -56,6 +56,7 @@
     <!-- Video Edit Screen -->
     <string name="remove_audio">Remove audio</string>
     <string name="add_rgb_adjustment_effect">Add RGB adjustment effect</string>
+    <string name="add_periodic_vignette_effect">Add Periodic Vignette effect</string>
     <string name="send">Send</string>
     <string name="add_text_overlay_placeholder">Add text overlay</string>
     <string name="red_text_option">Red</string>
