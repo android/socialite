@@ -16,10 +16,7 @@
 
 package com.google.android.samples.socialite.ui.videoedit
 
-import android.media.MediaMetadataRetriever
-import android.net.Uri
-import android.util.Log
-import androidx.compose.foundation.Image
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +38,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -59,15 +55,17 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -75,14 +73,25 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.CompositionPlayer
+import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
 
-private const val TAG = "VideoEditScreen"
+@Immutable
+private data class VideoPreviewConfig(
+    val uri: String,
+    val removeAudioEnabled: Boolean,
+    val overlayText: String,
+    val redOverlayTextEnabled: Boolean,
+    val largeOverlayTextEnabled: Boolean,
+)
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
@@ -108,6 +117,21 @@ fun VideoEditScreen(
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
+
+    val previewConfig = remember(
+        removeAudioEnabled,
+        overlayText,
+        redOverlayTextEnabled,
+        largeOverlayTextEnabled,
+    ) {
+        VideoPreviewConfig(
+            uri = uri,
+            removeAudioEnabled = removeAudioEnabled,
+            overlayText = overlayText,
+            redOverlayTextEnabled = redOverlayTextEnabled,
+            largeOverlayTextEnabled = largeOverlayTextEnabled,
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -136,7 +160,19 @@ fun VideoEditScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(50.dp))
-            VideoMessagePreview(uri, isProcessing.value)
+            VideoMessagePreview(
+                context,
+                previewConfig,
+            ) { context, previewConfig ->
+                viewModel.prepareComposition(
+                    context = context,
+                    videoUri = previewConfig.uri,
+                    removeAudio = previewConfig.removeAudioEnabled,
+                    textOverlayText = previewConfig.overlayText,
+                    textOverlayRedSelected = previewConfig.redOverlayTextEnabled,
+                    textOverlayLargeSelected = previewConfig.largeOverlayTextEnabled,
+                )
+            }
             Spacer(modifier = Modifier.height(20.dp))
 
             Column(
@@ -175,6 +211,8 @@ fun VideoEditScreen(
             }
         }
     }
+
+    CenteredCircularProgressIndicator(isProcessing.value)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -212,8 +250,13 @@ private fun VideoEditTopAppBar(
     )
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean) {
+private fun VideoMessagePreview(
+    context: Context,
+    previewConfig: VideoPreviewConfig,
+    prepareComposition: (Context, VideoPreviewConfig) -> Composition,
+) {
     // Render yellow box instead of frame of captured video for Preview purposes
     if (LocalInspectionMode.current) {
         Box(
@@ -225,42 +268,32 @@ private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean) {
         return
     }
 
-    val mediaMetadataRetriever = MediaMetadataRetriever()
-    mediaMetadataRetriever.setDataSource(LocalContext.current, Uri.parse(videoUri))
+    val playerView = remember(context) { PlayerView(context) }
+    var compositionPlayer by remember { mutableStateOf<CompositionPlayer?>(null) }
 
-    // Return any frame that the framework considers representative of a valid frame
-    val bitmap = mediaMetadataRetriever.frameAtTime
-
-    if (bitmap != null) {
-        Box(
-            modifier = Modifier
-                .padding(10.dp),
-        ) {
-            Image(
-                modifier = Modifier.width(200.dp),
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
-            )
-
-            Icon(
-                Icons.Filled.Movie,
-                tint = Color.White,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(60.dp)
-                    .padding(10.dp),
-            )
-
-            if (isProcessing) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-                        .padding(8.dp),
-                )
+    AndroidView(
+        factory = {
+            playerView.apply {
+                player = compositionPlayer
+                controllerAutoShow = false
             }
-        }
-    } else {
-        Log.e(TAG, "Error rendering preview of video")
+        },
+        modifier = Modifier
+            .width(250.dp)
+            .height(450.dp),
+    )
+
+    LaunchedEffect(previewConfig) {
+        compositionPlayer?.release()
+        compositionPlayer = CompositionPlayer.Builder(context).build()
+
+        playerView.player = compositionPlayer
+
+        val composition = prepareComposition(context, previewConfig)
+
+        compositionPlayer?.setComposition(composition)
+        compositionPlayer?.prepare()
+        compositionPlayer?.play()
     }
 }
 
@@ -337,6 +370,24 @@ private fun VideoEditFilterChip(
             selectedLeadingIconColor = selectedIconColor,
         ),
     )
+}
+
+@Composable
+private fun CenteredCircularProgressIndicator(isProcessing: Boolean) {
+    if (isProcessing) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                    .padding(8.dp),
+            )
+        }
+    }
 }
 
 @Composable

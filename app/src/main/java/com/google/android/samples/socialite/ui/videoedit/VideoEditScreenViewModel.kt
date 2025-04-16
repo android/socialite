@@ -18,14 +18,18 @@ package com.google.android.samples.socialite.ui.videoedit
 
 import android.content.Context
 import android.graphics.Color
+import android.media.MediaMetadataRetriever
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
+import android.util.Log
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
@@ -34,6 +38,7 @@ import androidx.media3.effect.TextOverlay
 import androidx.media3.effect.TextureOverlay
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
@@ -51,6 +56,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
+
+private const val TAG = "VideoEditViewModel"
 
 @HiltViewModel
 class VideoEditScreenViewModel @Inject constructor(
@@ -94,7 +102,7 @@ class VideoEditScreenViewModel @Inject constructor(
             }
         }
 
-    @androidx.annotation.OptIn(UnstableApi::class)
+    @OptIn(UnstableApi::class)
     fun applyVideoTransformation(
         context: Context,
         videoUri: String,
@@ -108,6 +116,65 @@ class VideoEditScreenViewModel @Inject constructor(
             .addListener(transformerListener)
             .build()
 
+        val videoEffects =
+            buildVideoEffectsList(textOverlayText, textOverlayRedSelected, textOverlayLargeSelected)
+
+        val editedMediaItem =
+            EditedMediaItem.Builder(MediaItem.fromUri(videoUri))
+                .setRemoveAudio(removeAudio)
+                .setEffects(Effects(listOf(), videoEffects))
+                .build()
+
+        val editedVideoFileName = "Socialite-edited-recording-" +
+            SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis()) + ".mp4"
+
+        transformedVideoFilePath = createNewVideoFilePath(context, editedVideoFileName)
+
+        // TODO: Investigate using MediaStoreOutputOptions instead of external cache file for saving
+        //  edited video https://github.com/androidx/media/issues/504
+        transformer.start(editedMediaItem, transformedVideoFilePath)
+        _isProcessing.value = true
+    }
+
+    @OptIn(UnstableApi::class)
+    fun prepareComposition(
+        context: Context,
+        videoUri: String, removeAudio: Boolean,
+        textOverlayText: String,
+        textOverlayRedSelected: Boolean,
+        textOverlayLargeSelected: Boolean,
+    ): Composition {
+        val mediaItem = MediaItem.fromUri(videoUri)
+        val retriever = MediaMetadataRetriever()
+        val durationUs = try {
+            retriever.setDataSource(context, videoUri.toUri())
+            val durationStr =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            durationStr?.toLongOrNull()?.times(1000) ?: 0L // Convert to microseconds
+        } catch (e: Exception) {
+            Log.e(TAG, "Error retrieving duration of video")
+            0L
+        } finally {
+            retriever.release()
+        }
+        val videoEffects =
+            buildVideoEffectsList(textOverlayText, textOverlayRedSelected, textOverlayLargeSelected)
+
+        val editedMediaItem =
+            EditedMediaItem.Builder(mediaItem).setEffects(Effects(listOf(), videoEffects))
+                .setRemoveAudio(removeAudio).setDurationUs(durationUs).build()
+
+        val videoImageSequence = EditedMediaItemSequence(editedMediaItem)
+        return Composition.Builder(videoImageSequence).build()
+    }
+
+    @OptIn(UnstableApi::class)
+    private fun buildVideoEffectsList(
+        textOverlayText: String,
+        textOverlayRedSelected: Boolean,
+        textOverlayLargeSelected: Boolean,
+    ): List<Effect> {
         val overlaysBuilder = ImmutableList.Builder<TextureOverlay>()
 
         if (textOverlayText.isNotEmpty()) {
@@ -143,22 +210,7 @@ class VideoEditScreenViewModel @Inject constructor(
             overlaysBuilder.add(textOverlay)
         }
 
-        val editedMediaItem =
-            EditedMediaItem.Builder(MediaItem.fromUri(videoUri))
-                .setRemoveAudio(removeAudio)
-                .setEffects(Effects(listOf(), listOf(OverlayEffect(overlaysBuilder.build()))))
-                .build()
-
-        val editedVideoFileName = "Socialite-edited-recording-" +
-            SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis()) + ".mp4"
-
-        transformedVideoFilePath = createNewVideoFilePath(context, editedVideoFileName)
-
-        // TODO: Investigate using MediaStoreOutputOptions instead of external cache file for saving
-        //  edited video https://github.com/androidx/media/issues/504
-        transformer.start(editedMediaItem, transformedVideoFilePath)
-        _isProcessing.value = true
+        return listOf(OverlayEffect(overlaysBuilder.build()))
     }
 
     private fun createNewVideoFilePath(context: Context, fileName: String): String {
