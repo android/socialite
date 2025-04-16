@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.VolumeMute
@@ -88,6 +89,7 @@ import com.google.android.samples.socialite.R
 private data class VideoPreviewConfig(
     val uri: String,
     val removeAudioEnabled: Boolean,
+    val rgbAdjustmentEffectEnabled: Boolean,
     val overlayText: String,
     val redOverlayTextEnabled: Boolean,
     val largeOverlayTextEnabled: Boolean,
@@ -114,12 +116,14 @@ fun VideoEditScreen(
     val isProcessing = viewModel.isProcessing.collectAsState()
 
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
+    var rgbAdjustmentEffectEnabled by rememberSaveable { mutableStateOf(false) }
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
 
     val previewConfig = remember(
         removeAudioEnabled,
+        rgbAdjustmentEffectEnabled,
         overlayText,
         redOverlayTextEnabled,
         largeOverlayTextEnabled,
@@ -127,6 +131,7 @@ fun VideoEditScreen(
         VideoPreviewConfig(
             uri = uri,
             removeAudioEnabled = removeAudioEnabled,
+            rgbAdjustmentEffectEnabled = rgbAdjustmentEffectEnabled,
             overlayText = overlayText,
             redOverlayTextEnabled = redOverlayTextEnabled,
             largeOverlayTextEnabled = largeOverlayTextEnabled,
@@ -141,6 +146,7 @@ fun VideoEditScreen(
                         context = context,
                         videoUri = uri,
                         removeAudio = removeAudioEnabled,
+                        rgbAdjustmentEffectSelected = rgbAdjustmentEffectEnabled,
                         textOverlayText = overlayText,
                         textOverlayRedSelected = redOverlayTextEnabled,
                         textOverlayLargeSelected = largeOverlayTextEnabled,
@@ -168,6 +174,7 @@ fun VideoEditScreen(
                     context = context,
                     videoUri = previewConfig.uri,
                     removeAudio = previewConfig.removeAudioEnabled,
+                    rgbAdjustmentEffectSelected = previewConfig.rgbAdjustmentEffectEnabled,
                     textOverlayText = previewConfig.overlayText,
                     textOverlayRedSelected = previewConfig.redOverlayTextEnabled,
                     textOverlayLargeSelected = previewConfig.largeOverlayTextEnabled,
@@ -189,6 +196,12 @@ fun VideoEditScreen(
                     selected = removeAudioEnabled,
                     onClick = { removeAudioEnabled = !removeAudioEnabled },
                     label = stringResource(id = R.string.remove_audio),
+                )
+                VideoEditFilterChip(
+                    icon = Icons.Filled.ColorLens,
+                    selected = rgbAdjustmentEffectEnabled,
+                    onClick = { rgbAdjustmentEffectEnabled = !rgbAdjustmentEffectEnabled },
+                    label = stringResource(id = R.string.add_rgb_adjustment_effect),
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 TextOverlayOption(

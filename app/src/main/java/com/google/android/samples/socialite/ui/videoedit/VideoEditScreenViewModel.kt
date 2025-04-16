@@ -57,6 +57,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import androidx.media3.effect.GlEffect
+import androidx.media3.effect.RgbAdjustment
 
 private const val TAG = "VideoEditViewModel"
 
@@ -107,6 +109,7 @@ class VideoEditScreenViewModel @Inject constructor(
         context: Context,
         videoUri: String,
         removeAudio: Boolean,
+        rgbAdjustmentEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -117,7 +120,12 @@ class VideoEditScreenViewModel @Inject constructor(
             .build()
 
         val videoEffects =
-            buildVideoEffectsList(textOverlayText, textOverlayRedSelected, textOverlayLargeSelected)
+            buildVideoEffectsList(
+                rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
+                textOverlayText = textOverlayText,
+                textOverlayRedSelected = textOverlayRedSelected,
+                textOverlayLargeSelected = textOverlayLargeSelected,
+            )
 
         val editedMediaItem =
             EditedMediaItem.Builder(MediaItem.fromUri(videoUri))
@@ -141,6 +149,7 @@ class VideoEditScreenViewModel @Inject constructor(
     fun prepareComposition(
         context: Context,
         videoUri: String, removeAudio: Boolean,
+        rgbAdjustmentEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
@@ -159,7 +168,12 @@ class VideoEditScreenViewModel @Inject constructor(
             retriever.release()
         }
         val videoEffects =
-            buildVideoEffectsList(textOverlayText, textOverlayRedSelected, textOverlayLargeSelected)
+            buildVideoEffectsList(
+                rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
+                textOverlayText = textOverlayText,
+                textOverlayRedSelected = textOverlayRedSelected,
+                textOverlayLargeSelected = textOverlayLargeSelected,
+            )
 
         val editedMediaItem =
             EditedMediaItem.Builder(mediaItem).setEffects(Effects(listOf(), videoEffects))
@@ -171,10 +185,12 @@ class VideoEditScreenViewModel @Inject constructor(
 
     @OptIn(UnstableApi::class)
     private fun buildVideoEffectsList(
+        rgbAdjustmentEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
     ): List<Effect> {
+        val videoEffects: MutableList<GlEffect> = mutableListOf()
         val overlaysBuilder = ImmutableList.Builder<TextureOverlay>()
 
         if (textOverlayText.isNotEmpty()) {
@@ -209,8 +225,18 @@ class VideoEditScreenViewModel @Inject constructor(
 
             overlaysBuilder.add(textOverlay)
         }
+        videoEffects.add(OverlayEffect(overlaysBuilder.build()))
 
-        return listOf(OverlayEffect(overlaysBuilder.build()))
+        if (rgbAdjustmentEffectSelected) {
+            videoEffects.add(
+                RgbAdjustment.Builder()
+                    .setRedScale(1.5f)
+                    .setGreenScale(1.2f)
+                    .setBlueScale(0.8f).build(),
+            )
+        }
+
+        return videoEffects
     }
 
     private fun createNewVideoFilePath(context: Context, fileName: String): String {
