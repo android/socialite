@@ -38,9 +38,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Autorenew
+import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.Nightlight
+import androidx.compose.material.icons.filled.NotInterested
+import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +67,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.util.UnstableApi
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -68,6 +76,7 @@ import kotlin.reflect.KFunction1
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 
+@UnstableApi
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(
@@ -78,6 +87,8 @@ fun Camera(
     var surfaceProvider by remember { mutableStateOf<Preview.SurfaceProvider?>(null) }
     var cameraSelector by remember { mutableStateOf(CameraSelector.DEFAULT_BACK_CAMERA) }
     var captureMode by remember { mutableStateOf(CaptureMode.PHOTO) }
+    var effectMode by remember { mutableStateOf(EffectMode.NONE) }
+    var isEffectMenuExpanded by remember { mutableStateOf(false) }
     val cameraAndRecordAudioPermissionState = rememberMultiplePermissionsState(
         listOf(
             Manifest.permission.CAMERA,
@@ -124,7 +135,7 @@ fun Camera(
 
         rotationProvider.addListener(Dispatchers.Main.asExecutor(), rotationListener)
 
-        viewModel.startPreview(lifecycleOwner, captureMode, cameraSelector, rotation)
+        viewModel.startPreview(lifecycleOwner, captureMode, effectMode, cameraSelector, rotation)
 
         onDispose {
             rotationProvider.removeListener(rotationListener)
@@ -136,6 +147,7 @@ fun Camera(
         viewModel.startPreview(
             lifecycleOwner,
             captureMode,
+            effectMode,
             cameraSelector,
             rotation,
         )
@@ -146,6 +158,19 @@ fun Camera(
         viewModel.startPreview(
             lifecycleOwner,
             captureMode,
+            effectMode,
+            cameraSelector,
+            rotation,
+        )
+    }
+
+    fun setEffectMode(mode: EffectMode) {
+        effectMode = mode
+        isEffectMenuExpanded = false
+        viewModel.startPreview(
+            lifecycleOwner,
+            captureMode,
+            effectMode,
             cameraSelector,
             rotation,
         )
@@ -168,20 +193,81 @@ fun Camera(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp, 25.dp, 0.dp, 0.dp)
+                        .padding(0.dp, 50.dp, 0.dp, 0.dp)
                         .background(Color.Black)
                         .height(50.dp),
                 ) {
-                    IconButton(onClick = {
-                        onMediaCaptured(null)
-                    }) {
+                    IconButton(
+                        onClick = {
+                            onMediaCaptured(null)
+                        },
+                    ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = null,
                             tint = Color.White,
                         )
                     }
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = { isEffectMenuExpanded = !isEffectMenuExpanded },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                        DropdownMenu(
+                            expanded = isEffectMenuExpanded,
+                            onDismissRequest = { isEffectMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("No Effect") },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.NotInterested,
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = { setEffectMode(EffectMode.NONE) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Black and White") },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Contrast,
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = { setEffectMode(EffectMode.BLACK_AND_WHITE) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Green Screen") },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.PersonOutline,
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = { setEffectMode(EffectMode.GREEN_SCREEN) }
+                            )
+                            if (captureMode == CaptureMode.PHOTO) {
+                                DropdownMenuItem(
+                                    text = { Text("Night Mode") },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Nightlight,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = { setEffectMode(EffectMode.NIGHT_MODE) }
+                                )
+                            }
+                        }
+                    }
+
                 }
+
                 if (isLayoutUnfolded != null) {
                     if (isLayoutUnfolded as Boolean) {
                         Row(

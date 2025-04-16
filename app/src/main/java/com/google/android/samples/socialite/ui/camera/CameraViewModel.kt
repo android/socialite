@@ -19,27 +19,46 @@ package com.google.android.samples.socialite.ui.camera
 import android.Manifest
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Display
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
+import androidx.camera.core.CameraEffect.IMAGE_CAPTURE
+import androidx.camera.core.CameraEffect.PREVIEW
+import androidx.camera.core.CameraEffect.VIDEO_CAPTURE
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ConcurrentCamera
 import androidx.camera.core.DisplayOrientedMeteringPointFactory
 import androidx.camera.core.DynamicRange
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.FocusMeteringAction
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.UseCaseGroup
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.effects.OverlayEffect
 import androidx.camera.extensions.ExtensionMode
 import androidx.camera.extensions.ExtensionsManager
+import androidx.camera.media3.effect.Media3Effect
 import androidx.camera.video.MediaStoreOutputOptions
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
@@ -54,9 +73,15 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.RgbFilter
 import com.google.android.samples.socialite.repository.ChatRepository
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.segmentation.Segmentation
+import com.google.mlkit.vision.segmentation.selfie.SelfieSegmenterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.System.currentTimeMillis
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -64,6 +89,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
 
 private const val TAG = "CameraViewModel"
 
@@ -76,7 +102,6 @@ class CameraViewModel @Inject constructor(
 ) : ViewModel() {
     private lateinit var camera: Camera
     private lateinit var extensionsManager: ExtensionsManager
-    private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
     val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
@@ -108,20 +133,62 @@ class CameraViewModel @Inject constructor(
         .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
         .build()
 
+    private val videoCaptureBuilder = VideoCapture.Builder(recorder)
+    lateinit private var videoCaptureUseCase: VideoCapture<Recorder>
+
+    private val imageAnalysisUseCase = ImageAnalysis.Builder()
+        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        .build()
+
+    lateinit var greenScreenEffect:OverlayEffect
+    val backgroundRemovalThreshold = 0.8
+
+    lateinit var mask: Bitmap
+    lateinit var bitmap: Bitmap
+    var isGreenScreenProcessing = false
+
     private var currentRecording: Recording? = null
     private lateinit var recordingState: VideoRecordEvent
 
     init {
         val videoCaptureBuilder = VideoCapture.Builder(recorder)
         viewModelScope.launch {
-            val hdrCameraInfo = getHdrCameraInfo()
+            greenScreenEffect = OverlayEffect(
+                PREVIEW or IMAGE_CAPTURE or VIDEO_CAPTURE,
+                5,
+                Handler(Looper.getMainLooper()), {},
+            )
 
-            if (hdrCameraInfo != null) {
-                Log.i(TAG, "Capturing HDR video")
-                videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
+            imageAnalysisUseCase.setAnalyzer(
+                ContextCompat.getMainExecutor(application), SelfieSegmentationAnalyzer(),
+            )
+
+            greenScreenEffect.setOnDrawListener { frame ->
+                if(!::mask.isInitialized || !::bitmap.isInitialized) {
+                    // Do not change the drawing if the frame doesn’t match the analysis
+                    // result.
+                    return@setOnDrawListener true
+                }
+
+                // Clear the previously drawn frame.
+                frame.overlayCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+
+                // Create a Paint object to draw the mask layer.
+                val paint = Paint()
+                paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+
+                // Create transformation matrix to position the overlay in the bottom right.
+                val transformationMatrix = Matrix()
+                transformationMatrix.setTranslate(2f * bitmap.width, 0f * bitmap.height)
+
+                // First, draw the bitmap with the pixel data, then draw the mask to remove
+                // any background pixels.
+                frame.overlayCanvas.drawBitmap(bitmap, transformationMatrix, null)
+                frame.overlayCanvas.drawBitmap(mask, transformationMatrix, paint)
+
+                isGreenScreenProcessing = false
+                true
             }
-
-            videoCaptureUseCase = videoCaptureBuilder.build()
         }
     }
 
@@ -149,9 +216,11 @@ class CameraViewModel @Inject constructor(
         savedStateHandle.set("chatId", chatId)
     }
 
+    @UnstableApi
     fun startPreview(
         lifecycleOwner: LifecycleOwner,
         captureMode: CaptureMode,
+        effectMode: EffectMode,
         cameraSelector: CameraSelector,
         rotation: Int,
     ) {
@@ -164,6 +233,20 @@ class CameraViewModel @Inject constructor(
                 ).await()
             }
             var extensionsCameraSelector: CameraSelector? = null
+
+            // Determine whether we can capture HDR video. Currently, concurrent camera
+            // does not support HDR video, so we can't enable HDR if the green screen effect
+            // is being applied.
+            val hdrCameraInfo = getHdrCameraInfo()
+            if (hdrCameraInfo != null && effectMode != EffectMode.GREEN_SCREEN) {
+                Log.i(TAG, "Capturing HDR video")
+                videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
+            } else {
+                videoCaptureBuilder.setDynamicRange(DynamicRange.SDR)
+            }
+
+            videoCaptureUseCase = videoCaptureBuilder.build()
+
             val useCaseGroupBuilder = UseCaseGroup.Builder()
                 .addUseCase(previewUseCase)
 
@@ -171,8 +254,9 @@ class CameraViewModel @Inject constructor(
                 try {
                     extensionManagerJob.join()
 
-                    // Query if extension is available.
-                    if (extensionsManager.isExtensionAvailable(
+                    // Query if we should use Night Mode and if the extension is available.
+                    if (effectMode == EffectMode.NIGHT_MODE &&
+                        extensionsManager.isExtensionAvailable(
                             cameraSelector,
                             ExtensionMode.NIGHT,
                         )
@@ -196,6 +280,68 @@ class CameraViewModel @Inject constructor(
                 useCaseGroupBuilder.addUseCase(videoCaptureUseCase)
             }
 
+            if (effectMode == EffectMode.BLACK_AND_WHITE) {
+                // Use the grayscale effect with the Media3Effect connector.
+                val media3Effect =
+                Media3Effect(
+                    application, PREVIEW or VIDEO_CAPTURE or IMAGE_CAPTURE,
+                    ContextCompat.getMainExecutor(application), {},
+                )
+                media3Effect.setEffects(listOf(RgbFilter.createGrayscaleFilter()))
+                useCaseGroupBuilder.addEffect(media3Effect)
+            }
+
+            if (effectMode == EffectMode.GREEN_SCREEN) {
+                var primaryCameraSelector: CameraSelector? = null
+                var secondaryCameraSelector: CameraSelector? = null
+
+                for (cameraInfos in cameraProvider.availableConcurrentCameraInfos) {
+                    primaryCameraSelector = cameraInfos.first {
+                        it.lensFacing == CameraSelector.LENS_FACING_FRONT
+                    }.cameraSelector
+                    secondaryCameraSelector = cameraInfos.first {
+                        it.lensFacing == CameraSelector.LENS_FACING_BACK
+                    }.cameraSelector
+
+                    if (primaryCameraSelector == null || secondaryCameraSelector == null) {
+                        // If either a primary or secondary selector wasn't found, reset both
+                        // to move on to the next list of CameraInfos.
+                        primaryCameraSelector = null
+                        secondaryCameraSelector = null
+                    } else {
+                        // If both primary and secondary camera selectors were found, we can
+                        // conclude the search.
+                        break
+                    }
+                }
+
+                if (primaryCameraSelector != null && secondaryCameraSelector != null) {
+                    useCaseGroupBuilder.addEffect(greenScreenEffect)
+
+                    val segmentedSelfieUseCaseGroupBuilder = UseCaseGroup.Builder()
+                        .addUseCase(imageAnalysisUseCase)
+
+                    val primary = ConcurrentCamera.SingleCameraConfig(
+                        primaryCameraSelector,
+                        segmentedSelfieUseCaseGroupBuilder.build(),
+                        lifecycleOwner,
+                    )
+
+                    val secondary = ConcurrentCamera.SingleCameraConfig(
+                        secondaryCameraSelector,
+                        useCaseGroupBuilder.build(),
+                        lifecycleOwner,
+                    )
+
+                    cameraProvider.unbindAll()
+                    val concurrentCamera = cameraProvider.bindToLifecycle(
+                        listOf(primary, secondary),
+                    )
+
+                    return@launch
+                }
+            }
+
             cameraProvider.unbindAll()
             val activeCameraSelector = extensionsCameraSelector ?: cameraSelector
             camera = cameraProvider.bindToLifecycle(
@@ -205,6 +351,7 @@ class CameraViewModel @Inject constructor(
             )
             viewFinderState.value.cameraState = CameraState.READY
         }
+
     }
 
     fun setTargetRotation(rotation: Int) {
@@ -215,7 +362,7 @@ class CameraViewModel @Inject constructor(
     fun capturePhoto(onMediaCaptured: (Media) -> Unit) {
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
+            .format(currentTimeMillis())
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
@@ -260,7 +407,7 @@ class CameraViewModel @Inject constructor(
     fun startVideoCapture(onMediaCaptured: (Media) -> Unit) {
         val name = "Socialite-recording-" +
             SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis()) + ".mp4"
+                .format(currentTimeMillis()) + ".mp4"
         val contentValues = ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
@@ -327,7 +474,7 @@ class CameraViewModel @Inject constructor(
         x: Float,
         y: Float,
     ) {
-        camera?.let { camera ->
+        camera.let { camera ->
             val meteringPoint =
                 DisplayOrientedMeteringPointFactory(
                     display,
@@ -343,15 +490,79 @@ class CameraViewModel @Inject constructor(
     }
 
     fun setZoomScale(scale: Float) {
-        val zoomState = camera?.cameraInfo?.zoomState?.value
+        val zoomState = camera.cameraInfo.zoomState.value
         if (zoomState == null) return
         val finalScale =
             (zoomState.zoomRatio * scale).coerceIn(
                 zoomState.minZoomRatio,
                 zoomState.maxZoomRatio,
             )
-        camera?.cameraControl?.setZoomRatio(finalScale)
+        camera.cameraControl.setZoomRatio(finalScale)
     }
+
+    inner class SelfieSegmentationAnalyzer : ImageAnalysis.Analyzer {
+
+        val options = SelfieSegmenterOptions.Builder()
+            .setDetectorMode(SelfieSegmenterOptions.STREAM_MODE)
+            .build()
+        val selfieSegmenter = Segmentation.getClient(options)
+        var isAnalyzing = false
+
+        @RequiresApi(Build.VERSION_CODES.Q)
+        @ExperimentalGetImage
+        override fun analyze(imageProxy: ImageProxy) {
+            val mediaImage = imageProxy.image
+            if (mediaImage != null && !isAnalyzing) {
+                isAnalyzing = true
+                val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                selfieSegmenter.process(image)
+                    .addOnSuccessListener { results ->
+                        // Get foreground probabilities for each pixel. Since ML Kit returns this
+                        // in a byte buffer with each 4 bytes representing a float, convert it to
+                        // a FloatArray for easier use.
+                        val maskProbabilities = FloatArray(results.buffer.capacity() / 4)
+                        results.buffer.asFloatBuffer().get(maskProbabilities)
+
+                        // If the pixel foreground likelihood is above the threshold, assign it
+                        // with a color, otherwise assign it transparent so it will be masked out.
+                        val maskColors = maskProbabilities.map { point ->
+                            if (point > backgroundRemovalThreshold) {
+                                Color.WHITE
+                            } else {
+                                Color.TRANSPARENT
+                            }
+                        }.toIntArray()
+
+                        mask = Bitmap.createBitmap(maskColors, mediaImage.height, mediaImage.width, Bitmap.Config.ARGB_8888)
+
+                        // Create am ARGB bitmap from the mediaImage, converting from YUV (required
+                        // by ML Kit) to ARGB (which is easier to use the transparent channel of).
+                        val baseBitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
+                        val yubConverter = YuvToRgbConverter(application)
+                        yubConverter.yuvToRgb(mediaImage, baseBitmap)
+
+                        // Create final bitmap and mask, performing transformations so that they match.
+                        val matrix = Matrix()
+                        matrix.preScale(-1f, 1f);
+                        bitmap = Bitmap.createBitmap(baseBitmap, 0, 0, baseBitmap.width, baseBitmap.height, matrix, false)
+                        matrix.preRotate(90F)
+                        mask = Bitmap.createBitmap(mask, 0, 0, mask.width, mask.height, matrix, false)
+
+                        // Final cleanup. Close imageProxy for next analysis frame.
+                        imageProxy.close()
+                        isAnalyzing = false
+                    }
+                    .addOnFailureListener { e ->
+                        // Task failed with an exception. Close imageProxy for next analysis frame.
+                        imageProxy.close()
+                        isAnalyzing = false
+                    }
+            } else {
+                imageProxy.close()
+            }
+        }
+    }
+
 }
 
 data class ViewFinderState(
@@ -383,4 +594,11 @@ enum class CaptureMode {
     PHOTO,
     VIDEO_READY,
     VIDEO_RECORDING,
+}
+
+enum class EffectMode {
+    NONE,
+    BLACK_AND_WHITE,
+    GREEN_SCREEN,
+    NIGHT_MODE
 }

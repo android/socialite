@@ -82,6 +82,9 @@ dependencies {
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
+    implementation(libs.camera.media3.effect)
+    implementation(libs.vision.common)
+    implementation(libs.segmentation.selfie)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
@@ -133,6 +136,7 @@ dependencies {
     implementation(libs.camera.core)
     implementation(libs.camera.compose)
     implementation(libs.camera2)
+    implementation(libs.camera.effects)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
 

@@ -18,6 +18,7 @@ package com.google.android.samples.socialite.ui.camera
 
 import android.content.Context
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.lifecycle.awaitInstance
 import androidx.concurrent.futures.await
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -26,7 +27,7 @@ interface CameraProviderManager {
     suspend fun getCameraProvider(): ProcessCameraProvider
 }
 
-class CameraXProcessCameraProviderManager @Inject constructor(@ApplicationContext context: Context) : CameraProviderManager {
-    private val cameraFuture = ProcessCameraProvider.getInstance(context)
-    override suspend fun getCameraProvider() = cameraFuture.await()
+class CameraXProcessCameraProviderManager @Inject constructor(@ApplicationContext appContext: Context) : CameraProviderManager {
+    val context = appContext
+    override suspend fun getCameraProvider() = ProcessCameraProvider.awaitInstance(context)
 }
