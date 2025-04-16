@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,44 +14,92 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.ui
+package com.google.android.samples.socialite.ui.home.chatlist
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.utils.toReadableString
 import com.google.android.samples.socialite.model.ChatDetail
+import com.google.android.samples.socialite.ui.rememberIconPainter
 
 @Composable
-fun ChatRow(
+fun ChatListItem(
     chat: ChatDetail,
-    onClick: (() -> Unit)?,
+    onOpenChatRequest: (ChatOpenRequest) -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: () -> Unit = {},
+    shouldUseTooltip: Boolean = false,
+) {
+    var isTooltipVisible by remember { mutableStateOf(false) }
+
+    Box {
+        ChatListItem(
+            chat = chat,
+            modifier = modifier,
+            onClick = {
+                onOpenChatRequest(ChatOpenRequest.openInSameWindow(chat))
+            },
+            onLongClick = {
+                if (shouldUseTooltip) {
+                    isTooltipVisible = true
+                } else {
+                    onLongClick()
+                }
+            },
+        )
+        ChatListToolTip(
+            chatDetail = chat,
+            onOpenChatRequest = {
+                onOpenChatRequest(it)
+                isTooltipVisible = false
+            },
+            onDismissRequest = { isTooltipVisible = false },
+            expanded = isTooltipVisible,
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ChatListItem(
+    chat: ChatDetail,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+    onLongClick: () -> Unit = {},
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .then(
-                if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
-            )
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -95,5 +143,25 @@ fun ChatRow(
                 fontSize = 14.sp,
             )
         }
+    }
+}
+
+@Composable
+private fun ChatListToolTip(
+    chatDetail: ChatDetail,
+    onOpenChatRequest: (ChatOpenRequest) -> Unit,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    expanded: Boolean = false,
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+    ) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.open_in_new_window)) },
+            onClick = { onOpenChatRequest(ChatOpenRequest.openInNewWindow(chatDetail)) },
+        )
     }
 }

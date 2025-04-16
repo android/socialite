@@ -16,31 +16,27 @@
 
 package com.google.android.samples.socialite.ui
 
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
-import com.google.android.samples.socialite.model.extractChatId
+import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
@@ -55,20 +51,20 @@ import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
 
 @Composable
 fun Main(
-    shortcutParams: ShortcutParams?,
+    appArgs: AppArgs? = null,
 ) {
     val modifier = Modifier.fillMaxSize()
     SocialTheme {
-        MainNavigation(modifier, shortcutParams)
+        MainNavigation(modifier, appArgs)
     }
 }
 
 @Composable
 fun MainNavigation(
     modifier: Modifier,
-    shortcutParams: ShortcutParams?,
+    appArgs: AppArgs?,
 ) {
-    val activity = LocalContext.current as Activity
+    val activity = LocalActivity.current
     val navController = rememberNavController()
 
     navController.addOnDestinationChangedListener { _: NavController, destination: NavDestination, _: Bundle? ->
@@ -76,9 +72,9 @@ fun MainNavigation(
         // constant, even on orientation changes. Note that the camera is still aware of
         // orientation, and will assign the correct edge as the bottom of the photo or video.
         if (destination.hasRoute<Route.Camera>()) {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
         } else {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 
@@ -86,128 +82,114 @@ fun MainNavigation(
         navController = navController,
         modifier = modifier,
     ) {
-        NavHost(
+        NavigationTree(
             navController = navController,
-            startDestination = Route.Chats(null, null),
-            popExitTransition = {
-                scaleOut(
-                    targetScale = 0.9f,
-                    transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
-                )
-            },
-            popEnterTransition = {
-                EnterTransition.None
-            },
-        ) {
-            composable<Route.Chats>(
-                deepLinks = listOf(
-                    navDeepLink {
-                        action = Intent.ACTION_VIEW
-                        uriPattern = "https://socialite.google.com/chat/{chatId}"
-                    },
-                ),
-            ) { backStackEntry ->
-                val route: Route.Chats = backStackEntry.toRoute()
-                val chatId = route.chatId
-                ChatsListDetail(
-                    navController,
-                    chatId,
-                    modifier,
-                )
-            }
-
-            composable<Route.Timeline> {
-                Timeline(Modifier.fillMaxSize())
-            }
-
-            composable<Route.Settings> {
-                Settings(Modifier.fillMaxSize())
-            }
-
-            composable<Route.Camera> { backStackEntry ->
-                val route: Route.Camera = backStackEntry.toRoute()
-                val chatId = route.chatId
-                Camera(
-                    onMediaCaptured = { capturedMedia: Media? ->
-                        when (capturedMedia?.mediaType) {
-                            MediaType.PHOTO -> {
-                                navController.popBackStack()
-                            }
-
-                            MediaType.VIDEO -> {
-                                navController.navigate(
-                                    Route.VideoEdit(
-                                        chatId,
-                                        capturedMedia.uri.toString(),
-                                    ),
-                                )
-                            }
-
-                            else -> {
-                                // No media to use.
-                                navController.popBackStack()
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            // Invoke PhotoPicker to select photo or video from device gallery
-            photoPickerScreen(
-                onPhotoPicked = navController::popBackStack,
-            )
-
-            composable<Route.VideoEdit> { backStackEntry ->
-                val route: Route.VideoEdit = backStackEntry.toRoute()
-                val chatId = route.chatId
-                val videoUri = route.uri
-                VideoEditScreen(
-                    chatId = chatId,
-                    uri = videoUri,
-                    onCloseButtonClicked = { navController.popBackStack() },
-                    navController = navController,
-                )
-            }
-
-            composable<Route.VideoPlayer> { backStackEntry ->
-                val route: Route.VideoPlayer = backStackEntry.toRoute()
-                val videoUri = route.uri
-                VideoPlayerScreen(
-                    uri = videoUri,
-                    onCloseButtonClicked = { navController.popBackStack() },
-                )
-            }
-        }
+        )
     }
 
-    if (shortcutParams != null) {
-        val chatId = extractChatId(shortcutParams.shortcutId)
-        val text = shortcutParams.text
-        navController.navigate(Route.Chats(chatId, text))
+    LaunchedEffect(appArgs) {
+        if (appArgs != null) {
+            navController.navigate(appArgs.toRoute())
+        }
     }
 }
 
-data class ShortcutParams(
-    val shortcutId: String,
-    val text: String,
-)
+@Composable
+private fun NavigationTree(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Route.Chats(null, null),
+        popExitTransition = {
+            scaleOut(
+                targetScale = 0.9f,
+                transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
+            )
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        modifier = modifier,
+    ) {
+        composable<Route.Chats>(
+            deepLinks = listOf(
+                navDeepLink {
+                    action = Intent.ACTION_VIEW
+                    uriPattern = "https://socialite.google.com/chat/{chatId}"
+                },
+            ),
+        ) { backStackEntry ->
+            val route: Route.Chats = backStackEntry.toRoute()
+            val chatId = route.chatId
+            ChatsListDetail(
+                navController = navController,
+                chatId = chatId,
+            )
+        }
 
-object AnimationConstants {
-    private const val ENTER_MILLIS = 250
-    private const val EXIT_MILLIS = 250
+        composable<Route.Timeline> {
+            Timeline(Modifier.fillMaxSize())
+        }
 
-    val enterTransition = fadeIn(
-        animationSpec = tween(
-            durationMillis = ENTER_MILLIS,
-            easing = FastOutLinearInEasing,
-        ),
-    )
+        composable<Route.Settings> {
+            Settings(Modifier.fillMaxSize())
+        }
 
-    val exitTransition = fadeOut(
-        animationSpec = tween(
-            durationMillis = EXIT_MILLIS,
-            easing = FastOutSlowInEasing,
-        ),
-    )
+        composable<Route.Camera> { backStackEntry ->
+            val route: Route.Camera = backStackEntry.toRoute()
+            val chatId = route.chatId
+            Camera(
+                onMediaCaptured = { capturedMedia: Media? ->
+                    when (capturedMedia?.mediaType) {
+                        MediaType.PHOTO -> {
+                            navController.popBackStack()
+                        }
+
+                        MediaType.VIDEO -> {
+                            navController.navigate(
+                                Route.VideoEdit(
+                                    chatId,
+                                    capturedMedia.uri.toString(),
+                                ),
+                            )
+                        }
+
+                        else -> {
+                            // No media to use.
+                            navController.popBackStack()
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+
+        // Invoke PhotoPicker to select photo or video from device gallery
+        photoPickerScreen(
+            onPhotoPicked = navController::popBackStack,
+        )
+
+        composable<Route.VideoEdit> { backStackEntry ->
+            val route: Route.VideoEdit = backStackEntry.toRoute()
+            val chatId = route.chatId
+            val videoUri = route.uri
+            VideoEditScreen(
+                chatId = chatId,
+                uri = videoUri,
+                onCloseButtonClicked = { navController.popBackStack() },
+                navController = navController,
+            )
+        }
+
+        composable<Route.VideoPlayer> { backStackEntry ->
+            val route: Route.VideoPlayer = backStackEntry.toRoute()
+            val videoUri = route.uri
+            VideoPlayerScreen(
+                uri = videoUri,
+                onCloseButtonClicked = { navController.popBackStack() },
+            )
+        }
+    }
 }
