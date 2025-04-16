@@ -44,13 +44,11 @@ import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
-import com.google.android.samples.socialite.ui.chat.ChatScreen
-import com.google.android.samples.socialite.ui.home.chatlist.ChatList
+import com.google.android.samples.socialite.ui.home.ChatsListDetail
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.navigation.Route
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
-import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
 import com.google.android.samples.socialite.ui.photopicker.navigation.photoPickerScreen
 import com.google.android.samples.socialite.ui.player.VideoPlayerScreen
 import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
@@ -90,7 +88,7 @@ fun MainNavigation(
     ) {
         NavHost(
             navController = navController,
-            startDestination = Route.ChatsList,
+            startDestination = Route.Chats(null, null),
             popExitTransition = {
                 scaleOut(
                     targetScale = 0.9f,
@@ -101,10 +99,20 @@ fun MainNavigation(
                 EnterTransition.None
             },
         ) {
-            composable<Route.ChatsList> {
-                ChatList(
-                    onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
-                    modifier = Modifier.fillMaxSize(),
+            composable<Route.Chats>(
+                deepLinks = listOf(
+                    navDeepLink {
+                        action = Intent.ACTION_VIEW
+                        uriPattern = "https://socialite.google.com/chat/{chatId}"
+                    },
+                ),
+            ) { backStackEntry ->
+                val route: Route.Chats = backStackEntry.toRoute()
+                val chatId = route.chatId
+                ChatsListDetail(
+                    navController,
+                    chatId,
+                    modifier,
                 )
             }
 
@@ -114,28 +122,6 @@ fun MainNavigation(
 
             composable<Route.Settings> {
                 Settings(Modifier.fillMaxSize())
-            }
-
-            composable<Route.ChatThread>(
-                deepLinks = listOf(
-                    navDeepLink {
-                        action = Intent.ACTION_VIEW
-                        uriPattern = "https://socialite.google.com/chat/{chatId}"
-                    },
-                ),
-            ) { backStackEntry ->
-                val route: Route.ChatThread = backStackEntry.toRoute()
-                val chatId = route.chatId
-                ChatScreen(
-                    chatId = chatId,
-                    foreground = true,
-                    onBackPressed = { navController.popBackStack() },
-                    onCameraClick = { navController.navigate(Route.Camera(chatId)) },
-                    onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
-                    onVideoClick = { uri -> navController.navigate(Route.VideoPlayer(uri)) },
-                    prefilledText = route.text,
-                    modifier = Modifier.fillMaxSize(),
-                )
             }
 
             composable<Route.Camera> { backStackEntry ->
@@ -198,7 +184,7 @@ fun MainNavigation(
     if (shortcutParams != null) {
         val chatId = extractChatId(shortcutParams.shortcutId)
         val text = shortcutParams.text
-        navController.navigate(Route.ChatThread(chatId, text))
+        navController.navigate(Route.Chats(chatId, text))
     }
 }
 

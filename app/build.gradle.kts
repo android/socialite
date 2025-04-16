@@ -76,6 +76,10 @@ android {
 }
 
 dependencies {
+    implementation(libs.adaptive)
+    implementation(libs.adaptive.layout)
+    implementation(libs.adaptive.navigation)
+
     implementation(libs.core.ktx)
     implementation(libs.camera.extensions)
     implementation(libs.profileinstaller)
