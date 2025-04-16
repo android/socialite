@@ -25,8 +25,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
+import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.Main
-import com.google.android.samples.socialite.ui.ShortcutParams
+import com.google.android.samples.socialite.ui.navigation.Route
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -43,17 +44,57 @@ class MainActivity : ComponentActivity() {
         runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
         setContent {
             Main(
-                shortcutParams = extractShortcutParams(intent),
+                appArgs = extractAppArgs(intent),
             )
         }
     }
 
-    private fun extractShortcutParams(intent: Intent?): ShortcutParams? {
-        if (intent == null || intent.action != Intent.ACTION_SEND) return null
-        val shortcutId = intent.getStringExtra(
-            ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
-        ) ?: return null
-        val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
-        return ShortcutParams(shortcutId, text)
+    private fun extractAppArgs(intent: Intent?): AppArgs? {
+        if (intent == null) return null
+        return AppArgs.ShortcutParams.tryFrom(intent) ?: AppArgs.LaunchParams.tryFrom(intent)
+    }
+}
+
+sealed interface AppArgs {
+    fun toRoute(): Route
+
+    data class ShortcutParams(val shortcutId: String, val text: String) : AppArgs {
+        override fun toRoute(): Route {
+            val chatId = extractChatId(shortcutId)
+            return Route.Chats(chatId, text)
+        }
+
+        companion object {
+            fun tryFrom(intent: Intent): ShortcutParams? {
+                if (intent.action != Intent.ACTION_SEND) return null
+
+                val shortcutId = intent.getStringExtra(
+                    ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
+                )
+                val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+
+                return if (shortcutId != null && text != null) {
+                    ShortcutParams(shortcutId, text)
+                } else {
+                    null
+                }
+            }
+        }
+    }
+    data class LaunchParams(val chatId: Long) : AppArgs {
+        override fun toRoute() = Route.Chats(chatId, null)
+
+        companion object {
+            const val CHAT_ID_KEY = "chatId"
+
+            fun tryFrom(intent: Intent): LaunchParams? {
+                val chatId = intent.getLongExtra(CHAT_ID_KEY, -1)
+                return if (chatId != -1L) {
+                    LaunchParams(chatId)
+                } else {
+                    null
+                }
+            }
+        }
     }
 }
