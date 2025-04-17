@@ -17,7 +17,15 @@
 package com.google.android.samples.socialite.ui.home.chatlist
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipDescription
+import android.os.Build
+import android.view.View
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,10 +57,12 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.ui.home.HomeAppBar
 import com.google.android.samples.socialite.ui.home.HomeBackground
+import com.google.android.samples.socialite.ui.home.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 
 @Composable
@@ -88,6 +99,7 @@ fun ChatList(
 
     var selectedChatId by remember { mutableLongStateOf(0L) }
     val isBottomSheetVisible = selectedChatId != 0L && shouldUseBottomSheet
+    LocalActivity.current
 
     Scaffold(
         modifier = modifier,
@@ -113,18 +125,15 @@ fun ChatList(
                 }
             }
             items(items = chats) { chat ->
-                Box(
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
-                    ChatListItem(
-                        chat = chat,
-                        onOpenChatRequest = onOpenChatRequest,
-                        onLongClick = {
-                            selectedChatId = chat.chatWithLastMessage.id
-                        },
-                        shouldUseTooltip = !shouldUseBottomSheet,
-                    )
-                }
+                ChatListItem(
+                    chat = chat,
+                    onOpenChatRequest = onOpenChatRequest,
+                    onLongClick = {
+                        selectedChatId = chat.chatWithLastMessage.id
+                    },
+                    shouldUseMenu = !shouldUseBottomSheet,
+                    modifier = Modifier.draggableWithIntentToOpenChat(chatId = chat.chatWithLastMessage.id),
+                )
             }
         }
         AnimatedVisibility(isBottomSheetVisible) {
@@ -134,6 +143,59 @@ fun ChatList(
                 onDismissRequest = { selectedChatId = 0L },
             )
         }
+    }
+}
+
+@Composable
+private fun Modifier.draggableWithIntentToOpenChat(
+    chatId: Long,
+    activity: Activity? = LocalActivity.current,
+): Modifier {
+    return if (activity != null) {
+        draggableWithIntentToOpenChat(
+            params = AppArgs.LaunchParams(chatId),
+            activity = activity,
+        )
+    } else {
+        this
+    }
+}
+
+@Composable
+private fun Modifier.draggableWithIntentToOpenChat(
+    params: AppArgs.LaunchParams,
+    activity: Activity,
+): Modifier {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        dragAndDropSource { _ ->
+            val intent = activity.tryCreateIntentFrom(params)
+
+            val pendingIntent = PendingIntent.getActivity(
+                activity,
+                AppArgs.LaunchParams.REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE,
+            )
+            val item = ClipData.Item.Builder()
+                .setIntent(intent)
+                .setIntentSender(pendingIntent.intentSender)
+                .build()
+
+            val clipData = ClipData(
+                AppArgs.LaunchParams.INTENT_KEY,
+                arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
+                item,
+            )
+
+            DragAndDropTransferData(
+                clipData = clipData,
+                flags =
+                View.DRAG_FLAG_GLOBAL or
+                    View.DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG,
+            )
+        }
+    } else {
+        this
     }
 }
 

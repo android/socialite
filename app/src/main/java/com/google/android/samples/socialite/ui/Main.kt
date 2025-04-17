@@ -237,20 +237,28 @@ private fun handleOChatOpenRequest(
         }
 
         is ChatOpenRequest.NewWindow -> {
-            activity?.launchAnotherInstance(chatId = request.chatId)
+            activity?.launchAnotherInstance(request.toAppArgs())
         }
     }
 }
 
-private fun Activity.launchAnotherInstance(chatId: Long) {
-    val intent = packageManager.getLaunchIntentForPackage(packageName)
-    intent?.apply {
-        putExtra(AppArgs.LaunchParams.CHAT_ID_KEY, chatId)
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            flags = flags or Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
+internal fun Activity.tryCreateIntentFrom(params: AppArgs.LaunchParams): Intent? {
+    return Intent(Intent.ACTION_VIEW).apply {
+        component = componentName
+        putExtra(AppArgs.LaunchParams.CHAT_ID_KEY, params.chatId)
+        flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_MULTIPLE_TASK or
+                Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
+        } else {
+            Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_MULTIPLE_TASK
         }
     }
+}
+
+private fun Activity.launchAnotherInstance(params: AppArgs.LaunchParams) {
+    val intent = tryCreateIntentFrom(params)
     if (intent?.resolveActivity(packageManager) != null) {
         startActivity(intent)
     }

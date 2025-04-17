@@ -135,6 +135,8 @@ sealed interface AppArgs {
 
         companion object {
             const val CHAT_ID_KEY = "chatId"
+            const val INTENT_KEY = "AppArgs.LaunchParams"
+            const val REQUEST_CODE = 54321
 
             fun tryFrom(intent: Intent): LaunchParams? {
                 val chatId = intent.getLongExtra(CHAT_ID_KEY, -1)

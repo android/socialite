@@ -16,20 +16,22 @@
 
 package com.google.android.samples.socialite.ui.home.chatlist
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,50 +59,16 @@ fun ChatListItem(
     onOpenChatRequest: (ChatOpenRequest) -> Unit,
     modifier: Modifier = Modifier,
     onLongClick: () -> Unit = {},
-    shouldUseTooltip: Boolean = false,
-) {
-    var isTooltipVisible by remember { mutableStateOf(false) }
-
-    Box {
-        ChatListItem(
-            chat = chat,
-            modifier = modifier,
-            onClick = {
-                onOpenChatRequest(ChatOpenRequest.openInSameWindow(chat))
-            },
-            onLongClick = {
-                if (shouldUseTooltip) {
-                    isTooltipVisible = true
-                } else {
-                    onLongClick()
-                }
-            },
-        )
-        ChatListToolTip(
-            chatDetail = chat,
-            onOpenChatRequest = {
-                onOpenChatRequest(it)
-                isTooltipVisible = false
-            },
-            onDismissRequest = { isTooltipVisible = false },
-            expanded = isTooltipVisible,
-        )
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ChatListItem(
-    chat: ChatDetail,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
-    onLongClick: () -> Unit = {},
+    shouldUseMenu: Boolean = false,
 ) {
     Row(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-            .padding(16.dp),
+            .clickable {
+                onOpenChatRequest(ChatOpenRequest.openInSameWindow(chat))
+            }
+            .padding(16.dp)
+            .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -143,13 +111,52 @@ fun ChatListItem(
                 fontSize = 14.sp,
             )
         }
+        ChatListItemOptionButton(
+            chatDetail = chat,
+            onClick = onLongClick,
+            onChatOpenRequest = onOpenChatRequest,
+            enabled = shouldUseMenu,
+        )
     }
 }
 
 @Composable
-private fun ChatListToolTip(
+private fun ChatListItemOptionButton(
     chatDetail: ChatDetail,
-    onOpenChatRequest: (ChatOpenRequest) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onClick: () -> Unit = {},
+    onChatOpenRequest: (ChatOpenRequest) -> Unit = {},
+) {
+    var isMenuVisible by remember { mutableStateOf(false) }
+
+    IconButton(
+        onClick = {
+            if (enabled) {
+                isMenuVisible = !isMenuVisible
+            } else {
+                onClick()
+            }
+        },
+        modifier = modifier,
+    ) {
+        Icon(Icons.Default.MoreVert, stringResource(R.string.option))
+        ChatListOptionMenu(
+            chatDetail = chatDetail,
+            onDismissRequest = { isMenuVisible = false },
+            onChatOpenRequest = {
+                isMenuVisible = false
+                onChatOpenRequest(it)
+            },
+            expanded = isMenuVisible,
+        )
+    }
+}
+
+@Composable
+private fun ChatListOptionMenu(
+    chatDetail: ChatDetail,
+    onChatOpenRequest: (ChatOpenRequest) -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     expanded: Boolean = false,
@@ -161,7 +168,7 @@ private fun ChatListToolTip(
     ) {
         DropdownMenuItem(
             text = { Text(stringResource(R.string.open_in_new_window)) },
-            onClick = { onOpenChatRequest(ChatOpenRequest.openInNewWindow(chatDetail)) },
+            onClick = { onChatOpenRequest(ChatOpenRequest.openInNewWindow(chatDetail)) },
         )
     }
 }
