@@ -62,7 +62,7 @@ import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.ui.home.HomeAppBar
 import com.google.android.samples.socialite.ui.home.HomeBackground
-import com.google.android.samples.socialite.ui.home.tryCreateIntentFrom
+import com.google.android.samples.socialite.ui.home.createIntentFrom
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 
 @Composable
@@ -168,7 +168,7 @@ private fun Modifier.draggableWithIntentToOpenChat(
 ): Modifier {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
         dragAndDropSource { _ ->
-            val intent = activity.tryCreateIntentFrom(params)
+            val intent = activity.createIntentFrom(params)
 
             val pendingIntent = PendingIntent.getActivity(
                 activity,
