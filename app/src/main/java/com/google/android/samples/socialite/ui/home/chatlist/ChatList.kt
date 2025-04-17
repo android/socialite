@@ -99,7 +99,6 @@ fun ChatList(
 
     var selectedChatId by remember { mutableLongStateOf(0L) }
     val isBottomSheetVisible = selectedChatId != 0L && shouldUseBottomSheet
-    LocalActivity.current
 
     Scaffold(
         modifier = modifier,
