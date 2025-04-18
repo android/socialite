@@ -102,6 +102,8 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
+        videoTrimStart: Float,
+        videoTrimEnd: Float
     ) {
         val transformer = Transformer.Builder(context)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
@@ -143,8 +145,17 @@ class VideoEditScreenViewModel @Inject constructor(
             overlaysBuilder.add(textOverlay)
         }
 
+        val inputMediaItem = MediaItem.Builder()
+            .setUri(videoUri)
+            .setClippingConfiguration(
+                MediaItem.ClippingConfiguration.Builder()
+                    .setStartPositionMs(videoTrimStart.toLong())
+                    .setEndPositionMs(videoTrimEnd.toLong())
+                    .build())
+            .build()
+
         val editedMediaItem =
-            EditedMediaItem.Builder(MediaItem.fromUri(videoUri))
+            EditedMediaItem.Builder(inputMediaItem)
                 .setRemoveAudio(removeAudio)
                 .setEffects(Effects(listOf(), listOf(OverlayEffect(overlaysBuilder.build()))))
                 .build()
