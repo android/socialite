@@ -52,6 +52,8 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.RangeSliderState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -59,9 +61,11 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -84,7 +88,8 @@ import com.google.android.samples.socialite.R
 
 private const val TAG = "VideoEditScreen"
 
-@androidx.annotation.OptIn(UnstableApi::class)
+@ExperimentalMaterial3Api
+@androidx.annotation.OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun VideoEditScreen(
     chatId: Long,
@@ -108,6 +113,10 @@ fun VideoEditScreen(
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
+    var videoDuration = rememberSaveable { mutableStateOf(0L) }
+    var videoTrimStart by rememberSaveable { mutableStateOf(0F)}
+    var videoTrimEnd = rememberSaveable { mutableStateOf(0F)}
+
 
     Scaffold(
         topBar = {
@@ -120,6 +129,8 @@ fun VideoEditScreen(
                         textOverlayText = overlayText,
                         textOverlayRedSelected = redOverlayTextEnabled,
                         textOverlayLargeSelected = largeOverlayTextEnabled,
+                        videoTrimStart = videoTrimStart,
+                        videoTrimEnd = videoTrimEnd.value
                     )
                 },
                 onCloseButtonClicked = onCloseButtonClicked,
@@ -136,7 +147,7 @@ fun VideoEditScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(50.dp))
-            VideoMessagePreview(uri, isProcessing.value)
+            VideoMessagePreview(uri, isProcessing.value, videoDuration, videoTrimEnd)
             Spacer(modifier = Modifier.height(20.dp))
 
             Column(
@@ -172,6 +183,22 @@ fun VideoEditScreen(
                         largeOverlayTextEnabled = !largeOverlayTextEnabled
                     },
                 )
+                if (videoDuration.value > 0) {
+                    val rangeStart = "%.2f".format(videoTrimStart/1000.0)
+                    val rangeEnd = "%.2f".format(videoTrimEnd.value/1000.0)
+                    Text(text = "Video segment: $rangeStart s .. $rangeEnd s")
+                    RangeSlider(
+                        value = videoTrimStart..videoTrimEnd.value,
+                        valueRange = 0f..videoDuration.value.toFloat(),
+                        onValueChange = {
+                            videoTrimStart = it.start
+                            videoTrimEnd.value = it.endInclusive
+                        },
+                        steps = 0,
+                        enabled = true,
+                        modifier = Modifier
+                    )
+                }
             }
         }
     }
@@ -213,7 +240,7 @@ private fun VideoEditTopAppBar(
 }
 
 @Composable
-private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean) {
+private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean, duration: MutableState<Long>, trimEnd: MutableState<Float>) {
     // Render yellow box instead of frame of captured video for Preview purposes
     if (LocalInspectionMode.current) {
         Box(
@@ -227,6 +254,10 @@ private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean) {
 
     val mediaMetadataRetriever = MediaMetadataRetriever()
     mediaMetadataRetriever.setDataSource(LocalContext.current, Uri.parse(videoUri))
+
+    val time: String? = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+    duration.value = time?.toLong() ?: 0L
+    trimEnd.value = duration.value.toFloat()
 
     // Return any frame that the framework considers representative of a valid frame
     val bitmap = mediaMetadataRetriever.frameAtTime
@@ -253,7 +284,8 @@ private fun VideoMessagePreview(videoUri: String, isProcessing: Boolean) {
 
             if (isProcessing) {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier
+                        .align(Alignment.Center)
                         .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
                         .padding(8.dp),
                 )
@@ -339,6 +371,7 @@ private fun VideoEditFilterChip(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun VideoEditScreenPreview() {
