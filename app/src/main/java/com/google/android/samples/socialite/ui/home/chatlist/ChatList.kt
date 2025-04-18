@@ -25,7 +25,9 @@ import android.os.Build
 import android.view.View
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.draganddrop.dragAndDropSource
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -160,39 +162,43 @@ private fun Modifier.draggableWithIntentToOpenChat(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Modifier.draggableWithIntentToOpenChat(
     params: AppArgs.LaunchParams,
     activity: Activity,
 ): Modifier {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-        dragAndDropSource { _ ->
-            val intent = activity.createIntentFrom(params)
+        dragAndDropSource(block = {
+            detectDragGesturesAfterLongPress { _, _ ->
+                val intent = activity.createIntentFrom(params)
 
-            val pendingIntent = PendingIntent.getActivity(
-                activity,
-                AppArgs.LaunchParams.REQUEST_CODE,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE,
-            )
-            val item = ClipData.Item.Builder()
-                .setIntent(intent)
-                .setIntentSender(pendingIntent.intentSender)
-                .build()
+                val pendingIntent = PendingIntent.getActivity(
+                    activity,
+                    AppArgs.LaunchParams.REQUEST_CODE,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
+                val item = ClipData.Item.Builder()
+                    .setIntent(intent)
+                    .setIntentSender(pendingIntent.intentSender)
+                    .build()
 
-            val clipData = ClipData(
-                AppArgs.LaunchParams.INTENT_KEY,
-                arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
-                item,
-            )
+                val clipData = ClipData(
+                    AppArgs.LaunchParams.INTENT_KEY,
+                    arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
+                    item,
+                )
 
-            DragAndDropTransferData(
-                clipData = clipData,
-                flags =
-                View.DRAG_FLAG_GLOBAL or
-                    View.DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG,
-            )
-        }
+                val data = DragAndDropTransferData(
+                    clipData = clipData,
+                    flags =
+                    View.DRAG_FLAG_GLOBAL or
+                        View.DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG,
+                )
+                startTransfer(data)
+            }
+        })
     } else {
         this
     }
