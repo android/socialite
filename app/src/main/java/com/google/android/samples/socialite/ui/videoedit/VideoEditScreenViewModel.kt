@@ -124,22 +124,17 @@ class VideoEditScreenViewModel @Inject constructor(
             .addListener(transformerListener)
             .build()
 
-        val videoEffects =
-            buildVideoEffectsList(
-                context = context,
-                rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
-                periodicVignetteEffectSelected = periodicVignetteEffectSelected,
-                styleTransferEffectSelected = styleTransferEffectSelected,
-                textOverlayText = textOverlayText,
-                textOverlayRedSelected = textOverlayRedSelected,
-                textOverlayLargeSelected = textOverlayLargeSelected,
-            )
-
-        val editedMediaItem =
-            EditedMediaItem.Builder(MediaItem.fromUri(videoUri))
-                .setRemoveAudio(removeAudio)
-                .setEffects(Effects(listOf(), videoEffects))
-                .build()
+        val composition = prepareComposition(
+            context = context,
+            videoUri = videoUri,
+            removeAudio = removeAudio,
+            rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
+            periodicVignetteEffectSelected = periodicVignetteEffectSelected,
+            styleTransferEffectSelected = styleTransferEffectSelected,
+            textOverlayText = textOverlayText,
+            textOverlayRedSelected = textOverlayRedSelected,
+            textOverlayLargeSelected = textOverlayLargeSelected
+        )
 
         val editedVideoFileName = "Socialite-edited-recording-" +
             SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
@@ -149,7 +144,7 @@ class VideoEditScreenViewModel @Inject constructor(
 
         // TODO: Investigate using MediaStoreOutputOptions instead of external cache file for saving
         //  edited video https://github.com/androidx/media/issues/504
-        transformer.start(editedMediaItem, transformedVideoFilePath)
+        transformer.start(composition, transformedVideoFilePath)
         _isProcessing.value = true
     }
 
