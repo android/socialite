@@ -27,6 +27,7 @@ core = "1.15.0"
 core-performance = "1.0.0"
 core-splashscreen = "1.0.1"
 espresso = "3.6.1"
+download = "5.6.0"
 graphics = "1.0.1"
 hilt = "2.49"
 hiltNavigationCompose = "1.2.0"
@@ -134,3 +135,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
+download = { id = "de.undercouch.download", version.ref = "download" }
