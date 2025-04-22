@@ -64,7 +64,7 @@ fun ChatsListDetail(
 
     LaunchedEffect(LocalConfiguration.current) {
         val currentDestination = navigator.currentDestination
-        if(currentDestination != null) {
+        if (currentDestination != null) {
             navigator.navigateTo(currentDestination.pane, currentDestination.contentKey)
         }
     }
