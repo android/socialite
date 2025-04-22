@@ -61,6 +61,7 @@ import androidx.core.net.toUri
 import androidx.media3.effect.ByteBufferGlEffect
 import androidx.media3.effect.GlEffect
 import androidx.media3.effect.RgbAdjustment
+import androidx.media3.transformer.Composition.HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL
 
 private const val TAG = "VideoEditViewModel"
 
@@ -188,11 +189,17 @@ class VideoEditScreenViewModel @Inject constructor(
             )
 
         val editedMediaItem =
-            EditedMediaItem.Builder(mediaItem).setEffects(Effects(listOf(), videoEffects))
+            EditedMediaItem.Builder(mediaItem)
                 .setRemoveAudio(removeAudio).setDurationUs(durationUs).build()
-
         val videoImageSequence = EditedMediaItemSequence(editedMediaItem)
-        return Composition.Builder(videoImageSequence).build()
+
+        val compositionBuilder = Composition.Builder(videoImageSequence)
+        // Tone-map to SDR if style transfer is selected since it can only be applied for SDR videos
+        if (styleTransferEffectSelected) {
+            compositionBuilder.setHdrMode(HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL)
+        }
+        compositionBuilder.setEffects(Effects(listOf(), videoEffects))
+        return compositionBuilder.build()
     }
 
     @OptIn(UnstableApi::class)
