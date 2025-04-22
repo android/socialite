@@ -47,8 +47,16 @@ import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.util.concurrent.Future
 
+/**
+ * A [ByteBufferGlEffect.Processor] that applies a style transfer effect to video frames using
+ * a TensorFlow Lite model.
+ *
+ * The effect takes an input video frame and a style image, and outputs a new frame with the
+ * style of the style image applied.
+ */
+/* package */
 @UnstableApi
-class StyleTransferEffect(context: Context, styleAssetFileName: String) :
+internal class StyleTransferEffect(context: Context, styleAssetFileName: String) :
     ByteBufferGlEffect.Processor<Bitmap> {
 
     private val transformInterpreter: InterpreterApi

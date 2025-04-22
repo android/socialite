@@ -74,7 +74,7 @@ android {
         }
     }
     lintOptions {
-        disable("RestrictedApi")
+        disable("RestrictedApi") // Disabled to use Media3's CompositionPlayer API
     }
 }
 

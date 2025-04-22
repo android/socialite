@@ -87,6 +87,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
 
+/**
+ * Configuration options for video preview.
+ */
 @Immutable
 private data class VideoPreviewConfig(
     val uri: String,
@@ -127,6 +130,7 @@ fun VideoEditScreen(
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
 
+    // Create a VideoPreviewConfig based on the current state of the editing options
     val previewConfig = remember(
         removeAudioEnabled,
         rgbAdjustmentEffectEnabled,
@@ -152,6 +156,7 @@ fun VideoEditScreen(
         topBar = {
             VideoEditTopAppBar(
                 onSendButtonClicked = {
+                    // Trigger the video transformation process in the ViewModel
                     viewModel.applyVideoTransformation(
                         context = context,
                         videoUri = uri,
@@ -178,10 +183,12 @@ fun VideoEditScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(50.dp))
+            // Display the video preview with applied effects.
             VideoMessagePreview(
                 context,
                 previewConfig,
             ) { context, previewConfig ->
+                // Trigger composition preparation process in the viewModel
                 viewModel.prepareComposition(
                     context = context,
                     videoUri = previewConfig.uri,
@@ -251,6 +258,7 @@ fun VideoEditScreen(
         }
     }
 
+    // Show a loading indicator while the video is being processed.
     CenteredCircularProgressIndicator(isProcessing.value)
 }
 
@@ -289,6 +297,10 @@ private fun VideoEditTopAppBar(
     )
 }
 
+/**
+ * Preview of the video with applied effects. This composable uses Media3's [CompositionPlayer] to
+ * render the video with the specified edits.
+ */
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 private fun VideoMessagePreview(
@@ -308,6 +320,7 @@ private fun VideoMessagePreview(
     }
 
     val playerView = remember(context) { PlayerView(context) }
+    // CompositionPlayer is still under active development
     var compositionPlayer by remember { mutableStateOf<CompositionPlayer?>(null) }
 
     AndroidView(
@@ -323,13 +336,17 @@ private fun VideoMessagePreview(
     )
 
     LaunchedEffect(previewConfig) {
+        // Release the previous player instance if it exists
         compositionPlayer?.release()
+        // Create a new CompositionPlayer
         compositionPlayer = CompositionPlayer.Builder(context).build()
 
+        // Set the player to the PlayerView
         playerView.player = compositionPlayer
 
         val composition = prepareComposition(context, previewConfig)
 
+        // Set the composition to the player and start playback
         compositionPlayer?.setComposition(composition)
         compositionPlayer?.prepare()
         compositionPlayer?.play()
@@ -411,6 +428,10 @@ private fun VideoEditFilterChip(
     )
 }
 
+/**
+ * Circular progress indicator displayed in the center of the screen when the video is being
+ * processed. This provides visual feedback to the user that an operation is in progress.
+ */
 @Composable
 private fun CenteredCircularProgressIndicator(isProcessing: Boolean) {
     if (isProcessing) {

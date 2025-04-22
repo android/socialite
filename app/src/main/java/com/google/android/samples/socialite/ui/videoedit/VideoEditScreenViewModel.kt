@@ -153,6 +153,10 @@ class VideoEditScreenViewModel @Inject constructor(
         _isProcessing.value = true
     }
 
+    /**
+     * Prepares the video composition with the specified edits. This method is used to configure the
+     * video for preview.
+     */
     @OptIn(UnstableApi::class)
     fun prepareComposition(
         context: Context,
@@ -165,18 +169,20 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayLargeSelected: Boolean,
     ): Composition {
         val mediaItem = MediaItem.fromUri(videoUri)
+        // Try to retrieve the video duration
         val retriever = MediaMetadataRetriever()
         val durationUs = try {
             retriever.setDataSource(context, videoUri.toUri())
             val durationStr =
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            durationStr?.toLongOrNull()?.times(1000) ?: 0L // Convert to microseconds
+            durationStr?.toLongOrNull()?.times(1000) ?: 0L
         } catch (e: Exception) {
             Log.e(TAG, "Error retrieving duration of video")
             0L
         } finally {
             retriever.release()
         }
+        // Build the list of video effects to apply
         val videoEffects =
             buildVideoEffectsList(
                 context = context,
@@ -202,6 +208,9 @@ class VideoEditScreenViewModel @Inject constructor(
         return compositionBuilder.build()
     }
 
+    /**
+     * Builds a list of video effects based on the selected options.
+     */
     @OptIn(UnstableApi::class)
     private fun buildVideoEffectsList(
         context: Context,
@@ -215,6 +224,7 @@ class VideoEditScreenViewModel @Inject constructor(
         val videoEffects: MutableList<GlEffect> = mutableListOf()
         val overlaysBuilder = ImmutableList.Builder<TextureOverlay>()
 
+        // Add text overlay effect if text is provided
         if (textOverlayText.isNotEmpty()) {
             val spannableStringBuilder = SpannableStringBuilder(textOverlayText)
 
@@ -249,7 +259,9 @@ class VideoEditScreenViewModel @Inject constructor(
         }
         videoEffects.add(OverlayEffect(overlaysBuilder.build()))
 
+        // Add RGB adjustment effect if selected
         if (rgbAdjustmentEffectSelected) {
+            // Create an RgbAdjustment effect to modify the color balance
             videoEffects.add(
                 RgbAdjustment.Builder()
                     .setRedScale(1.5f)
@@ -257,22 +269,27 @@ class VideoEditScreenViewModel @Inject constructor(
                     .setBlueScale(0.8f).build(),
             )
         }
+        // Add periodic vignette effect if selected
         if (periodicVignetteEffectSelected) {
+            // Create a GlEffect that applies a vignette effect that changes over time
+            // The shader program for this effect is defined in PeriodicVignetteShaderProgram
             videoEffects.add(
                 GlEffect { context: Context?, useHdr: Boolean ->
                     PeriodicVignetteShaderProgram(
-                        context,
-                        useHdr,
-                        0.5f,
-                        0.5f,
-                        0f,
-                        0.7f,
-                        0.7f,
+                        context = context,
+                        useHdr = useHdr,
+                        centerX = 0.5f,
+                        centerY = 0.5f,
+                        minInnerRadius = 0f,
+                        maxInnerRadius = 0.7f,
+                        outerRadius = 0.7f,
                     )
                 },
             )
         }
+        // Add style transfer effect if selected
         if (styleTransferEffectSelected) {
+            // Apply a style transfer effect using a TensorFlow Lite model
             videoEffects.add(ByteBufferGlEffect<Bitmap>(StyleTransferEffect(context, "style.jpg")))
         }
 
