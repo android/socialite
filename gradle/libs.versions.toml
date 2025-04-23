@@ -15,7 +15,7 @@
 [versions]
 accompanist = "0.32.0"
 activity = "1.10.1"
-agp = "8.9.1"
+agp = "8.9.2"
 benchmarkMacroJunit4 = "1.3.4"
 baselineprofile = "1.3.4"
 camera = "1.5.0-alpha06"
@@ -35,7 +35,7 @@ kotlin = "2.1.10"
 kotlinxSerializationJson = "1.8.1"
 ksp = "2.1.10-1.0.30"
 lifecycle = "2.8.7"
-android-material3 = "1.13.0-alpha12"
+android-material3 = "1.13.0-alpha13"
 material3 = "1.3.2"
 media3 = "1.6.1"
 navigation = "2.8.9"
@@ -106,6 +106,7 @@ media3-effect = { group = "androidx.media3", name = "media3-effect", version.ref
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
+media3-ui-compose = { group = "androidx.media3", name = "media3-ui-compose", version.ref = "media3" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
