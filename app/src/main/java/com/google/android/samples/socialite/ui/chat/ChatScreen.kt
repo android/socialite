@@ -60,7 +60,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -442,19 +441,19 @@ private fun MessageBubble(
     val indication = remember { ripple() }
 
     Surface(
-        modifier = modifier.then(
-            if (mimeType != null && mimeType.contains("video")) {
-                Modifier.clickable(
-                    interactionSource = interactionSource,
-                    indication = indication,
-                    onClick = onVideoClick,
-                )
-            } else {
-                Modifier
-                    .focusable(interactionSource = interactionSource)
-                    .indication(interactionSource = interactionSource, indication = indication)
-            },
-        ),
+        modifier = modifier
+            .then(
+                if (mimeType != null && mimeType.contains("video")) {
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = indication,
+                        onClick = onVideoClick,
+                    )
+                } else {
+                    Modifier.focusable(interactionSource = interactionSource)
+                },
+            )
+            .indication(interactionSource = interactionSource, indication = indication),
         color = if (message.isIncoming) {
             MaterialTheme.colorScheme.secondaryContainer
         } else {
@@ -481,7 +480,7 @@ private fun MessageBubble(
                     } else if (mimeType.contains("video")) {
                         VideoMessagePreview(
                             videoUri = message.mediaUri,
-                            onClick = {},
+                            onClick = onVideoClick,
                         )
                     } else {
                         Log.e(TAG, "Unrecognized media type")
@@ -495,7 +494,11 @@ private fun MessageBubble(
 }
 
 @Composable
-private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
+private fun VideoMessagePreview(
+    videoUri: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current.applicationContext
 
     // Running on an IO thread for loading metadata from remote urls to reduce lag time
@@ -516,7 +519,7 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
 
     bitmapState.value?.let { bitmap ->
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .clickable(onClick = onClick)
                 .padding(10.dp),
         ) {
