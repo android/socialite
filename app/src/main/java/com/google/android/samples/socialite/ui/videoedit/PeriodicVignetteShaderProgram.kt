@@ -43,7 +43,6 @@ import kotlin.math.cos
  *
  * The parameters are given in normalized texture coordinates from 0 to 1.
  */
-/* package */
 @UnstableApi
 internal class PeriodicVignetteShaderProgram(
     context: Context?,
@@ -54,7 +53,10 @@ internal class PeriodicVignetteShaderProgram(
     maxInnerRadius: Float,
     outerRadius: Float,
 ) : BaseGlShaderProgram(
-    /* useHighPrecisionColorComponents= */ useHdr,  /* texturePoolCapacity= */ 1,
+    /* useHighPrecisionColorComponents= */
+    useHdr,
+    /* texturePoolCapacity= */
+    1,
 ) {
     private var glProgram: GlProgram
     private val minInnerRadius: Float
@@ -90,14 +92,25 @@ internal class PeriodicVignetteShaderProgram(
     override fun drawFrame(inputTexId: Int, presentationTimeUs: Long) {
         try {
             glProgram.use()
-            glProgram.setSamplerTexIdUniform("uTexSampler", inputTexId,  /* texUnitIndex= */0)
+            glProgram.setSamplerTexIdUniform(
+                "uTexSampler",
+                inputTexId,
+                /* texUnitIndex= */
+                0
+            )
             val theta = presentationTimeUs * 2 * Math.PI / DIMMING_PERIOD_US
             val innerRadius =
                 minInnerRadius + deltaInnerRadius * (0.5f - 0.5f * cos(theta).toFloat())
             glProgram.setFloatsUniform("uInnerRadius", floatArrayOf(innerRadius))
             glProgram.bindAttributesAndUniforms()
             // The four-vertex triangle strip forms a quad.
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP,  /* first= */0,  /* count= */4)
+            GLES20.glDrawArrays(
+                GLES20.GL_TRIANGLE_STRIP,
+                /* first= */
+                0,
+                /* count= */
+                4
+            )
         } catch (e: GlException) {
             throw VideoFrameProcessingException(e, presentationTimeUs)
         }

@@ -54,7 +54,6 @@ import java.util.concurrent.Future
  * The effect takes an input video frame and a style image, and outputs a new frame with the
  * style of the style image applied.
  */
-/* package */
 @UnstableApi
 internal class StyleTransferEffect(context: Context, styleAssetFileName: String) :
     ByteBufferGlEffect.Processor<Bitmap> {
