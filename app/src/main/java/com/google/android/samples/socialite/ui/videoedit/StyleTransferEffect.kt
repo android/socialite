@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableMap
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import java.util.concurrent.Future
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.InterpreterApi
@@ -45,7 +46,6 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.util.concurrent.Future
 
 /**
  * A [ByteBufferGlEffect.Processor] that applies a style transfer effect to video frames using
@@ -77,7 +77,6 @@ internal class StyleTransferEffect(context: Context, styleAssetFileName: String)
 
     private var inputWidth: Int = 0
     private var inputHeight: Int = 0
-
 
     init {
         val options = Interpreter.Options()

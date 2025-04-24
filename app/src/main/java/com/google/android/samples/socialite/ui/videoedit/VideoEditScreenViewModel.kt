@@ -28,16 +28,21 @@ import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.ByteBufferGlEffect
+import androidx.media3.effect.GlEffect
 import androidx.media3.effect.OverlayEffect
+import androidx.media3.effect.RgbAdjustment
 import androidx.media3.effect.TextOverlay
 import androidx.media3.effect.TextureOverlay
 import androidx.media3.transformer.Composition
+import androidx.media3.transformer.Composition.HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL
 import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.Effects
@@ -57,11 +62,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
-import androidx.media3.effect.ByteBufferGlEffect
-import androidx.media3.effect.GlEffect
-import androidx.media3.effect.RgbAdjustment
-import androidx.media3.transformer.Composition.HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL
 
 private const val TAG = "VideoEditViewModel"
 
@@ -133,7 +133,7 @@ class VideoEditScreenViewModel @Inject constructor(
             styleTransferEffectSelected = styleTransferEffectSelected,
             textOverlayText = textOverlayText,
             textOverlayRedSelected = textOverlayRedSelected,
-            textOverlayLargeSelected = textOverlayLargeSelected
+            textOverlayLargeSelected = textOverlayLargeSelected,
         )
 
         val editedVideoFileName = "Socialite-edited-recording-" +
@@ -155,7 +155,8 @@ class VideoEditScreenViewModel @Inject constructor(
     @OptIn(UnstableApi::class)
     fun prepareComposition(
         context: Context,
-        videoUri: String, removeAudio: Boolean,
+        videoUri: String,
+        removeAudio: Boolean,
         rgbAdjustmentEffectSelected: Boolean,
         periodicVignetteEffectSelected: Boolean,
         styleTransferEffectSelected: Boolean,

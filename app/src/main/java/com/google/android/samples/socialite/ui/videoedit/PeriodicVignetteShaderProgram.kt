@@ -25,11 +25,10 @@ import androidx.media3.common.util.GlUtil
 import androidx.media3.common.util.GlUtil.GlException
 import androidx.media3.common.util.Size
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.effect.GlShaderProgram
 import androidx.media3.effect.BaseGlShaderProgram
+import androidx.media3.effect.GlShaderProgram
 import java.io.IOException
 import kotlin.math.cos
-
 
 /**
  * A [GlShaderProgram] that periodically dims the frames such that pixels are darker the
@@ -96,7 +95,7 @@ internal class PeriodicVignetteShaderProgram(
                 "uTexSampler",
                 inputTexId,
                 /* texUnitIndex= */
-                0
+                0,
             )
             val theta = presentationTimeUs * 2 * Math.PI / DIMMING_PERIOD_US
             val innerRadius =
@@ -109,7 +108,7 @@ internal class PeriodicVignetteShaderProgram(
                 /* first= */
                 0,
                 /* count= */
-                4
+                4,
             )
         } catch (e: GlException) {
             throw VideoFrameProcessingException(e, presentationTimeUs)
