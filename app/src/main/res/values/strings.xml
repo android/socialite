@@ -19,6 +19,7 @@
     <string name="timeline">Timeline</string>
     <string name="chats">Chats</string>
     <string name="settings">Settings</string>
+    <string name="chat">Chat</string>
 
     <!-- Timeline -->
     <eat-comment/>
@@ -74,5 +75,10 @@
     <string name="gemini_error">Gemini error (%1$s)</string>
     <string name="image_error">Can\'t open image</string>
     <string name="unknown_error">Unknown error</string>
+
+    <!-- Keyboard shortcuts helper -->
+    <string name="send_message">Send message</string>
+    <string name="page_up">Page up</string>
+    <string name="page_down">Page down</string>
 
 </resources>

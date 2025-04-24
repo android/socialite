@@ -19,6 +19,10 @@ package com.google.android.samples.socialite
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.KeyboardShortcutGroup
+import android.view.KeyboardShortcutInfo
+import android.view.Menu
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -52,6 +56,51 @@ class MainActivity : ComponentActivity() {
     private fun extractAppArgs(intent: Intent?): AppArgs? {
         if (intent == null) return null
         return AppArgs.ShortcutParams.tryFrom(intent) ?: AppArgs.LaunchParams.tryFrom(intent)
+    }
+
+    override fun onProvideKeyboardShortcuts(
+        data: MutableList<KeyboardShortcutGroup?>?,
+        menu: Menu?,
+        deviceId: Int,
+    ) {
+        data?.add(provideChatShortcuts())
+    }
+
+    private fun provideChatShortcuts(): KeyboardShortcutGroup? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            KeyboardShortcutGroup(
+                resources.getString(R.string.chat),
+                listOf(
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.send_message),
+                        KeyEvent.KEYCODE_ENTER,
+                        KeyEvent.META_SHIFT_ON,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_up),
+                        KeyEvent.KEYCODE_PAGE_UP,
+                        0,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_up),
+                        KeyEvent.KEYCODE_DPAD_UP,
+                        KeyEvent.META_SHIFT_ON,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_down),
+                        KeyEvent.KEYCODE_PAGE_DOWN,
+                        0,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_down),
+                        KeyEvent.KEYCODE_DPAD_DOWN,
+                        KeyEvent.META_SHIFT_ON,
+                    ),
+                ),
+            )
+        } else {
+            null
+        }
     }
 }
 

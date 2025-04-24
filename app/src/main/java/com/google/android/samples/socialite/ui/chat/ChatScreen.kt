@@ -24,6 +24,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,17 +47,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -67,18 +74,29 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -90,11 +108,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
@@ -102,8 +120,11 @@ import com.google.android.samples.socialite.data.ChatWithLastMessage
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.ui.SocialTheme
+import com.google.android.samples.socialite.ui.chat.component.isKeyPressed
 import com.google.android.samples.socialite.ui.rememberIconPainter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val TAG = "ChatUI"
@@ -192,9 +213,22 @@ private fun ChatContent(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+    val scrollState = rememberLazyListState()
+    val focusRequester = remember { FocusRequester() }
+
     Scaffold(
         modifier = modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .scrollWithKeyboards(
+                scrollState = scrollState,
+                coroutineScope = rememberCoroutineScope(),
+            )
+            .focusProperties {
+                onEnter = {
+                    focusRequester.tryRequestFocus()
+                }
+            }
+            .focusGroup(),
         topBar = {
             ChatAppBar(
                 chat = chat,
@@ -208,6 +242,7 @@ private fun ChatContent(
             MessageList(
                 messages = messages,
                 contentPadding = innerPadding.copy(layoutDirection, bottom = 16.dp),
+                state = scrollState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -223,9 +258,74 @@ private fun ChatContent(
                 sendEnabled = sendEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.ime.exclude(WindowInsets.navigationBars)),
+                    .windowInsetsPadding(WindowInsets.ime.exclude(WindowInsets.navigationBars))
+                    .focusRequester(focusRequester),
             )
         }
+    }
+}
+
+fun FocusRequester.tryRequestFocus(): Result<Unit> {
+    return try {
+        requestFocus()
+        Result.success(Unit)
+    } catch (e: IllegalArgumentException) {
+        Result.failure(e)
+    }
+}
+
+private fun Modifier.scrollWithKeyboards(
+    scrollState: LazyListState,
+    coroutineScope: CoroutineScope,
+): Modifier {
+    return onKeyEvent { event ->
+        if (event.type == KeyEventType.KeyUp) {
+            when {
+                event.isKeyPressed(Key.DirectionDown, shouldShiftBePressed = true) -> {
+                    scrollState.pageDown(coroutineScope)
+                    true
+                }
+
+                event.isKeyPressed(Key.PageDown) -> {
+                    scrollState.pageDown(coroutineScope)
+                    true
+                }
+
+                event.isKeyPressed(Key.DirectionUp, shouldShiftBePressed = true) -> {
+                    scrollState.pageUp(coroutineScope)
+                    true
+                }
+
+                event.isKeyPressed(Key.PageUp) -> {
+                    scrollState.pageUp(coroutineScope)
+                    true
+                }
+
+                else -> false
+            }
+        } else {
+            false
+        }
+    }
+}
+
+private fun LazyListState.pageUp(
+    coroutineScope: CoroutineScope,
+    fraction: Float = 0.8f,
+) {
+    val amount = layoutInfo.viewportSize.height * fraction
+    coroutineScope.launch {
+        animateScrollBy(amount)
+    }
+}
+
+private fun LazyListState.pageDown(
+    coroutineScope: CoroutineScope,
+    fraction: Float = 0.8f,
+) {
+    val amount = -layoutInfo.viewportSize.height * fraction
+    coroutineScope.launch {
+        animateScrollBy(amount)
     }
 }
 
@@ -294,6 +394,7 @@ private fun MessageList(
     messages: List<ChatMessage>,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
     onVideoClick: (uri: String) -> Unit = {},
 ) {
     LazyColumn(
@@ -301,6 +402,7 @@ private fun MessageList(
         contentPadding = contentPadding,
         reverseLayout = true,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
+        state = state,
     ) {
         items(items = messages) { message ->
             Row(
@@ -334,8 +436,24 @@ private fun MessageBubble(
     modifier: Modifier = Modifier,
     onVideoClick: () -> Unit = {},
 ) {
+    val mimeType = message.mediaMimeType
+    val interactionSource = remember { MutableInteractionSource() }
+    val indication = remember { ripple() }
+
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .then(
+                if (mimeType != null && mimeType.contains("video")) {
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = indication,
+                        onClick = onVideoClick,
+                    )
+                } else {
+                    Modifier.focusable(interactionSource = interactionSource)
+                },
+            )
+            .indication(interactionSource = interactionSource, indication = indication),
         color = if (message.isIncoming) {
             MaterialTheme.colorScheme.secondaryContainer
         } else {
@@ -348,7 +466,6 @@ private fun MessageBubble(
         ) {
             Text(text = message.text)
             if (message.mediaUri != null) {
-                val mimeType = message.mediaMimeType
                 if (mimeType != null) {
                     if (mimeType.contains("image")) {
                         AsyncImage(
@@ -377,7 +494,11 @@ private fun MessageBubble(
 }
 
 @Composable
-private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
+private fun VideoMessagePreview(
+    videoUri: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current.applicationContext
 
     // Running on an IO thread for loading metadata from remote urls to reduce lag time
@@ -389,7 +510,7 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
             if (videoUri.contains("https://")) {
                 mediaMetadataRetriever.setDataSource(videoUri, HashMap<String, String>())
             } else { // Locally saved files
-                mediaMetadataRetriever.setDataSource(context, Uri.parse(videoUri))
+                mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
             }
             // Return any frame that the framework considers representative of a valid frame
             value = mediaMetadataRetriever.frameAtTime
@@ -398,7 +519,7 @@ private fun VideoMessagePreview(videoUri: String, onClick: () -> Unit) {
 
     bitmapState.value?.let { bitmap ->
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .clickable(onClick = onClick)
                 .padding(10.dp),
         ) {
@@ -432,8 +553,16 @@ private fun InputBar(
     onPhotoPickerClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val focusRequester = remember { FocusRequester() }
+
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .focusProperties {
+                onEnter = {
+                    focusRequester.tryRequestFocus()
+                }
+            }
+            .focusGroup(),
         tonalElevation = 3.dp,
     ) {
         Row(
@@ -460,9 +589,6 @@ private fun InputBar(
             TextField(
                 value = input,
                 onValueChange = onInputChanged,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(56.dp),
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                     imeAction = ImeAction.Send,
@@ -477,6 +603,22 @@ private fun InputBar(
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent,
                 ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .focusRequester(focusRequester)
+                    .onPreviewKeyEvent { event ->
+                        when {
+                            event.isKeyPressed(Key.Enter, shouldShiftBePressed = true) -> {
+                                onSendClick()
+                                true
+                            }
+
+                            else -> {
+                                false
+                            }
+                        }
+                    },
             )
             FilledIconButton(
                 onClick = onSendClick,
@@ -484,7 +626,7 @@ private fun InputBar(
                 enabled = sendEnabled,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Send,
+                    imageVector = Icons.AutoMirrored.Filled.Send,
                     contentDescription = null,
                 )
             }
