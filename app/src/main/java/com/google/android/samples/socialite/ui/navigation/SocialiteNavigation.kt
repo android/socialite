@@ -16,6 +16,7 @@
 
 package com.google.android.samples.socialite.ui.navigation
 
+import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -28,98 +29,99 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination.Companion.isTopLevel
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
-sealed interface Route {
+sealed interface Screen : Parcelable {
+    @Parcelize
     @Serializable
-    data object Timeline : Route
+    data object Timeline : Screen
 
+    @Parcelize
     @Serializable
-    data object Settings : Route
+    data object ChatsList : Screen
 
+    @Parcelize
     @Serializable
-    data object Home : Route
+    data object Settings : Screen
 
+    @Parcelize
     @Serializable
-    data class Chats(val chatId: Long?, val text: String? = null) : Route
+    data object Home : Screen
 
+    @Parcelize
     @Serializable
-    data class Camera(val chatId: Long) : Route
+    data class ChatThread(val chatId: Long, val text: String? = null) : Screen
 
+    @Parcelize
     @Serializable
-    data class PhotoPicker(val chatId: Long) : Route
+    data class Camera(val chatId: Long) : Screen
 
+    @Parcelize
     @Serializable
-    data class VideoEdit(val chatId: Long, val uri: String) : Route
+    data class PhotoPicker(val chatId: Long) : Screen
 
+    @Parcelize
     @Serializable
-    data class VideoPlayer(val uri: String) : Route
+    data class VideoEdit(val chatId: Long, val uri: String) : Screen
+
+    @Parcelize
+    @Serializable
+    data class VideoPlayer(val uri: String) : Screen
 }
 
 enum class TopLevelDestination(
-    val route: Route,
+    val screen: Screen,
     @StringRes val label: Int,
     val imageVector: ImageVector,
 ) {
     Timeline(
-        route = Route.Timeline,
+        screen = Screen.Timeline,
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
-    ChatsListDetail(
-        route = Route.Chats(null, null),
+    ChatsList(
+        screen = Screen.ChatsList,
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
     ),
     Settings(
-        route = Route.Settings,
+        screen = Screen.Settings,
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
     ),
     ;
 
     companion object {
-        val START_DESTINATION = ChatsListDetail
+        val START_DESTINATION = ChatsList
 
-        fun fromNavDestination(destination: NavDestination?): TopLevelDestination {
-            return entries.find { dest ->
-                destination?.hierarchy?.any {
-                    it.hasRoute(dest.route::class)
-                } == true
-            } ?: START_DESTINATION
+        fun fromScreen(screen: Screen?): TopLevelDestination {
+            return entries.find { it.screen::class == screen?.let { r -> r::class } }
+                ?: START_DESTINATION
         }
 
-        fun NavDestination.isTopLevel(): Boolean {
-            return entries.any {
-                hasRoute(it.route::class)
-            }
+        fun Screen.isTopLevel(): Boolean {
+            return TopLevelDestination.entries.any { it.screen::class == this::class }
         }
     }
 }
 
 private fun calculateNavigationLayoutType(
-    destination: NavDestination?,
+    screen: Screen?,
     defaultLayoutType: NavigationSuiteType,
 ): NavigationSuiteType {
     return when {
-        destination == null -> defaultLayoutType
+        screen == null -> defaultLayoutType
         // Never show navigation UI on Camera.
-        destination.hasRoute<Route.Camera>() -> NavigationSuiteType.None
+        screen::class == Screen.Camera::class -> NavigationSuiteType.None
         // Top level destinations can show any layout type.
-        destination.isTopLevel() -> defaultLayoutType
-        // Every other destination goes through a ChatsListDetail. Hide the bottom nav bar
+        screen.isTopLevel() -> defaultLayoutType
+        // Every other destination goes through a ChatThread. Hide the bottom nav bar
         // since it interferes with composing chat messages.
         defaultLayoutType == NavigationSuiteType.NavigationBar -> NavigationSuiteType.None
         else -> defaultLayoutType
@@ -128,18 +130,17 @@ private fun calculateNavigationLayoutType(
 
 @Composable
 fun SocialiteNavSuite(
-    navController: NavController,
+    backStack: MutableList<Screen>,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val destination = navBackStackEntry?.destination
+    val currentScreen = backStack.lastOrNull()
+    val topLevelDestination = TopLevelDestination.fromScreen(currentScreen)
 
-    val topLevelDestination = TopLevelDestination.fromNavDestination(destination)
     val defaultLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
     )
-    val layoutType = calculateNavigationLayoutType(destination, defaultLayoutType)
+    val layoutType = calculateNavigationLayoutType(currentScreen, defaultLayoutType)
 
     NavigationSuiteScaffold(
         modifier = modifier,
@@ -151,10 +152,7 @@ fun SocialiteNavSuite(
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            navController.navigate(it.route) {
-                                popUpTo(navController.graph.findStartDestination().id)
-                                launchSingleTop = true
-                            }
+                            backStack.add(it.screen)
                         }
                     },
                     icon = {

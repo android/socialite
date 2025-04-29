@@ -92,7 +92,7 @@ fun ChatList(
     Scaffold(
         modifier = modifier,
         topBar = {
-            HomeAppBar(title = stringResource(TopLevelDestination.ChatsListDetail.label))
+            HomeAppBar(title = stringResource(TopLevelDestination.ChatsList.label))
         },
     ) { contentPadding ->
         HomeBackground(modifier = Modifier.fillMaxSize())

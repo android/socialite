@@ -16,38 +16,43 @@
 
 package com.google.android.samples.socialite.ui
 
+import android.app.Activity
 import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.os.Bundle
+import android.os.Build
 import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navDeepLink
-import androidx.navigation.toRoute
+import androidx.navigation3.NavEntry
+import androidx.navigation3.SceneNavDisplay
 import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
-import com.google.android.samples.socialite.ui.home.ChatsListDetail
+import com.google.android.samples.socialite.ui.chat.ChatScreen
+import com.google.android.samples.socialite.ui.home.chatlist.ChatList
+import com.google.android.samples.socialite.ui.home.chatlist.ChatOpenRequest
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
-import com.google.android.samples.socialite.ui.navigation.Route
+import com.google.android.samples.socialite.ui.navigation.ListDetailPaneScaffoldSceneStrategy
+import com.google.android.samples.socialite.ui.navigation.Screen
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
-import com.google.android.samples.socialite.ui.photopicker.navigation.photoPickerScreen
+import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
+import com.google.android.samples.socialite.ui.navigation.rememberListDetailSceneStrategy
+import com.google.android.samples.socialite.ui.photopicker.navigation.PhotoPickerRoute
 import com.google.android.samples.socialite.ui.player.VideoPlayerScreen
 import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun Main(
@@ -59,137 +64,191 @@ fun Main(
     }
 }
 
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun MainNavigation(
     modifier: Modifier,
     appArgs: AppArgs?,
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ) {
     val activity = LocalActivity.current
-    val navController = rememberNavController()
-
-    navController.addOnDestinationChangedListener { _: NavController, destination: NavDestination, _: Bundle? ->
-        // Lock the layout of the Camera screen to portrait so that the UI layout remains
-        // constant, even on orientation changes. Note that the camera is still aware of
-        // orientation, and will assign the correct edge as the bottom of the photo or video.
-        if (destination.hasRoute<Route.Camera>()) {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-        } else {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
-    }
+    val backStack = rememberSavableMutableStateListOf(TopLevelDestination.START_DESTINATION.screen)
 
     SocialiteNavSuite(
-        navController = navController,
         modifier = modifier,
+        backStack = backStack,
     ) {
-        NavigationTree(
-            navController = navController,
+        SceneNavDisplay(
+            backStack = backStack,
+            onBack = { repeat(it) { backStack.removeLastOrNull() } },
+            sceneStrategy = rememberListDetailSceneStrategy(
+                onBack = { repeat(it) { backStack.removeLastOrNull() } },
+            ),
+            entryProvider = { backStackKey ->
+                when (backStackKey) {
+                    is Screen.Timeline -> NavEntry(backStackKey) {
+                        Timeline(Modifier.fillMaxSize())
+                    }
+
+                    is Screen.Settings -> NavEntry(backStackKey) {
+                        Settings(Modifier.fillMaxSize())
+                    }
+
+                    is Screen.ChatsList -> NavEntry(
+                        key = backStackKey,
+                        metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
+                            ListDetailPaneScaffoldRole.List
+                        ),
+                    ) {
+                        ChatList(
+                            onOpenChatRequest = { request ->
+                                handleOChatOpenRequest(
+                                    request = request,
+                                    onOpenInSameWindow = { chatId ->
+                                        backStack.add(Screen.ChatThread(chatId = chatId))
+                                    },
+                                    activity = activity,
+                                    coroutineScope = coroutineScope,
+                                )
+                            },
+                        )
+                    }
+
+                    is Screen.ChatThread -> NavEntry(
+                        key = backStackKey,
+                        metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
+                            ListDetailPaneScaffoldRole.Detail
+                        ),
+                    ) {
+                        ChatScreen(
+                            chatId = backStackKey.chatId,
+                            foreground = true,
+                            onBackPressed = { backStack.removeLastOrNull() },
+                            onCameraClick = { backStack.add(Screen.Camera(backStackKey.chatId)) },
+                            onPhotoPickerClick = { backStack.add(Screen.PhotoPicker(backStackKey.chatId)) },
+                            onVideoClick = { uri -> backStack.add(Screen.VideoPlayer(uri))},
+                            prefilledText = backStackKey.text,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+
+                    is Screen.Camera -> NavEntry(backStackKey) {
+                        val chatId = backStackKey.chatId
+                        Camera(
+                            chatId = backStackKey.chatId,
+                            onMediaCaptured = { capturedMedia: Media? ->
+                                when (capturedMedia?.mediaType) {
+                                    MediaType.PHOTO -> {
+                                        backStack.removeLastOrNull()
+                                    }
+
+                                    MediaType.VIDEO -> {
+                                        backStack.add(
+                                            Screen.VideoEdit(
+                                                chatId,
+                                                capturedMedia.uri.toString(),
+                                            )
+                                        )
+                                    }
+
+                                    else -> {
+                                        // No media to use.
+                                        backStack.removeLastOrNull()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+
+                    is Screen.PhotoPicker -> NavEntry(backStackKey) {
+                        PhotoPickerRoute(
+                            chatId = backStackKey.chatId,
+                            onPhotoPicked = { backStack.removeLastOrNull() },
+                        )
+                    }
+
+                    is Screen.VideoEdit -> NavEntry(backStackKey) {
+                        VideoEditScreen(
+                            chatId = backStackKey.chatId,
+                            uri = backStackKey.uri,
+                            onCloseButtonClicked = { backStack.removeLastOrNull() },
+                            onFinishEditing = {
+                                var screen = backStack.lastOrNull()
+                                while (screen != null
+                                    && (screen !is Screen.ChatThread
+                                        || screen.chatId != backStackKey.chatId)) {
+                                    backStack.removeLastOrNull()
+                                    screen = backStack.lastOrNull()
+                                }
+                            }
+                        )
+                    }
+
+                    is Screen.VideoPlayer -> NavEntry(backStackKey) {
+                        VideoPlayerScreen(
+                            uri = backStackKey.uri,
+                            onCloseButtonClicked = { backStack.removeLastOrNull() }
+                        )
+                    }
+
+                    else -> NavEntry(backStackKey) {
+                        Text("Unknown screen: $backStackKey")
+                    }
+                }
+            }
         )
     }
 
     LaunchedEffect(appArgs) {
         if (appArgs != null) {
-            navController.navigate(appArgs.toRoute())
+            backStack.add(appArgs.toScreen())
         }
     }
 }
 
 @Composable
-private fun NavigationTree(
-    navController: NavHostController,
-    modifier: Modifier = Modifier,
+fun <T : Any> rememberSavableMutableStateListOf(vararg elements: T): SnapshotStateList<T> {
+    return rememberSaveable(saver = snapshotStateListSaver()) {
+        elements.toList().toMutableStateList()
+    }
+}
+
+private fun <T : Any> snapshotStateListSaver() =
+    listSaver<SnapshotStateList<T>, T>(
+        save = { stateList -> stateList.toList() },
+        restore = { it.toMutableStateList() },
+    )
+
+private fun handleOChatOpenRequest(
+    request: ChatOpenRequest,
+    onOpenInSameWindow: (chatId: Long) -> Unit,
+    activity: Activity?,
+    coroutineScope: CoroutineScope,
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = Route.Chats(null, null),
-        popExitTransition = {
-            scaleOut(
-                targetScale = 0.9f,
-                transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
-            )
-        },
-        popEnterTransition = {
-            EnterTransition.None
-        },
-        modifier = modifier,
-    ) {
-        composable<Route.Chats>(
-            deepLinks = listOf(
-                navDeepLink {
-                    action = Intent.ACTION_VIEW
-                    uriPattern = "https://socialite.google.com/chat/{chatId}"
-                },
-            ),
-        ) { backStackEntry ->
-            val route: Route.Chats = backStackEntry.toRoute()
-            val chatId = route.chatId
-            ChatsListDetail(
-                navController = navController,
-                chatId = chatId,
-            )
+    when (request) {
+        is ChatOpenRequest.SameWindow -> {
+            coroutineScope.launch {
+                onOpenInSameWindow(request.chatId)
+            }
         }
 
-        composable<Route.Timeline> {
-            Timeline(Modifier.fillMaxSize())
+        is ChatOpenRequest.NewWindow -> {
+            activity?.launchAnotherInstance(chatId = request.chatId)
         }
+    }
+}
 
-        composable<Route.Settings> {
-            Settings(Modifier.fillMaxSize())
+private fun Activity.launchAnotherInstance(chatId: Long) {
+    val intent = packageManager.getLaunchIntentForPackage(packageName)
+    intent?.apply {
+        putExtra(AppArgs.LaunchParams.CHAT_ID_KEY, chatId)
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            flags = flags or Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
         }
-
-        composable<Route.Camera> { backStackEntry ->
-            val route: Route.Camera = backStackEntry.toRoute()
-            val chatId = route.chatId
-            Camera(
-                onMediaCaptured = { capturedMedia: Media? ->
-                    when (capturedMedia?.mediaType) {
-                        MediaType.PHOTO -> {
-                            navController.popBackStack()
-                        }
-
-                        MediaType.VIDEO -> {
-                            navController.navigate(
-                                Route.VideoEdit(
-                                    chatId,
-                                    capturedMedia.uri.toString(),
-                                ),
-                            )
-                        }
-
-                        else -> {
-                            // No media to use.
-                            navController.popBackStack()
-                        }
-                    }
-                },
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-
-        // Invoke PhotoPicker to select photo or video from device gallery
-        photoPickerScreen(
-            onPhotoPicked = navController::popBackStack,
-        )
-
-        composable<Route.VideoEdit> { backStackEntry ->
-            val route: Route.VideoEdit = backStackEntry.toRoute()
-            val chatId = route.chatId
-            val videoUri = route.uri
-            VideoEditScreen(
-                chatId = chatId,
-                uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
-                navController = navController,
-            )
-        }
-
-        composable<Route.VideoPlayer> { backStackEntry ->
-            val route: Route.VideoPlayer = backStackEntry.toRoute()
-            val videoUri = route.uri
-            VideoPlayerScreen(
-                uri = videoUri,
-                onCloseButtonClicked = { navController.popBackStack() },
-            )
-        }
+    }
+    if (intent?.resolveActivity(packageManager) != null) {
+        startActivity(intent)
     }
 }

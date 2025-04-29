@@ -31,7 +31,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
 import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.Main
-import com.google.android.samples.socialite.ui.navigation.Route
+import com.google.android.samples.socialite.ui.navigation.Screen
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -105,12 +105,12 @@ class MainActivity : ComponentActivity() {
 }
 
 sealed interface AppArgs {
-    fun toRoute(): Route
+    fun toScreen(): Screen
 
     data class ShortcutParams(val shortcutId: String, val text: String) : AppArgs {
-        override fun toRoute(): Route {
+        override fun toScreen(): Screen {
             val chatId = extractChatId(shortcutId)
-            return Route.Chats(chatId, text)
+            return Screen.ChatThread(chatId, text)
         }
 
         companion object {
@@ -131,7 +131,7 @@ sealed interface AppArgs {
         }
     }
     data class LaunchParams(val chatId: Long) : AppArgs {
-        override fun toRoute() = Route.Chats(chatId, null)
+        override fun toScreen() = Screen.ChatThread(chatId, null)
 
         companion object {
             const val CHAT_ID_KEY = "chatId"
