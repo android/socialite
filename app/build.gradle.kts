@@ -24,6 +24,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
+    alias(libs.plugins.download)
 }
 
 kotlin {
@@ -73,6 +74,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    lintOptions {
+        disable("RestrictedApi") // Disabled to use Media3's CompositionPlayer API
+    }
+}
+
+project.ext.set("ASSET_DIR", "$projectDir/src/main/assets")
+project.ext.set("TEST_ASSETS_DIR", "$projectDir/src/androidTest/assets")
+// Download default models; if you wish to use your own models then
+// place them in the "assets" directory and comment out this line.
+apply {
+    from("download_model.gradle")
 }
 
 dependencies {
@@ -82,6 +94,9 @@ dependencies {
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
+    implementation(libs.litert)
+    implementation(libs.litert.gpu)
+    implementation(libs.litert.support.api)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
