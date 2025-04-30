@@ -51,7 +51,6 @@ import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
@@ -72,13 +71,11 @@ class CameraViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
     private val cameraProviderManager: CameraXProcessCameraProviderManager,
     private val repository: ChatRepository,
-    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private lateinit var camera: Camera
     private lateinit var extensionsManager: ExtensionsManager
     private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
-    val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
 
     val aspectRatioStrategy =
@@ -145,10 +142,6 @@ class CameraViewModel @Inject constructor(
         return supportedHdrEncoding
     }
 
-    fun setChatId(chatId: Long) {
-        savedStateHandle.set("chatId", chatId)
-    }
-
     fun startPreview(
         lifecycleOwner: LifecycleOwner,
         captureMode: CaptureMode,
@@ -212,7 +205,7 @@ class CameraViewModel @Inject constructor(
         videoCaptureUseCase.targetRotation = rotation
     }
 
-    fun capturePhoto(onMediaCaptured: (Media) -> Unit) {
+    fun capturePhoto(chatId: Long, onMediaCaptured: (Media) -> Unit) {
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
             .format(System.currentTimeMillis())
@@ -245,7 +238,10 @@ class CameraViewModel @Inject constructor(
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = output.savedUri
                     if (savedUri != null) {
-                        sendPhotoMessage(savedUri.toString())
+                        sendPhotoMessage(
+                            photoUri = savedUri.toString(),
+                            chatId = chatId,
+                        )
                         onMediaCaptured(Media(savedUri, MediaType.PHOTO))
                     } else {
                         val msg = "Photo capture failed."
@@ -290,16 +286,14 @@ class CameraViewModel @Inject constructor(
             .start(ContextCompat.getMainExecutor(context), captureListener)
     }
 
-    fun sendPhotoMessage(photoUri: String) {
+    fun sendPhotoMessage(photoUri: String, chatId: Long) {
         viewModelScope.launch {
-            if (chatId != null) {
-                repository.sendMessage(
-                    chatId = chatId,
-                    text = "",
-                    mediaUri = photoUri,
-                    mediaMimeType = "image/jpeg",
-                )
-            }
+            repository.sendMessage(
+                chatId = chatId,
+                text = "",
+                mediaUri = photoUri,
+                mediaMimeType = "image/jpeg",
+            )
         }
     }
 
