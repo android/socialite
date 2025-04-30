@@ -44,7 +44,7 @@ import com.google.android.samples.socialite.ui.home.chatlist.ChatOpenRequest
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.navigation.ListDetailPaneScaffoldSceneStrategy
-import com.google.android.samples.socialite.ui.navigation.Screen
+import com.google.android.samples.socialite.ui.navigation.Pane
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 import com.google.android.samples.socialite.ui.navigation.rememberListDetailSceneStrategy
@@ -72,7 +72,7 @@ fun MainNavigation(
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ) {
     val activity = LocalActivity.current
-    val backStack = rememberSavableMutableStateListOf(TopLevelDestination.START_DESTINATION.screen)
+    val backStack = rememberSavableMutableStateListOf(TopLevelDestination.START_DESTINATION.pane)
 
     SocialiteNavSuite(
         modifier = modifier,
@@ -86,15 +86,15 @@ fun MainNavigation(
             ),
             entryProvider = { backStackKey ->
                 when (backStackKey) {
-                    is Screen.Timeline -> NavEntry(backStackKey) {
+                    is Pane.Timeline -> NavEntry(backStackKey) {
                         Timeline(Modifier.fillMaxSize())
                     }
 
-                    is Screen.Settings -> NavEntry(backStackKey) {
+                    is Pane.Settings -> NavEntry(backStackKey) {
                         Settings(Modifier.fillMaxSize())
                     }
 
-                    is Screen.ChatsList -> NavEntry(
+                    is Pane.ChatsList -> NavEntry(
                         key = backStackKey,
                         metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
                             ListDetailPaneScaffoldRole.List
@@ -105,7 +105,7 @@ fun MainNavigation(
                                 handleOChatOpenRequest(
                                     request = request,
                                     onOpenInSameWindow = { chatId ->
-                                        backStack.add(Screen.ChatThread(chatId = chatId))
+                                        backStack.add(Pane.ChatThread(chatId = chatId))
                                     },
                                     activity = activity,
                                     coroutineScope = coroutineScope,
@@ -114,7 +114,7 @@ fun MainNavigation(
                         )
                     }
 
-                    is Screen.ChatThread -> NavEntry(
+                    is Pane.ChatThread -> NavEntry(
                         key = backStackKey,
                         metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
                             ListDetailPaneScaffoldRole.Detail
@@ -124,15 +124,15 @@ fun MainNavigation(
                             chatId = backStackKey.chatId,
                             foreground = true,
                             onBackPressed = { backStack.removeLastOrNull() },
-                            onCameraClick = { backStack.add(Screen.Camera(backStackKey.chatId)) },
-                            onPhotoPickerClick = { backStack.add(Screen.PhotoPicker(backStackKey.chatId)) },
-                            onVideoClick = { uri -> backStack.add(Screen.VideoPlayer(uri))},
+                            onCameraClick = { backStack.add(Pane.Camera(backStackKey.chatId)) },
+                            onPhotoPickerClick = { backStack.add(Pane.PhotoPicker(backStackKey.chatId)) },
+                            onVideoClick = { uri -> backStack.add(Pane.VideoPlayer(uri))},
                             prefilledText = backStackKey.text,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
 
-                    is Screen.Camera -> NavEntry(backStackKey) {
+                    is Pane.Camera -> NavEntry(backStackKey) {
                         val chatId = backStackKey.chatId
                         Camera(
                             chatId = backStackKey.chatId,
@@ -144,7 +144,7 @@ fun MainNavigation(
 
                                     MediaType.VIDEO -> {
                                         backStack.add(
-                                            Screen.VideoEdit(
+                                            Pane.VideoEdit(
                                                 chatId,
                                                 capturedMedia.uri.toString(),
                                             )
@@ -161,31 +161,31 @@ fun MainNavigation(
                         )
                     }
 
-                    is Screen.PhotoPicker -> NavEntry(backStackKey) {
+                    is Pane.PhotoPicker -> NavEntry(backStackKey) {
                         PhotoPickerRoute(
                             chatId = backStackKey.chatId,
                             onPhotoPicked = { backStack.removeLastOrNull() },
                         )
                     }
 
-                    is Screen.VideoEdit -> NavEntry(backStackKey) {
+                    is Pane.VideoEdit -> NavEntry(backStackKey) {
                         VideoEditScreen(
                             chatId = backStackKey.chatId,
                             uri = backStackKey.uri,
                             onCloseButtonClicked = { backStack.removeLastOrNull() },
                             onFinishEditing = {
-                                var screen = backStack.lastOrNull()
-                                while (screen != null
-                                    && (screen !is Screen.ChatThread
-                                        || screen.chatId != backStackKey.chatId)) {
+                                var pane = backStack.lastOrNull()
+                                while (pane != null
+                                    && (pane !is Pane.ChatThread
+                                        || pane.chatId != backStackKey.chatId)) {
                                     backStack.removeLastOrNull()
-                                    screen = backStack.lastOrNull()
+                                    pane = backStack.lastOrNull()
                                 }
                             }
                         )
                     }
 
-                    is Screen.VideoPlayer -> NavEntry(backStackKey) {
+                    is Pane.VideoPlayer -> NavEntry(backStackKey) {
                         VideoPlayerScreen(
                             uri = backStackKey.uri,
                             onCloseButtonClicked = { backStack.removeLastOrNull() }
@@ -193,7 +193,7 @@ fun MainNavigation(
                     }
 
                     else -> NavEntry(backStackKey) {
-                        Text("Unknown screen: $backStackKey")
+                        Text("Unknown pane: $backStackKey")
                     }
                 }
             }
@@ -202,7 +202,7 @@ fun MainNavigation(
 
     LaunchedEffect(appArgs) {
         if (appArgs != null) {
-            backStack.add(appArgs.toScreen())
+            backStack.add(appArgs.toPane())
         }
     }
 }

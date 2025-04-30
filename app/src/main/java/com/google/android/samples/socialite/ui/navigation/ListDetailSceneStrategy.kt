@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// TODO: Remove this when ListDetailSceneStrategy is merged into Navigation 3
+
 @file:OptIn(ExperimentalMaterial3AdaptiveApi::class)
 
 package com.google.android.samples.socialite.ui.navigation

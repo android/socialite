@@ -37,61 +37,61 @@ import com.google.android.samples.socialite.ui.navigation.TopLevelDestination.Co
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
-sealed interface Screen : Parcelable {
+sealed interface Pane : Parcelable {
     @Parcelize
     @Serializable
-    data object Timeline : Screen
+    data object Timeline : Pane
 
     @Parcelize
     @Serializable
-    data object ChatsList : Screen
+    data object ChatsList : Pane
 
     @Parcelize
     @Serializable
-    data object Settings : Screen
+    data object Settings : Pane
 
     @Parcelize
     @Serializable
-    data object Home : Screen
+    data object Home : Pane
 
     @Parcelize
     @Serializable
-    data class ChatThread(val chatId: Long, val text: String? = null) : Screen
+    data class ChatThread(val chatId: Long, val text: String? = null) : Pane
 
     @Parcelize
     @Serializable
-    data class Camera(val chatId: Long) : Screen
+    data class Camera(val chatId: Long) : Pane
 
     @Parcelize
     @Serializable
-    data class PhotoPicker(val chatId: Long) : Screen
+    data class PhotoPicker(val chatId: Long) : Pane
 
     @Parcelize
     @Serializable
-    data class VideoEdit(val chatId: Long, val uri: String) : Screen
+    data class VideoEdit(val chatId: Long, val uri: String) : Pane
 
     @Parcelize
     @Serializable
-    data class VideoPlayer(val uri: String) : Screen
+    data class VideoPlayer(val uri: String) : Pane
 }
 
 enum class TopLevelDestination(
-    val screen: Screen,
+    val pane: Pane,
     @StringRes val label: Int,
     val imageVector: ImageVector,
 ) {
     Timeline(
-        screen = Screen.Timeline,
+        pane = Pane.Timeline,
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
     ChatsList(
-        screen = Screen.ChatsList,
+        pane = Pane.ChatsList,
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
     ),
     Settings(
-        screen = Screen.Settings,
+        pane = Pane.Settings,
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
     ),
@@ -100,27 +100,27 @@ enum class TopLevelDestination(
     companion object {
         val START_DESTINATION = ChatsList
 
-        fun fromScreen(screen: Screen?): TopLevelDestination {
-            return entries.find { it.screen::class == screen?.let { r -> r::class } }
+        fun fromPane(pane: Pane?): TopLevelDestination {
+            return entries.find { it.pane::class == pane?.let { r -> r::class } }
                 ?: START_DESTINATION
         }
 
-        fun Screen.isTopLevel(): Boolean {
-            return TopLevelDestination.entries.any { it.screen::class == this::class }
+        fun Pane.isTopLevel(): Boolean {
+            return TopLevelDestination.entries.any { it.pane::class == this::class }
         }
     }
 }
 
 private fun calculateNavigationLayoutType(
-    screen: Screen?,
+    pane: Pane?,
     defaultLayoutType: NavigationSuiteType,
 ): NavigationSuiteType {
     return when {
-        screen == null -> defaultLayoutType
+        pane == null -> defaultLayoutType
         // Never show navigation UI on Camera.
-        screen::class == Screen.Camera::class -> NavigationSuiteType.None
+        pane::class == Pane.Camera::class -> NavigationSuiteType.None
         // Top level destinations can show any layout type.
-        screen.isTopLevel() -> defaultLayoutType
+        pane.isTopLevel() -> defaultLayoutType
         // Every other destination goes through a ChatThread. Hide the bottom nav bar
         // since it interferes with composing chat messages.
         defaultLayoutType == NavigationSuiteType.NavigationBar -> NavigationSuiteType.None
@@ -130,17 +130,17 @@ private fun calculateNavigationLayoutType(
 
 @Composable
 fun SocialiteNavSuite(
-    backStack: MutableList<Screen>,
+    backStack: MutableList<Pane>,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val currentScreen = backStack.lastOrNull()
-    val topLevelDestination = TopLevelDestination.fromScreen(currentScreen)
+    val currentPane = backStack.lastOrNull()
+    val topLevelDestination = TopLevelDestination.fromPane(currentPane)
 
     val defaultLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
     )
-    val layoutType = calculateNavigationLayoutType(currentScreen, defaultLayoutType)
+    val layoutType = calculateNavigationLayoutType(currentPane, defaultLayoutType)
 
     NavigationSuiteScaffold(
         modifier = modifier,
@@ -152,7 +152,7 @@ fun SocialiteNavSuite(
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            backStack.add(it.screen)
+                            backStack.add(it.pane)
                         }
                     },
                     icon = {
