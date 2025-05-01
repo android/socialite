@@ -17,8 +17,6 @@
 package com.google.android.samples.socialite.ui
 
 import android.app.Activity
-import android.content.Intent
-import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -35,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.NavEntry
 import androidx.navigation3.SceneNavDisplay
 import com.google.android.samples.socialite.AppArgs
+import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
@@ -237,20 +236,13 @@ private fun handleOChatOpenRequest(
         }
 
         is ChatOpenRequest.NewWindow -> {
-            activity?.launchAnotherInstance(chatId = request.chatId)
+            activity?.launchAnotherInstance(request.toAppArgs())
         }
     }
 }
 
-private fun Activity.launchAnotherInstance(chatId: Long) {
-    val intent = packageManager.getLaunchIntentForPackage(packageName)
-    intent?.apply {
-        putExtra(AppArgs.LaunchParams.CHAT_ID_KEY, chatId)
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            flags = flags or Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
-        }
-    }
+private fun Activity.launchAnotherInstance(params: AppArgs.LaunchParams) {
+    val intent = tryCreateIntentFrom(params)
     if (intent?.resolveActivity(packageManager) != null) {
         startActivity(intent)
     }

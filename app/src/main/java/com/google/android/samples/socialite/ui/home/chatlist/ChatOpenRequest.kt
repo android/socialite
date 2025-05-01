@@ -16,13 +16,18 @@
 
 package com.google.android.samples.socialite.ui.home.chatlist
 
+import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.model.ChatDetail
 
 sealed interface ChatOpenRequest {
     val chatId: Long
 
     data class SameWindow(override val chatId: Long) : ChatOpenRequest
-    data class NewWindow(override val chatId: Long) : ChatOpenRequest
+    data class NewWindow(override val chatId: Long) : ChatOpenRequest {
+        fun toAppArgs(): AppArgs.LaunchParams {
+            return AppArgs.LaunchParams(chatId)
+        }
+    }
 
     companion object {
         fun openInNewWindow(chatDetail: ChatDetail) = NewWindow(chatDetail.chatWithLastMessage.id)

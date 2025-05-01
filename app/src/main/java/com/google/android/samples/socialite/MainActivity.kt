@@ -26,12 +26,9 @@ import android.view.Menu
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
-import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.Main
-import com.google.android.samples.socialite.ui.navigation.Pane
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
@@ -100,50 +97,6 @@ class MainActivity : ComponentActivity() {
             )
         } else {
             null
-        }
-    }
-}
-
-sealed interface AppArgs {
-    fun toPane(): Pane
-
-    data class ShortcutParams(val shortcutId: String, val text: String) : AppArgs {
-        override fun toPane(): Pane {
-            val chatId = extractChatId(shortcutId)
-            return Pane.ChatThread(chatId, text)
-        }
-
-        companion object {
-            fun tryFrom(intent: Intent): ShortcutParams? {
-                if (intent.action != Intent.ACTION_SEND) return null
-
-                val shortcutId = intent.getStringExtra(
-                    ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
-                )
-                val text = intent.getStringExtra(Intent.EXTRA_TEXT)
-
-                return if (shortcutId != null && text != null) {
-                    ShortcutParams(shortcutId, text)
-                } else {
-                    null
-                }
-            }
-        }
-    }
-    data class LaunchParams(val chatId: Long) : AppArgs {
-        override fun toPane() = Pane.ChatThread(chatId, null)
-
-        companion object {
-            const val CHAT_ID_KEY = "chatId"
-
-            fun tryFrom(intent: Intent): LaunchParams? {
-                val chatId = intent.getLongExtra(CHAT_ID_KEY, -1)
-                return if (chatId != -1L) {
-                    LaunchParams(chatId)
-                } else {
-                    null
-                }
-            }
         }
     }
 }

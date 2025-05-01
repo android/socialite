@@ -49,6 +49,7 @@
     <string name="back">Back</string>
     <string name="message">Message</string>
     <string name="open_in_new_window">Open in new window</string>
+    <string name="option">Option</string>
 
     <!-- Settings -->
     <eat-comment />
