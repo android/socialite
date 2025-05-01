@@ -193,18 +193,18 @@ internal class ListDetailPaneScaffoldScene<T : Any>(
                 // Back event leaves the scaffold
                 return OnBackResult(
                     previousScaffoldValue = null,
-                    previousEntries = allEntries.subList(0, index + 1).toList()
+                    previousEntries = allEntries.subList(0, index + 1).toList(),
                 )
             }
             if (index == prevDestAbsoluteIndex) {
                 // Back event stays within the scaffold -- handled internally
                 val previousScaffoldValue =
                     calculateScaffoldValue(
-                        destinationHistory = entriesAsNavItems.subList(0, prevDestRelativeIndex + 1)
+                        destinationHistory = entriesAsNavItems.subList(0, prevDestRelativeIndex + 1),
                     )
                 return OnBackResult(
                     previousScaffoldValue = previousScaffoldValue,
-                    previousEntries = allEntries.subList(0, index + 1).toList()
+                    previousEntries = allEntries.subList(0, index + 1).toList(),
                 )
             }
         }
@@ -232,7 +232,7 @@ internal class ListDetailPaneScaffoldScene<T : Any>(
                     val previousValue =
                         calculateScaffoldValue(
                             destinationHistory =
-                                entriesAsNavItems.subList(0, previousDestinationIndex + 1),
+                            entriesAsNavItems.subList(0, previousDestinationIndex + 1),
                         )
                     if (previousValue != currentScaffoldValue) {
                         return previousDestinationIndex
@@ -255,7 +255,7 @@ internal class ListDetailPaneScaffoldScene<T : Any>(
                     val previousValue =
                         calculateScaffoldValue(
                             destinationHistory =
-                                entriesAsNavItems.subList(0, previousDestinationIndex + 1),
+                            entriesAsNavItems.subList(0, previousDestinationIndex + 1),
                         )
                     if (previousValue != currentScaffoldValue) {
                         return previousDestinationIndex
@@ -267,7 +267,7 @@ internal class ListDetailPaneScaffoldScene<T : Any>(
     }
 
     private fun calculateScaffoldValue(
-        destinationHistory: List<ThreePaneScaffoldDestinationItem<*>>
+        destinationHistory: List<ThreePaneScaffoldDestinationItem<*>>,
     ): ThreePaneScaffoldValue =
         calculateThreePaneScaffoldValue(
             maxHorizontalPartitions = directive.maxHorizontalPartitions,
@@ -287,10 +287,10 @@ internal class ListDetailPaneScaffoldScene<T : Any>(
                 progress.collect { backEvent ->
                     scaffoldState.seekTo(
                         fraction =
-                            backProgressToStateProgress(
-                                progress = backEvent.progress,
-                                scaffoldValue = scaffoldValue,
-                            ),
+                        backProgressToStateProgress(
+                            progress = backEvent.progress,
+                            scaffoldValue = scaffoldValue,
+                        ),
                         targetState = previousScaffoldValue!!,
                     )
                 }
@@ -320,15 +320,15 @@ internal class ListDetailPaneScaffoldScene<T : Any>(
             directive = directive,
             scaffoldState = scaffoldState,
             listPane =
-                lastList?.content?.let {
-                    {
-                        // TODO: allow customizing AnimatedPane params
-                        AnimatedPane { it.invoke(lastList.key) }
-                    }
-                } ?: {},
+            lastList?.content?.let {
+                {
+                    // TODO: allow customizing AnimatedPane params
+                    AnimatedPane { it.invoke(lastList.key) }
+                }
+            } ?: {},
             detailPane =
-                lastDetail?.content?.let { { AnimatedPane { it.invoke(lastDetail.key) } } }
-                    ?: detailPlaceholder,
+            lastDetail?.content?.let { { AnimatedPane { it.invoke(lastDetail.key) } } }
+                ?: detailPlaceholder,
             extraPane = lastExtra?.content?.let { { AnimatedPane { it.invoke(lastExtra.key) } } },
             // TODO: drag handle/pane expansion state
         )
@@ -350,11 +350,11 @@ private fun backProgressToStateProgress(
     progress: Float,
     scaffoldValue: ThreePaneScaffoldValue,
 ): Float =
-    ThreePaneScaffoldPredictiveBackEasing.transform(progress) *
+    THREE_PANE_SCAFFOLD_PREDICTIVE_BACK_EASING.transform(progress) *
         when (scaffoldValue.expandedCount) {
-            1 -> SinglePaneProgressRatio
-            2 -> DualPaneProgressRatio
-            else -> TriplePaneProgressRatio
+            1 -> SINGLE_PANE_PROGRESS_RATIO
+            2 -> DUAL_PANE_PROGRESS_RATIO
+            else -> TRIPLE_PANE_PROGRESS_RATIO
         }
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
@@ -373,7 +373,7 @@ private val ThreePaneScaffoldValue.expandedCount: Int
         return count
     }
 
-private val ThreePaneScaffoldPredictiveBackEasing: Easing = CubicBezierEasing(0.1f, 0.1f, 0f, 1f)
-private const val SinglePaneProgressRatio: Float = 0.1f
-private const val DualPaneProgressRatio: Float = 0.15f
-private const val TriplePaneProgressRatio: Float = 0.2f
+private val THREE_PANE_SCAFFOLD_PREDICTIVE_BACK_EASING: Easing = CubicBezierEasing(0.1f, 0.1f, 0f, 1f)
+private const val SINGLE_PANE_PROGRESS_RATIO: Float = 0.1f
+private const val DUAL_PANE_PROGRESS_RATIO: Float = 0.15f
+private const val TRIPLE_PANE_PROGRESS_RATIO: Float = 0.2f

@@ -97,7 +97,7 @@ fun MainNavigation(
                     is Pane.ChatsList -> NavEntry(
                         key = backStackKey,
                         metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
-                            ListDetailPaneScaffoldRole.List
+                            ListDetailPaneScaffoldRole.List,
                         ),
                     ) {
                         ChatList(
@@ -117,7 +117,7 @@ fun MainNavigation(
                     is Pane.ChatThread -> NavEntry(
                         key = backStackKey,
                         metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
-                            ListDetailPaneScaffoldRole.Detail
+                            ListDetailPaneScaffoldRole.Detail,
                         ),
                     ) {
                         ChatScreen(
@@ -126,7 +126,7 @@ fun MainNavigation(
                             onBackPressed = { backStack.removeLastOrNull() },
                             onCameraClick = { backStack.add(Pane.Camera(backStackKey.chatId)) },
                             onPhotoPickerClick = { backStack.add(Pane.PhotoPicker(backStackKey.chatId)) },
-                            onVideoClick = { uri -> backStack.add(Pane.VideoPlayer(uri))},
+                            onVideoClick = { uri -> backStack.add(Pane.VideoPlayer(uri)) },
                             prefilledText = backStackKey.text,
                             modifier = Modifier.fillMaxSize(),
                         )
@@ -147,7 +147,7 @@ fun MainNavigation(
                                             Pane.VideoEdit(
                                                 chatId,
                                                 capturedMedia.uri.toString(),
-                                            )
+                                            ),
                                         )
                                     }
 
@@ -175,20 +175,23 @@ fun MainNavigation(
                             onCloseButtonClicked = { backStack.removeLastOrNull() },
                             onFinishEditing = {
                                 var pane = backStack.lastOrNull()
-                                while (pane != null
-                                    && (pane !is Pane.ChatThread
-                                        || pane.chatId != backStackKey.chatId)) {
+                                while (pane != null &&
+                                    (
+                                        pane !is Pane.ChatThread ||
+                                            pane.chatId != backStackKey.chatId
+                                        )
+                                ) {
                                     backStack.removeLastOrNull()
                                     pane = backStack.lastOrNull()
                                 }
-                            }
+                            },
                         )
                     }
 
                     is Pane.VideoPlayer -> NavEntry(backStackKey) {
                         VideoPlayerScreen(
                             uri = backStackKey.uri,
-                            onCloseButtonClicked = { backStack.removeLastOrNull() }
+                            onCloseButtonClicked = { backStack.removeLastOrNull() },
                         )
                     }
 
@@ -196,7 +199,7 @@ fun MainNavigation(
                         Text("Unknown pane: $backStackKey")
                     }
                 }
-            }
+            },
         )
     }
 

@@ -18,20 +18,23 @@ package com.google.android.samples.socialite.ui.chat.component
 
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isAltPressed
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 
 fun KeyEvent.isKeyPressed(
     expectedKey: Key,
+    expectedKeyEventType: KeyEventType = KeyEventType.KeyDown,
     shouldShiftBePressed: Boolean = false,
     shouldAltBePressed: Boolean = false,
     shouldCtrlBePressed: Boolean = false,
     shouldMetaBePressed: Boolean = false,
 ): Boolean {
-    return (key == expectedKey) &&
+    return key == expectedKey && type == expectedKeyEventType &&
         isModifierKeyPressed(
             shouldShiftBePressed = shouldShiftBePressed,
             shouldAltBePressed = shouldAltBePressed,

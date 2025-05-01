@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                     KeyboardShortcutInfo(
                         resources.getString(R.string.send_message),
                         KeyEvent.KEYCODE_ENTER,
-                        KeyEvent.META_SHIFT_ON,
+                        0,
                     ),
                     KeyboardShortcutInfo(
                         resources.getString(R.string.page_up),
