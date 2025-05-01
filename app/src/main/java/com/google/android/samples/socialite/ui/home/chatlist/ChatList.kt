@@ -180,7 +180,6 @@ private fun Modifier.draggableWithIntentToOpenChat(
                     PendingIntent.FLAG_IMMUTABLE,
                 )
                 val item = ClipData.Item.Builder()
-                    .setIntent(intent)
                     .setIntentSender(pendingIntent.intentSender)
                     .build()
 
