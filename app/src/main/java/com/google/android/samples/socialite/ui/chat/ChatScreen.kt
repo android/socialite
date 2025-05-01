@@ -16,13 +16,10 @@
 
 package com.google.android.samples.socialite.ui.chat
 
-import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
@@ -30,7 +27,6 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -59,7 +55,6 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -79,7 +74,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -88,10 +82,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -106,7 +97,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -119,11 +109,11 @@ import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.ui.SocialTheme
 import com.google.android.samples.socialite.ui.chat.component.isKeyPressed
+import com.google.android.samples.socialite.ui.components.PlayArrowIcon
+import com.google.android.samples.socialite.ui.components.VideoPreview
 import com.google.android.samples.socialite.ui.rememberIconPainter
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val TAG = "ChatUI"
 
@@ -493,47 +483,19 @@ private fun VideoMessagePreview(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current.applicationContext
-
-    // Running on an IO thread for loading metadata from remote urls to reduce lag time
-    val bitmapState = produceState<Bitmap?>(initialValue = null) {
-        withContext(Dispatchers.IO) {
-            val mediaMetadataRetriever = MediaMetadataRetriever()
-
-            // Remote url
-            if (videoUri.contains("https://")) {
-                mediaMetadataRetriever.setDataSource(videoUri, HashMap<String, String>())
-            } else { // Locally saved files
-                mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
-            }
-            // Return any frame that the framework considers representative of a valid frame
-            value = mediaMetadataRetriever.frameAtTime
-        }
-    }
-
-    bitmapState.value?.let { bitmap ->
-        Box(
-            modifier = modifier
-                .clickable(onClick = onClick)
-                .padding(10.dp),
-        ) {
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(Color.Gray, BlendMode.Darken),
-            )
-
-            Icon(
-                Icons.Filled.PlayArrow,
-                tint = Color.White,
-                contentDescription = null,
+    VideoPreview(
+        videoUri = videoUri,
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(10.dp),
+        overlay = {
+            PlayArrowIcon(
                 modifier = Modifier
                     .size(50.dp)
-                    .align(Alignment.Center)
-                    .border(3.dp, Color.White, shape = CircleShape),
+                    .align(Alignment.Center),
             )
-        }
-    }
+        },
+    )
 }
 
 @Composable

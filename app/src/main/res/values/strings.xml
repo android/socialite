@@ -81,4 +81,7 @@
     <string name="page_up">Page up</string>
     <string name="page_down">Page down</string>
 
+    <!-- Timeline screen -->
+    <string name="close_carousel">Close carousel</string>
+
 </resources>
