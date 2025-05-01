@@ -93,10 +93,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -279,32 +277,28 @@ private fun Modifier.scrollWithKeyboards(
     coroutineScope: CoroutineScope,
 ): Modifier {
     return onKeyEvent { event ->
-        if (event.type == KeyEventType.KeyUp) {
-            when {
-                event.isKeyPressed(Key.DirectionDown, shouldShiftBePressed = true) -> {
-                    scrollState.pageDown(coroutineScope)
-                    true
-                }
-
-                event.isKeyPressed(Key.PageDown) -> {
-                    scrollState.pageDown(coroutineScope)
-                    true
-                }
-
-                event.isKeyPressed(Key.DirectionUp, shouldShiftBePressed = true) -> {
-                    scrollState.pageUp(coroutineScope)
-                    true
-                }
-
-                event.isKeyPressed(Key.PageUp) -> {
-                    scrollState.pageUp(coroutineScope)
-                    true
-                }
-
-                else -> false
+        when {
+            event.isKeyPressed(Key.DirectionDown, shouldShiftBePressed = true) -> {
+                scrollState.pageDown(coroutineScope)
+                true
             }
-        } else {
-            false
+
+            event.isKeyPressed(Key.PageDown) -> {
+                scrollState.pageDown(coroutineScope)
+                true
+            }
+
+            event.isKeyPressed(Key.DirectionUp, shouldShiftBePressed = true) -> {
+                scrollState.pageUp(coroutineScope)
+                true
+            }
+
+            event.isKeyPressed(Key.PageUp) -> {
+                scrollState.pageUp(coroutineScope)
+                true
+            }
+
+            else -> false
         }
     }
 }
@@ -609,7 +603,7 @@ private fun InputBar(
                     .focusRequester(focusRequester)
                     .onPreviewKeyEvent { event ->
                         when {
-                            event.isKeyPressed(Key.Enter, shouldShiftBePressed = true) -> {
+                            event.isKeyPressed(Key.Enter) -> {
                                 onSendClick()
                                 true
                             }
