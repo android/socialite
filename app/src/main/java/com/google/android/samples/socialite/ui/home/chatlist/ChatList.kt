@@ -62,9 +62,9 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.model.ChatDetail
+import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.home.HomeAppBar
 import com.google.android.samples.socialite.ui.home.HomeBackground
-import com.google.android.samples.socialite.ui.home.createIntentFrom
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 
 @Composable
@@ -169,35 +169,39 @@ private fun Modifier.draggableWithIntentToOpenChat(
     activity: Activity,
 ): Modifier {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-        dragAndDropSource(block = {
-            detectDragGesturesAfterLongPress { _, _ ->
-                val intent = activity.createIntentFrom(params)
+        dragAndDropSource(
+            block = {
+                detectDragGesturesAfterLongPress { _, _ ->
+                    val intent = activity.tryCreateIntentFrom(params)
 
-                val pendingIntent = PendingIntent.getActivity(
-                    activity,
-                    AppArgs.LaunchParams.REQUEST_CODE,
-                    intent,
-                    PendingIntent.FLAG_IMMUTABLE,
-                )
-                val item = ClipData.Item.Builder()
-                    .setIntentSender(pendingIntent.intentSender)
-                    .build()
+                    if (intent != null) {
+                        val pendingIntent = PendingIntent.getActivity(
+                            activity,
+                            AppArgs.LaunchParams.REQUEST_CODE,
+                            intent,
+                            PendingIntent.FLAG_IMMUTABLE,
+                        )
+                        val item = ClipData.Item.Builder()
+                            .setIntentSender(pendingIntent.intentSender)
+                            .build()
 
-                val clipData = ClipData(
-                    AppArgs.LaunchParams.INTENT_KEY,
-                    arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
-                    item,
-                )
+                        val clipData = ClipData(
+                            AppArgs.LaunchParams.INTENT_KEY,
+                            arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
+                            item,
+                        )
 
-                val data = DragAndDropTransferData(
-                    clipData = clipData,
-                    flags =
-                    View.DRAG_FLAG_GLOBAL or
-                        View.DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG,
-                )
-                startTransfer(data)
-            }
-        })
+                        val data = DragAndDropTransferData(
+                            clipData = clipData,
+                            flags =
+                            View.DRAG_FLAG_GLOBAL or
+                                View.DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG,
+                        )
+                        startTransfer(data)
+                    }
+                }
+            },
+        )
     } else {
         this
     }

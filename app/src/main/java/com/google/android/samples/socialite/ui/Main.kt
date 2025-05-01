@@ -17,8 +17,6 @@
 package com.google.android.samples.socialite.ui
 
 import android.app.Activity
-import android.content.Intent
-import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -35,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.NavEntry
 import androidx.navigation3.SceneNavDisplay
 import com.google.android.samples.socialite.AppArgs
+import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
@@ -238,21 +237,6 @@ private fun handleOChatOpenRequest(
 
         is ChatOpenRequest.NewWindow -> {
             activity?.launchAnotherInstance(request.toAppArgs())
-        }
-    }
-}
-
-internal fun Activity.tryCreateIntentFrom(params: AppArgs.LaunchParams): Intent? {
-    return Intent(Intent.ACTION_VIEW).apply {
-        component = componentName
-        putExtra(AppArgs.LaunchParams.CHAT_ID_KEY, params.chatId)
-        flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_MULTIPLE_TASK or
-                Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
-        } else {
-            Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_MULTIPLE_TASK
         }
     }
 }
