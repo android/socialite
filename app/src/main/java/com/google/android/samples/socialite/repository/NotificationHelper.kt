@@ -36,6 +36,7 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
+import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.BubbleActivity
 import com.google.android.samples.socialite.MainActivity
 import com.google.android.samples.socialite.R
@@ -237,7 +238,8 @@ class NotificationHelper @Inject constructor(@ApplicationContext context: Contex
                     REQUEST_CONTENT,
                     Intent(appContext, MainActivity::class.java)
                         .setAction(Intent.ACTION_VIEW)
-                        .setData(contact.contentUri),
+                        .setData(contact.contentUri)
+                        .putExtra(AppArgs.LaunchParams.CHAT_ID_KEY, contact.id),
                     flagUpdateCurrent(mutable = false),
                 ),
             )
