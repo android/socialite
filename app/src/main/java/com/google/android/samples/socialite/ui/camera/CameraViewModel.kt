@@ -27,7 +27,6 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.os.Build
 import android.os.Handler
-import android.os.HandlerThread
 import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
@@ -533,18 +532,14 @@ class CameraViewModel @Inject constructor(
                             }
                         }.toIntArray()
 
+                        bitmap = imageProxy.toBitmap()
                         mask = Bitmap.createBitmap(maskColors, mediaImage.height, mediaImage.width, Bitmap.Config.ARGB_8888)
-
-                        // Create am ARGB bitmap from the mediaImage, converting from YUV (required
-                        // by ML Kit) to ARGB (which is easier to use the transparent channel of).
-                        val baseBitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
-                        val yubConverter = YuvToRgbConverter(application)
-                        yubConverter.yuvToRgb(mediaImage, baseBitmap)
 
                         // Create final bitmap and mask, performing transformations so that they match.
                         val matrix = Matrix()
                         matrix.preScale(-1f, 1f);
-                        bitmap = Bitmap.createBitmap(baseBitmap, 0, 0, baseBitmap.width, baseBitmap.height, matrix, false)
+                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, false)
+
                         matrix.preRotate(90F)
                         mask = Bitmap.createBitmap(mask, 0, 0, mask.width, mask.height, matrix, false)
 
