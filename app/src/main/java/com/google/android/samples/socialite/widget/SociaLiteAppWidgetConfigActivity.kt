@@ -97,16 +97,21 @@ class SociaLiteAppWidgetConfigActivity : ComponentActivity() {
                                 contact = contact,
                                 onClick = {
                                     runBlocking {
-                                        widgetModelRepository.createOrUpdate(
-                                            WidgetModel(
-                                                appWidgetId,
-                                                contact.id,
-                                                contact.name,
-                                                contact.iconUri.toString(),
-                                                false,
-                                            ),
+                                        val newModel = WidgetModel(
+                                            appWidgetId,
+                                            contact.id,
+                                            contact.name,
+                                            contact.iconUri.toString(),
+                                            false,
                                         )
+
+                                        widgetModelRepository.createOrUpdate(
+                                            newModel,
+                                        )
+
                                         SociaLiteAppWidget().updateAll(this@SociaLiteAppWidgetConfigActivity)
+                                        SociaLiteAppWidgetGeneratedPreview(newModel).updateWidgetPreview(applicationContext)
+
                                         val resultValue = Intent().putExtra(
                                             AppWidgetManager.EXTRA_APPWIDGET_ID,
                                             appWidgetId,
