@@ -19,7 +19,6 @@ package com.google.android.samples.socialite.ui.camera
 import android.content.Context
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.lifecycle.awaitInstance
-import androidx.concurrent.futures.await
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 

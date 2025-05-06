@@ -89,7 +89,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
 private const val TAG = "CameraViewModel"
 
 @HiltViewModel
@@ -133,13 +132,13 @@ class CameraViewModel @Inject constructor(
         .build()
 
     private val videoCaptureBuilder = VideoCapture.Builder(recorder)
-    lateinit private var videoCaptureUseCase: VideoCapture<Recorder>
+    private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
     private val imageAnalysisUseCase = ImageAnalysis.Builder()
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
         .build()
 
-    lateinit var greenScreenEffect:OverlayEffect
+    lateinit var greenScreenEffect: OverlayEffect
     val backgroundRemovalThreshold = 0.8
 
     lateinit var mask: Bitmap
@@ -155,15 +154,17 @@ class CameraViewModel @Inject constructor(
             greenScreenEffect = OverlayEffect(
                 PREVIEW or IMAGE_CAPTURE or VIDEO_CAPTURE,
                 5,
-                Handler(Looper.getMainLooper()), {},
+                Handler(Looper.getMainLooper()),
+                {},
             )
 
             imageAnalysisUseCase.setAnalyzer(
-                ContextCompat.getMainExecutor(application), SelfieSegmentationAnalyzer(),
+                ContextCompat.getMainExecutor(application),
+                SelfieSegmentationAnalyzer(),
             )
 
             greenScreenEffect.setOnDrawListener { frame ->
-                if(!::mask.isInitialized || !::bitmap.isInitialized) {
+                if (!::mask.isInitialized || !::bitmap.isInitialized) {
                     // Do not change the drawing if the frame doesn’t match the analysis
                     // result.
                     return@setOnDrawListener true
@@ -282,10 +283,12 @@ class CameraViewModel @Inject constructor(
             if (effectMode == EffectMode.BLACK_AND_WHITE) {
                 // Use the grayscale effect with the Media3Effect connector.
                 val media3Effect =
-                Media3Effect(
-                    application, PREVIEW or VIDEO_CAPTURE or IMAGE_CAPTURE,
-                    ContextCompat.getMainExecutor(application), {},
-                )
+                    Media3Effect(
+                        application,
+                        PREVIEW or VIDEO_CAPTURE or IMAGE_CAPTURE,
+                        ContextCompat.getMainExecutor(application),
+                        {},
+                    )
                 media3Effect.setEffects(listOf(RgbFilter.createGrayscaleFilter()))
                 useCaseGroupBuilder.addEffect(media3Effect)
             }
@@ -350,7 +353,6 @@ class CameraViewModel @Inject constructor(
             )
             viewFinderState.value.cameraState = CameraState.READY
         }
-
     }
 
     fun setTargetRotation(rotation: Int) {
@@ -537,7 +539,7 @@ class CameraViewModel @Inject constructor(
 
                         // Create final bitmap and mask, performing transformations so that they match.
                         val matrix = Matrix()
-                        matrix.preScale(-1f, 1f);
+                        matrix.preScale(-1f, 1f)
                         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, false)
 
                         matrix.preRotate(90F)
@@ -557,7 +559,6 @@ class CameraViewModel @Inject constructor(
             }
         }
     }
-
 }
 
 data class ViewFinderState(
@@ -595,5 +596,5 @@ enum class EffectMode {
     NONE,
     BLACK_AND_WHITE,
     GREEN_SCREEN,
-    NIGHT_MODE
+    NIGHT_MODE,
 }

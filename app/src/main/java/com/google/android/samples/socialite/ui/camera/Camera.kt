@@ -219,37 +219,37 @@ fun Camera(
                         )
                         DropdownMenu(
                             expanded = isEffectMenuExpanded,
-                            onDismissRequest = { isEffectMenuExpanded = false }
+                            onDismissRequest = { isEffectMenuExpanded = false },
                         ) {
                             DropdownMenuItem(
                                 text = { Text("No Effect") },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.NotInterested,
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                 },
-                                onClick = { setEffectMode(EffectMode.NONE) }
+                                onClick = { setEffectMode(EffectMode.NONE) },
                             )
                             DropdownMenuItem(
                                 text = { Text("Black and White") },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.Contrast,
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                 },
-                                onClick = { setEffectMode(EffectMode.BLACK_AND_WHITE) }
+                                onClick = { setEffectMode(EffectMode.BLACK_AND_WHITE) },
                             )
                             DropdownMenuItem(
                                 text = { Text("Green Screen") },
                                 leadingIcon = {
                                     Icon(
                                         Icons.Default.PersonOutline,
-                                        contentDescription = null
+                                        contentDescription = null,
                                     )
                                 },
-                                onClick = { setEffectMode(EffectMode.GREEN_SCREEN) }
+                                onClick = { setEffectMode(EffectMode.GREEN_SCREEN) },
                             )
                             if (captureMode == CaptureMode.PHOTO) {
                                 DropdownMenuItem(
@@ -257,15 +257,14 @@ fun Camera(
                                     leadingIcon = {
                                         Icon(
                                             Icons.Default.Nightlight,
-                                            contentDescription = null
+                                            contentDescription = null,
                                         )
                                     },
-                                    onClick = { setEffectMode(EffectMode.NIGHT_MODE) }
+                                    onClick = { setEffectMode(EffectMode.NIGHT_MODE) },
                                 )
                             }
                         }
                     }
-
                 }
 
                 if (isLayoutUnfolded != null) {
