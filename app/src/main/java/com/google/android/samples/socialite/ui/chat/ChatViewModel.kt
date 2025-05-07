@@ -16,6 +16,10 @@
 
 package com.google.android.samples.socialite.ui.chat
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.samples.socialite.repository.ChatRepository
@@ -24,10 +28,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -38,44 +43,68 @@ class ChatViewModel @Inject constructor(
     private val chatId = MutableStateFlow(0L)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val _chat = chatId.flatMapLatest { id -> repository.findChat(id) }
+    private val chatDetail = chatId.flatMapLatest { id -> repository.findChat(id) }
 
-    private val attendees = _chat.map { c -> (c?.attendees ?: emptyList()).associateBy { it.id } }
+    private val attendees =
+        chatDetail.map { c -> (c?.attendees ?: emptyList()).associateBy { it.id } }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val _messages = chatId.flatMapLatest { id -> repository.findMessages(id) }
+    private val messagesInChat = chatId.flatMapLatest { id -> repository.findMessages(id) }
 
-    val chat = _chat.stateInUi(null)
+    val chat = chatDetail.stateInUi(null)
 
-    val messages = combine(_messages, attendees) { messages, attendees ->
-        // Build a list of `ChatMessage` from this list of `Message`.
-        buildList {
-            for (i in messages.indices) {
-                val message = messages[i]
-                // Show the contact icon only at the first message if the same sender has multiple
-                // messages in a row.
-                val showIcon = i + 1 >= messages.size ||
-                    messages[i + 1].senderId != message.senderId
-                val iconUri = if (showIcon) attendees[message.senderId]?.iconUri else null
-                add(
-                    ChatMessage(
-                        text = message.text,
-                        mediaUri = message.mediaUri,
-                        mediaMimeType = message.mediaMimeType,
-                        timestamp = message.timestamp,
-                        isIncoming = message.isIncoming,
-                        senderIconUri = iconUri,
-                    ),
-                )
+    val messages = combine(messagesInChat, attendees) { messages, attendees ->
+
+        // List of senders, which is referred to the message list to show or not the icon.
+        val senderList = messages.fold(emptyList<Long?>()) { list, message ->
+            val senderId = if (list.isEmpty() || list.last() != message.senderId) {
+                message.senderId
+            } else {
+                null
             }
+            list + senderId
+        }
+
+        messages.zip(senderList).map { (message, senderId) ->
+            // Show the sender's icon only for the first message in a row from the same sender.
+            val senderIconUri = if (senderId != null) {
+                attendees[senderId]?.iconUri
+            } else {
+                null
+            }
+
+            ChatMessage(
+                text = message.text,
+                mediaUri = message.mediaUri,
+                mediaMimeType = message.mediaMimeType,
+                timestamp = message.timestamp,
+                isIncoming = message.isIncoming,
+                senderIconUri = senderIconUri,
+            )
         }
     }.stateInUi(emptyList())
 
-    private val _input = MutableStateFlow("")
-    val input: StateFlow<String> = _input
-    private var inputPrefilled = false
+    val textFieldState = TextFieldState()
+    private val attachedMediaItem = MutableStateFlow<MediaItem?>(null)
+    val attachedMedia = attachedMediaItem
 
-    val sendEnabled = _input.map(::isInputValid).stateInUi(false)
+    private val isInputValidFlow = snapshotFlow {
+        isInputValid(textFieldState)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val sendEnabled = combine(
+        isInputValidFlow,
+        attachedMediaItem,
+    ) { isInputValid, attachedMediaItem ->
+        isInputValid || attachedMediaItem != null
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        false,
+    )
+
+    private var inputPrefilled = false
 
     /**
      * We want to update the notification when the corresponding chat screen is open. Setting this
@@ -98,7 +127,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun updateInput(input: String) {
-        _input.value = input
+        textFieldState.setTextAndPlaceCursorAtEnd(input)
     }
 
     fun prefillInput(input: String) {
@@ -107,16 +136,37 @@ class ChatViewModel @Inject constructor(
         updateInput(input)
     }
 
+    fun attachMedia(mediaItem: MediaItem) {
+        attachedMediaItem.value = mediaItem
+    }
+
     fun send() {
         val chatId = chatId.value
         if (chatId <= 0) return
-        val input = _input.value
-        if (!isInputValid(input)) return
+        if (!sendEnabled.value) return
+
+        val mediaItem = attachedMediaItem.value
+        val input = textFieldState.text.toString()
         viewModelScope.launch {
-            repository.sendMessage(chatId, input, null, null)
-            _input.value = ""
+            if (mediaItem != null) {
+                repository.saveAttachedMediaItem(mediaItem)
+                    .onSuccess { mediaItem ->
+                        if (mediaItem != null) {
+                            repository.sendMessage(chatId, input, mediaItem.uri, mediaItem.mimeType)
+                        }
+                    }
+                    .onFailure { }
+            } else {
+                repository.sendMessage(chatId, input, null, null)
+            }
+            textFieldState.clearText()
+            attachedMediaItem.emit(null)
         }
     }
 }
 
-private fun isInputValid(input: String): Boolean = input.isNotBlank()
+private fun isInputValid(textFieldState: TextFieldState): Boolean {
+    return textFieldState.text.isNotBlank()
+}
+
+data class MediaItem(val uri: String, val mimeType: String)

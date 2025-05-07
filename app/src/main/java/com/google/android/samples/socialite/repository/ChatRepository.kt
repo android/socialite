@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -37,8 +38,11 @@ import com.google.android.samples.socialite.data.utils.ShortsVideoList
 import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
+import com.google.android.samples.socialite.ui.chat.MediaItem
 import com.google.android.samples.socialite.widget.model.WidgetModelRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -170,6 +174,29 @@ class ChatRepository @Inject internal constructor(
             }
 
             widgetModelRepository.updateUnreadMessagesForContact(contactId = detail.firstContact.id, unread = true)
+        }
+    }
+
+    fun saveAttachedMediaItem(mediaItem: MediaItem): Result<MediaItem?> {
+        try {
+            var createdUri: String? = null
+            appContext.contentResolver.openInputStream(mediaItem.uri.toUri())?.use {
+                val filename = "pasted_media_${System.currentTimeMillis()}"
+                val file = File(appContext.filesDir, filename)
+                file.createNewFile()
+                FileOutputStream(file).use { outputStream ->
+                    it.copyTo(outputStream)
+                }
+                createdUri = file.toUri().toString()
+            }
+            val newMediaItem = if (createdUri != null) {
+                MediaItem(createdUri, mediaItem.mimeType)
+            } else {
+                null
+            }
+            return Result.success(newMediaItem)
+        } catch (e: Exception) {
+            return Result.failure(e)
         }
     }
 
