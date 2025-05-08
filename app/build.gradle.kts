@@ -37,7 +37,7 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
@@ -166,7 +166,8 @@ dependencies {
     implementation(libs.generativeai)
     implementation(libs.datastore)
 
-    implementation(libs.androidx.navigation3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 }
