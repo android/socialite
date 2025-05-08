@@ -509,9 +509,9 @@ class CameraViewModel @Inject constructor(
         val selfieSegmenter = Segmentation.getClient(options)
         var isAnalyzing = false
 
-        @RequiresApi(Build.VERSION_CODES.Q)
         @ExperimentalGetImage
         override fun analyze(imageProxy: ImageProxy) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
             val mediaImage = imageProxy.image
             if (mediaImage != null && !isAnalyzing) {
                 isAnalyzing = true

@@ -18,6 +18,7 @@ package com.google.android.samples.socialite.ui.camera
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.os.Build
 import android.view.Surface
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
@@ -241,16 +242,18 @@ fun Camera(
                                 },
                                 onClick = { setEffectMode(EffectMode.BLACK_AND_WHITE) },
                             )
-                            DropdownMenuItem(
-                                text = { Text("Green Screen") },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.PersonOutline,
-                                        contentDescription = null,
-                                    )
-                                },
-                                onClick = { setEffectMode(EffectMode.GREEN_SCREEN) },
-                            )
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                DropdownMenuItem(
+                                    text = { Text("Green Screen") },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.PersonOutline,
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    onClick = { setEffectMode(EffectMode.GREEN_SCREEN) },
+                                )
+                            }
                             if (captureMode == CaptureMode.PHOTO) {
                                 DropdownMenuItem(
                                     text = { Text("Night Mode") },
