@@ -302,9 +302,12 @@ class CameraViewModel @Inject constructor(
             }
 
             if (effectMode == EffectMode.GREEN_SCREEN) {
+                // Concurrent camera setup for green screen effect
                 var primaryCameraSelector: CameraSelector? = null
                 var secondaryCameraSelector: CameraSelector? = null
 
+                // Iterate through available concurrent camera infos to find suitable primary
+                // (front-facing) and secondary (back-facing) cameras.
                 for (cameraInfos in cameraProvider.availableConcurrentCameraInfos) {
                     primaryCameraSelector = cameraInfos.first {
                         it.lensFacing == CameraSelector.LENS_FACING_FRONT
