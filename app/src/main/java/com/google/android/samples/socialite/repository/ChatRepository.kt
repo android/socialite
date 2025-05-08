@@ -200,6 +200,15 @@ class ChatRepository @Inject internal constructor(
         }
     }
 
+    fun removeAttachedMediaItem(mediaItem: MediaItem): Result<Unit> {
+        try {
+            File(mediaItem.uri).delete()
+            return Result.success(Unit)
+        } catch (e: Exception) {
+            return Result.failure(e)
+        }
+    }
+
     /**
      * Add list of short form videos as sent messages to current chat history.This is used to test the preload manager of exoplayer
      */

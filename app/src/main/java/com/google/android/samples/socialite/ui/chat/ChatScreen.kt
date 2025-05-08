@@ -106,7 +106,6 @@ import com.google.android.samples.socialite.ui.components.tryRequestFocus
 import com.google.android.samples.socialite.ui.rememberIconPainter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 
 private const val TAG = "ChatUI"
 
@@ -146,6 +145,7 @@ fun ChatScreen(
             onPhotoPickerClick = onPhotoPickerClick,
             onVideoClick = onVideoClick,
             onMediaItemAttached = viewModel::attachMedia,
+            onRemoveAttachedMediaItem = viewModel::removeAttachedMedia,
             modifier = modifier
                 .clip(RoundedCornerShape(5)),
         )
@@ -193,6 +193,7 @@ private fun ChatContent(
     onPhotoPickerClick: () -> Unit,
     onVideoClick: (uri: String) -> Unit,
     onMediaItemAttached: (MediaItem) -> Unit,
+    onRemoveAttachedMediaItem: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val topAppBarState = rememberTopAppBarState()
@@ -239,6 +240,7 @@ private fun ChatContent(
                 onCameraClick = onCameraClick,
                 onPhotoPickerClick = onPhotoPickerClick,
                 onMediaItemAttached = onMediaItemAttached,
+                onRemoveAttachedMediaItem = onRemoveAttachedMediaItem,
                 contentPadding = innerPadding.copy(layoutDirection, top = 0.dp),
                 sendEnabled = sendEnabled,
                 modifier = Modifier
@@ -508,6 +510,7 @@ private fun PreviewChatContent() {
             onPhotoPickerClick = {},
             onVideoClick = {},
             onMediaItemAttached = {},
+            onRemoveAttachedMediaItem = {},
         )
     }
 }

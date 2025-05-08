@@ -16,8 +16,8 @@
 
 package com.google.android.samples.socialite.ui.chat.component
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.content.MediaType
 import androidx.compose.foundation.content.ReceiveContentListener
 import androidx.compose.foundation.content.TransferableContent
@@ -26,8 +26,11 @@ import androidx.compose.foundation.content.contentReceiver
 import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,14 +59,18 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.SocialTheme
 import com.google.android.samples.socialite.ui.chat.MediaItem
+import com.google.android.samples.socialite.ui.components.AttachmentRemovalIcon
+import com.google.android.samples.socialite.ui.components.VideoPreview
 import com.google.android.samples.socialite.ui.components.tryRequestFocus
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -75,12 +82,13 @@ internal fun InputBar(
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
     onPhotoPickerClick: () -> Unit,
+    onMediaItemAttached: (MediaItem) -> Unit,
+    onRemoveAttachedMediaItem: () -> Unit,
     modifier: Modifier = Modifier,
     attachedMedia: MediaItem? = null,
-    onMediaItemAttached: (MediaItem) -> Unit = {},
 ) {
     val focusRequester = remember { FocusRequester() }
-    val receiveContentListener = rememberReceiveContentListener(onMediaItemAttached)
+    rememberReceiveContentListener(onMediaItemAttached)
 
     Surface(
         modifier = modifier
@@ -93,10 +101,10 @@ internal fun InputBar(
         tonalElevation = 3.dp,
     ) {
         Row(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .padding(contentPadding)
                 .padding(16.dp),
-            verticalAlignment = Alignment.Companion.CenterVertically,
+            verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             IconButton(onClick = onCameraClick) {
@@ -113,44 +121,19 @@ internal fun InputBar(
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
-            TextField(
+            ChatMessageTextField(
                 state = textFieldState,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Companion.Sentences,
-                    imeAction = ImeAction.Companion.Send,
-                ),
-                onKeyboardAction = KeyboardActionHandler { onSendClick() },
-                placeholder = { Text(stringResource(R.string.message)) },
-                shape = MaterialTheme.shapes.extraLarge,
-
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.background,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                    focusedIndicatorColor = Color.Companion.Transparent,
-                    unfocusedIndicatorColor = Color.Companion.Transparent,
-                    disabledIndicatorColor = Color.Companion.Transparent,
-                ),
-                modifier = Modifier.Companion
+                attachedMedia = attachedMedia,
+                onSendClick = onSendClick,
+                onMediaItemAttached = onMediaItemAttached,
+                onRemoveAttachedMedia = onRemoveAttachedMediaItem,
+                modifier = Modifier
                     .weight(1f)
-                    .height(56.dp)
-                    .focusRequester(focusRequester)
-                    .contentReceiver(receiveContentListener)
-                    .onPreviewKeyEvent { event ->
-                        when {
-                            event.isKeyPressed(Key.Companion.Enter) -> {
-                                onSendClick()
-                                true
-                            }
-
-                            else -> {
-                                false
-                            }
-                        }
-                    },
+                    .focusRequester(focusRequester),
             )
             FilledIconButton(
                 onClick = onSendClick,
-                modifier = Modifier.Companion.size(56.dp),
+                modifier = Modifier.size(56.dp),
                 enabled = sendEnabled,
             ) {
                 Icon(
@@ -164,20 +147,125 @@ internal fun InputBar(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+internal fun ChatMessageTextField(
+    state: TextFieldState,
+    onSendClick: () -> Unit,
+    onMediaItemAttached: (MediaItem) -> Unit,
+    onRemoveAttachedMedia: () -> Unit,
+    modifier: Modifier = Modifier,
+    attachedMedia: MediaItem? = null,
+    placeholder: @Composable () -> Unit = { Text(stringResource(R.string.message)) },
+) {
+    val receiveContentListener = rememberReceiveContentListener(onMediaItemAttached)
+
+    Column(
+        modifier = modifier.focusGroup(),
+    ) {
+        if (attachedMedia != null) {
+            AttachedMediaItem(
+                mediaItem = attachedMedia,
+                onRemove = onRemoveAttachedMedia,
+                modifier = Modifier
+                    .padding(vertical = 8.dp),
+            )
+        }
+        TextField(
+            state = state,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Send,
+            ),
+            onKeyboardAction = KeyboardActionHandler { onSendClick() },
+            placeholder = placeholder,
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.background,
+                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+            ),
+            modifier = Modifier
+                .height(56.dp)
+                .fillMaxWidth()
+                .contentReceiver(receiveContentListener)
+                .onPreviewKeyEvent { event ->
+                    when {
+                        event.isKeyPressed(Key.Enter) -> {
+                            onSendClick()
+                            true
+                        }
+
+                        else -> {
+                            false
+                        }
+                    }
+                },
+        )
+    }
+}
+
+@Composable
+private fun AttachedMediaItem(
+    mediaItem: MediaItem,
+    modifier: Modifier = Modifier,
+    onRemove: () -> Unit = {},
+) {
+    Box(
+        modifier = modifier,
+    ) {
+        Thumbnail(
+            mediaItem = mediaItem,
+            modifier = Modifier.height(height = 128.dp).padding(24.dp),
+        )
+        IconButton(
+            onClick = onRemove,
+        ) {
+            AttachmentRemovalIcon()
+        }
+    }
+}
+
+@Composable
+private fun Thumbnail(
+    mediaItem: MediaItem,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Fit,
+) {
+    when {
+        mediaItem.isImage() -> {
+            AsyncImage(
+                model = mediaItem.uri,
+                contentDescription = null,
+                contentScale = contentScale,
+                modifier = modifier,
+            )
+        }
+
+        mediaItem.isVideo() -> {
+            VideoPreview(
+                videoUri = mediaItem.uri,
+                contentScale = contentScale,
+                modifier = Modifier,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
 private fun rememberReceiveContentListener(
     onMediaItemAttached: (MediaItem) -> Unit,
 ): ReceiveContentListener {
     return remember(onMediaItemAttached) {
         ReceiveContentListener { transferableContent ->
-            Log.d("Receiver", "$transferableContent")
-
             when {
                 transferableContent.hasMediaType(MediaType.Image) -> {
-                    transferableContent.tryCreateMediaItem("image/*", onMediaItemAttached)
+                    transferableContent.tryCreateMediaItem(MediaType.Image, onMediaItemAttached)
                 }
 
                 transferableContent.hasMediaType(MediaType.Video) -> {
-                    transferableContent.tryCreateMediaItem("video/*", onMediaItemAttached)
+                    transferableContent.tryCreateMediaItem(MediaType.Video, onMediaItemAttached)
                 }
 
                 else -> transferableContent
@@ -188,15 +276,14 @@ private fun rememberReceiveContentListener(
 
 @OptIn(ExperimentalFoundationApi::class)
 private fun TransferableContent.tryCreateMediaItem(
-    mimeType: String,
+    mediaType: MediaType,
     onMediaItemAttached: (MediaItem) -> Unit,
 ): TransferableContent? {
-    val mimeTypes = clipMetadata.clipDescription.filterMimeTypes(mimeType)
+    val mimeTypes = clipMetadata.clipDescription.filterMimeTypes(mediaType.representation)
     return if (mimeTypes.isEmpty()) {
         this
     } else {
         consume { item ->
-            Log.d("Receiver", "${item.intent}, ${item.uri}, ${mimeTypes.joinToString(",")}")
             onMediaItemAttached(MediaItem(item.uri.toString(), mimeTypes.first()))
             true
         }
@@ -204,6 +291,14 @@ private fun TransferableContent.tryCreateMediaItem(
 }
 
 private val MediaType.Companion.Video get() = MediaType("video/*")
+
+private fun MediaItem.isImage(): Boolean {
+    return mimeType.startsWith("image/")
+}
+
+private fun MediaItem.isVideo(): Boolean {
+    return mimeType.startsWith("video/")
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -215,6 +310,8 @@ private fun PreviewInputBar() {
             onSendClick = {},
             onCameraClick = {},
             onPhotoPickerClick = {},
+            onMediaItemAttached = {},
+            onRemoveAttachedMediaItem = {},
             sendEnabled = true,
         )
     }

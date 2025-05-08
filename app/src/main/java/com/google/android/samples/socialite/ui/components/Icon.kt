@@ -16,23 +16,31 @@
 
 package com.google.android.samples.socialite.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.android.samples.socialite.R
 
 @Composable
 internal fun PlayArrowIcon(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
-    tint: Color = Color.Companion.White,
+    tint: Color = Color.White,
 ) {
     val minSize = LocalMinimumInteractiveComponentSize.current
     Icon(
@@ -41,6 +49,37 @@ internal fun PlayArrowIcon(
         contentDescription = contentDescription,
         modifier = modifier
             .sizeIn(minWidth = minSize, minHeight = minSize)
-            .border(3.dp, Color.Companion.White, shape = CircleShape),
+            .outline(),
+    )
+}
+
+@Composable
+internal fun AttachmentRemovalIcon(
+    modifier: Modifier = Modifier,
+    contentDescription: String? = stringResource(R.string.remove_attachment),
+    tint: Color = Color.White,
+    outlineWidth: Dp = 1.dp,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+) {
+    Icon(
+        Icons.Default.Close,
+        contentDescription = contentDescription,
+        tint = tint,
+        modifier = modifier
+            .outline(width = outlineWidth, color = tint)
+            .clip(CircleShape)
+            .background(backgroundColor),
+    )
+}
+
+private fun Modifier.outline(
+    width: Dp = 3.dp,
+    color: Color = Color.Companion.White,
+    shape: Shape = CircleShape,
+): Modifier {
+    return border(
+        width = width,
+        color = color,
+        shape = shape,
     )
 }

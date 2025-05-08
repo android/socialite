@@ -137,7 +137,28 @@ class ChatViewModel @Inject constructor(
     }
 
     fun attachMedia(mediaItem: MediaItem) {
-        attachedMediaItem.value = mediaItem
+        viewModelScope.launch {
+            repository.saveAttachedMediaItem(mediaItem)
+                .onSuccess {
+                    attachedMediaItem.emit(it)
+                }
+                .onFailure {
+                    attachedMediaItem.emit(null)
+                }
+        }
+    }
+
+    fun removeAttachedMedia() {
+        viewModelScope.launch {
+            val mediaItem = attachedMediaItem.value
+            if (mediaItem != null) {
+                repository.removeAttachedMediaItem(mediaItem)
+                    .onSuccess {
+                        attachedMediaItem.emit(null)
+                    }
+                    .onFailure {}
+            }
+        }
     }
 
     fun send() {
@@ -149,13 +170,7 @@ class ChatViewModel @Inject constructor(
         val input = textFieldState.text.toString()
         viewModelScope.launch {
             if (mediaItem != null) {
-                repository.saveAttachedMediaItem(mediaItem)
-                    .onSuccess { mediaItem ->
-                        if (mediaItem != null) {
-                            repository.sendMessage(chatId, input, mediaItem.uri, mediaItem.mimeType)
-                        }
-                    }
-                    .onFailure { }
+                repository.sendMessage(chatId, input, mediaItem.uri, mediaItem.mimeType)
             } else {
                 repository.sendMessage(chatId, input, null, null)
             }
