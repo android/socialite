@@ -32,7 +32,6 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.Display
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
@@ -212,6 +211,25 @@ class CameraViewModel @Inject constructor(
         return supportedHdrEncoding
     }
 
+    private suspend fun setVideoCaptureDynamicRange(effectMode: EffectMode, videoCaptureBuilder: VideoCapture.Builder<Recorder>) {
+        // Note: there is currently an issue with androidx.camera.media3.effect not being
+        // compatible with Media3 version 1.6. Media3 1.6 is needed to tonemap videos down
+        // to SDR to perform certain effects, so for not, we are disabling HDR video. A fix
+        // is currently in development, so we'll re-enable HDR video recording when that fix lands.
+        videoCaptureBuilder.setDynamicRange(DynamicRange.SDR)
+
+        // Determine whether we can capture HDR video. Currently, concurrent camera
+        // does not support HDR video, so we can't enable HDR if the green screen effect
+        // is being applied.
+        //val hdrCameraInfo = getHdrCameraInfo()
+        // if (hdrCameraInfo != null && effectMode != EffectMode.GREEN_SCREEN) {
+        //    Log.i(TAG, "Capturing HDR video")
+        //    videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
+        //} else {
+        //    videoCaptureBuilder.setDynamicRange(DynamicRange.SDR)
+        //}
+    }
+
     fun setChatId(chatId: Long) {
         savedStateHandle.set("chatId", chatId)
     }
@@ -234,17 +252,7 @@ class CameraViewModel @Inject constructor(
             }
             var extensionsCameraSelector: CameraSelector? = null
 
-            // Determine whether we can capture HDR video. Currently, concurrent camera
-            // does not support HDR video, so we can't enable HDR if the green screen effect
-            // is being applied.
-            val hdrCameraInfo = getHdrCameraInfo()
-            if (hdrCameraInfo != null && effectMode != EffectMode.GREEN_SCREEN) {
-                Log.i(TAG, "Capturing HDR video")
-                videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
-            } else {
-                videoCaptureBuilder.setDynamicRange(DynamicRange.SDR)
-            }
-
+            setVideoCaptureDynamicRange(effectMode, videoCaptureBuilder)
             videoCaptureUseCase = videoCaptureBuilder.build()
 
             val useCaseGroupBuilder = UseCaseGroup.Builder()
