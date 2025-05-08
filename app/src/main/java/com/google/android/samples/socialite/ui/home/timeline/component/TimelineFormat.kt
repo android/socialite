@@ -32,7 +32,7 @@ fun rememberTimelineFormat(
 ): TimelineFormat {
     val isAtLeastMedium = windowAdaptiveInfo
         .windowSizeClass
-        .isWidthAtLeastBreakpoint(WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND)
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     return if (isAtLeastMedium) {
         TimelineFormat.Grid

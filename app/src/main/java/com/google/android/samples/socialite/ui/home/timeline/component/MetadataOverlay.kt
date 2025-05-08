@@ -78,14 +78,14 @@ internal fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
                 val seconds = it / 1000L
                 val minutes = seconds / 60L
                 Box(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .padding(16.dp)
-                        .align(Alignment.Companion.TopEnd)
+                        .align(Alignment.TopEnd)
                         .clip(RoundedCornerShape(50))
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
                 ) {
                     Text(
-                        modifier = Modifier.Companion.padding(8.dp),
+                        modifier = Modifier.padding(8.dp),
                         text = "%d:%02d".format(minutes, seconds % 60),
                     )
                 }
@@ -93,25 +93,25 @@ internal fun MetadataOverlay(modifier: Modifier, mediaItem: TimelineMediaItem) {
         }
 
         Row(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .padding(16.dp)
-                .align(Alignment.Companion.BottomStart)
+                .align(Alignment.BottomStart)
                 .clip(androidx.compose.foundation.shape.RoundedCornerShape(50))
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.Companion.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             mediaItem.chatIconUri?.let {
                 Image(
                     painter = rememberIconPainter(contentUri = it),
                     contentDescription = null,
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(Color.Companion.LightGray),
+                        .background(Color.LightGray),
                 )
             }
-            Text(modifier = Modifier.Companion.padding(end = 16.dp), text = mediaItem.chatName)
+            Text(modifier = Modifier.padding(end = 16.dp), text = mediaItem.chatName)
         }
     }
 }

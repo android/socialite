@@ -32,7 +32,7 @@ internal fun TimelineCard(
     content: @Composable BoxScope.() -> Unit = {},
 ) {
     Box(
-        modifier = Modifier.Companion
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .then(modifier),

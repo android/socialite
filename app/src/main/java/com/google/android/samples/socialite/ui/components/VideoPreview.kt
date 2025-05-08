@@ -42,9 +42,9 @@ import kotlinx.coroutines.withContext
 internal fun VideoPreview(
     videoUri: String,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
     contentDescription: String? = null,
-    colorFilter: ColorFilter = ColorFilter.Companion.tint(Color.Companion.Gray, BlendMode.Companion.Darken),
+    colorFilter: ColorFilter = ColorFilter.tint(Color.Gray, BlendMode.Darken),
     overlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     when (overlay) {
@@ -72,9 +72,9 @@ internal fun VideoPreview(
 private fun VideoPreview(
     state: State<Bitmap?>,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
     contentDescription: String? = null,
-    colorFilter: ColorFilter = ColorFilter.Companion.tint(Color.Companion.Gray, BlendMode.Companion.Darken),
+    colorFilter: ColorFilter = ColorFilter.tint(Color.Gray, BlendMode.Darken),
 ) {
     val bitmap = state.value
     if (bitmap != null) {
@@ -93,9 +93,9 @@ private fun VideoPreview(
     state: State<Bitmap?>,
     overlay: @Composable BoxScope.() -> Unit,
     modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Companion.Fit,
+    contentScale: ContentScale = ContentScale.Fit,
     contentDescription: String? = null,
-    colorFilter: ColorFilter = ColorFilter.Companion.tint(Color.Companion.Gray, BlendMode.Companion.Darken),
+    colorFilter: ColorFilter = ColorFilter.tint(Color.Gray, BlendMode.Darken),
 ) {
     val bitmap = state.value
     if (bitmap != null) {

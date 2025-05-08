@@ -42,7 +42,7 @@ internal fun EmptyTimeline(
             .padding(contentPadding)
             .padding(64.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.Companion.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
             painter = painterResource(id = R.drawable.empty_timeline),
@@ -50,12 +50,12 @@ internal fun EmptyTimeline(
         )
         Text(
             text = stringResource(R.string.timeline_empty_title),
-            modifier = Modifier.Companion.padding(top = 64.dp),
+            modifier = Modifier.padding(top = 64.dp),
             style = MaterialTheme.typography.titleLarge,
         )
         Text(
             text = stringResource(R.string.timeline_empty_message),
-            textAlign = TextAlign.Companion.Center,
+            textAlign = TextAlign.Center,
         )
     }
 }

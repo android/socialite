@@ -75,7 +75,7 @@ internal fun TimelineVerticalPager(
     ) { page ->
         if (player != null) {
             TimelineCard(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp)
                     .graphicsLayer {
@@ -96,8 +96,8 @@ internal fun TimelineVerticalPager(
                     },
             ) {
                 TimelinePage(
-                    modifier = Modifier.Companion
-                        .align(Alignment.Companion.Center)
+                    modifier = Modifier
+                        .align(Alignment.Center)
                         .padding(8.dp)
                         .clip(RoundedCornerShape(8.dp)),
                     media = mediaItems[page],
@@ -108,7 +108,7 @@ internal fun TimelineVerticalPager(
                 )
 
                 MetadataOverlay(
-                    modifier = Modifier.Companion.padding(16.dp),
+                    modifier = Modifier.padding(16.dp),
                     mediaItem = mediaItems[page],
                 )
             }
@@ -140,7 +140,7 @@ private fun TimelinePage(
                         PlayerSurface(
                             player = player,
                             modifier = modifier.resizeWithContentScale(
-                                ContentScale.Companion.Fit,
+                                ContentScale.Fit,
                                 null,
                             ),
                         )
@@ -157,7 +157,7 @@ private fun TimelinePage(
                 contentDescription = null,
                 modifier = modifier
                     .fillMaxSize(),
-                contentScale = ContentScale.Companion.Fit,
+                contentScale = ContentScale.Fit,
             )
         }
     }
