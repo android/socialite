@@ -83,9 +83,9 @@ internal fun TimelineVerticalPager(
                         // scroll position. We use the absolute value which allows us to mirror
                         // any effects for both directions
                         val pageOffset = (
-                                (pagerState.currentPage - page) + pagerState
-                                    .currentPageOffsetFraction
-                                ).absoluteValue
+                            (pagerState.currentPage - page) + pagerState
+                                .currentPageOffsetFraction
+                            ).absoluteValue
 
                         // We animate the alpha, between 0% and 100%
                         alpha = lerp(
