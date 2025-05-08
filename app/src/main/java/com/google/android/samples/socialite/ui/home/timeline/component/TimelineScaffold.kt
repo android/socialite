@@ -38,7 +38,7 @@ internal fun TimelineScaffold(
         topBar = topBar,
         modifier = modifier,
     ) { contentPadding ->
-        HomeBackground(modifier = Modifier.Companion.fillMaxSize())
+        HomeBackground(modifier = Modifier.fillMaxSize())
         content(contentPadding)
     }
 }
