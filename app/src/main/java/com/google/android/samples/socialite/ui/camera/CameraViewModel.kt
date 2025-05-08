@@ -29,7 +29,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
-import android.util.Log
 import android.view.Display
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
@@ -216,13 +215,13 @@ class CameraViewModel @Inject constructor(
         // Determine whether we can capture HDR video. Currently, concurrent camera
         // does not support HDR video, so we can't enable HDR if the green screen effect
         // is being applied.
-        //val hdrCameraInfo = getHdrCameraInfo()
+        // val hdrCameraInfo = getHdrCameraInfo()
         // if (hdrCameraInfo != null && effectMode != EffectMode.GREEN_SCREEN) {
         //    Log.i(TAG, "Capturing HDR video")
         //    videoCaptureBuilder.setDynamicRange(hdrCameraInfo)
-        //} else {
+        // } else {
         //    videoCaptureBuilder.setDynamicRange(DynamicRange.SDR)
-        //}
+        // }
     }
 
     fun setChatId(chatId: Long) {
