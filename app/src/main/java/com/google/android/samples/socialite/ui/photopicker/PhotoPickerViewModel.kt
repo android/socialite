@@ -17,7 +17,6 @@
 package com.google.android.samples.socialite.ui.photopicker
 
 import android.content.ContentResolver
-import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,7 +33,7 @@ class PhotoPickerViewModel @Inject constructor(
     fun onPhotoPicked(imageUri: Uri, chatId: Long) {
         viewModelScope.launch {
             // Ask permission since want to persist media access after app restart too.
-            contentResolver.takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            // contentResolver.takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
             chatRepository.sendMessage(
                 chatId = chatId,
