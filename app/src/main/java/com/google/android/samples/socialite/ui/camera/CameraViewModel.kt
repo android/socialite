@@ -162,6 +162,10 @@ class CameraViewModel @Inject constructor(
                 SelfieSegmentationAnalyzer(),
             )
 
+            // Create a Paint object to draw the mask layer.
+            val paint = Paint()
+            paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+
             greenScreenEffect.setOnDrawListener { frame ->
                 if (!::mask.isInitialized || !::bitmap.isInitialized) {
                     // Do not change the drawing if the frame doesn’t match the analysis
@@ -172,18 +176,9 @@ class CameraViewModel @Inject constructor(
                 // Clear the previously drawn frame.
                 frame.overlayCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-                // Create a Paint object to draw the mask layer.
-                val paint = Paint()
-                paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
-
-                // Create transformation matrix to position the overlay in the bottom right.
-                val transformationMatrix = Matrix()
-                transformationMatrix.setTranslate(2f * bitmap.width, 0f * bitmap.height)
-
-                // First, draw the bitmap with the pixel data, then draw the mask to remove
-                // any background pixels.
-                frame.overlayCanvas.drawBitmap(bitmap, transformationMatrix, null)
-                frame.overlayCanvas.drawBitmap(mask, transformationMatrix, paint)
+                // Draw the bitmap and mask, positioning the overlay in the bottom right corner.
+                frame.overlayCanvas.drawBitmap(bitmap, 2f * bitmap.width, 0f, null)
+                frame.overlayCanvas.drawBitmap(mask, 2f * bitmap.width, 0f, paint)
 
                 isGreenScreenProcessing = false
                 true
@@ -518,14 +513,12 @@ class CameraViewModel @Inject constructor(
             .setDetectorMode(SelfieSegmenterOptions.STREAM_MODE)
             .build()
         val selfieSegmenter = Segmentation.getClient(options)
-        var isAnalyzing = false
 
         @ExperimentalGetImage
         override fun analyze(imageProxy: ImageProxy) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
             val mediaImage = imageProxy.image
-            if (mediaImage != null && !isAnalyzing) {
-                isAnalyzing = true
+            if (mediaImage != null) {
                 val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                 selfieSegmenter.process(image)
                     .addOnSuccessListener { results ->
@@ -555,15 +548,10 @@ class CameraViewModel @Inject constructor(
 
                         matrix.preRotate(90F)
                         mask = Bitmap.createBitmap(mask, 0, 0, mask.width, mask.height, matrix, false)
-
+                    }
+                    .addOnCompleteListener {
                         // Final cleanup. Close imageProxy for next analysis frame.
                         imageProxy.close()
-                        isAnalyzing = false
-                    }
-                    .addOnFailureListener { e ->
-                        // Task failed with an exception. Close imageProxy for next analysis frame.
-                        imageProxy.close()
-                        isAnalyzing = false
                     }
             } else {
                 imageProxy.close()
