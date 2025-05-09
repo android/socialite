@@ -21,7 +21,6 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -30,8 +29,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.navigation3.NavEntry
-import androidx.navigation3.SceneNavDisplay
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.camera.Camera
@@ -77,7 +76,7 @@ fun MainNavigation(
         modifier = modifier,
         backStack = backStack,
     ) {
-        SceneNavDisplay(
+        NavDisplay(
             backStack = backStack,
             onBack = { repeat(it) { backStack.removeLastOrNull() } },
             sceneStrategy = rememberListDetailSceneStrategy(
@@ -95,9 +94,7 @@ fun MainNavigation(
 
                     is Pane.ChatsList -> NavEntry(
                         key = backStackKey,
-                        metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
-                            ListDetailPaneScaffoldRole.List,
-                        ),
+                        metadata = ListDetailPaneScaffoldSceneStrategy.listPaneMetadata(),
                     ) {
                         ChatList(
                             onOpenChatRequest = { request ->
@@ -115,9 +112,7 @@ fun MainNavigation(
 
                     is Pane.ChatThread -> NavEntry(
                         key = backStackKey,
-                        metadata = ListDetailPaneScaffoldSceneStrategy.paneRole(
-                            ListDetailPaneScaffoldRole.Detail,
-                        ),
+                        metadata = ListDetailPaneScaffoldSceneStrategy.detailPaneMetadata(),
                     ) {
                         ChatScreen(
                             chatId = backStackKey.chatId,
