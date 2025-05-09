@@ -145,7 +145,6 @@ class CameraViewModel @Inject constructor(
 
     lateinit var mask: Bitmap
     lateinit var bitmap: Bitmap
-    var isGreenScreenProcessing = false
 
     private var currentRecording: Recording? = null
     private lateinit var recordingState: VideoRecordEvent
@@ -192,7 +191,6 @@ class CameraViewModel @Inject constructor(
                 frame.overlayCanvas.drawBitmap(bitmap, null, rect, null)
                 frame.overlayCanvas.drawBitmap(mask, null, rect, paint)
 
-                isGreenScreenProcessing = false
                 true
             }
         }
@@ -529,7 +527,7 @@ class CameraViewModel @Inject constructor(
         lateinit var maskBuffer: ByteBuffer
         lateinit var maskBitmap: Bitmap
 
-        @ExperimentalGetImage
+        @androidx.annotation.OptIn(ExperimentalGetImage::class)
         override fun analyze(imageProxy: ImageProxy) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
             val mediaImage = imageProxy.image
