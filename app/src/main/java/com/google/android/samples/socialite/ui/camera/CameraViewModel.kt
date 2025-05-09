@@ -21,10 +21,12 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -65,6 +67,7 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.SavedStateHandle
@@ -79,6 +82,7 @@ import com.google.mlkit.vision.segmentation.selfie.SelfieSegmenterOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.lang.System.currentTimeMillis
+import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -164,6 +168,14 @@ class CameraViewModel @Inject constructor(
             // Create a Paint object to draw the mask layer.
             val paint = Paint()
             paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+            paint.colorFilter = ColorMatrixColorFilter(
+                floatArrayOf(
+                    0f, 0f, 0f, 1f, 0f,
+                    0f, 0f, 0f, 1f, 0f,
+                    0f, 0f, 0f, 1f, 0f,
+                    0f, 0f, 0f, 1f, 0f,
+                ),
+            )
 
             greenScreenEffect.setOnDrawListener { frame ->
                 if (!::mask.isInitialized || !::bitmap.isInitialized) {
@@ -176,8 +188,9 @@ class CameraViewModel @Inject constructor(
                 frame.overlayCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
                 // Draw the bitmap and mask, positioning the overlay in the bottom right corner.
-                frame.overlayCanvas.drawBitmap(bitmap, 2f * bitmap.width, 0f, null)
-                frame.overlayCanvas.drawBitmap(mask, 2f * bitmap.width, 0f, paint)
+                val rect = Rect(2 * bitmap.width, 0, 3 * bitmap.width, bitmap.height)
+                frame.overlayCanvas.drawBitmap(bitmap, null, rect, null)
+                frame.overlayCanvas.drawBitmap(mask, null, rect, paint)
 
                 isGreenScreenProcessing = false
                 true
@@ -510,8 +523,11 @@ class CameraViewModel @Inject constructor(
 
         val options = SelfieSegmenterOptions.Builder()
             .setDetectorMode(SelfieSegmenterOptions.STREAM_MODE)
+            .enableRawSizeMask()
             .build()
         val selfieSegmenter = Segmentation.getClient(options)
+        lateinit var maskBuffer: ByteBuffer
+        lateinit var maskBitmap: Bitmap
 
         @ExperimentalGetImage
         override fun analyze(imageProxy: ImageProxy) {
@@ -523,30 +539,77 @@ class CameraViewModel @Inject constructor(
                     .addOnSuccessListener { results ->
                         // Get foreground probabilities for each pixel. Since ML Kit returns this
                         // in a byte buffer with each 4 bytes representing a float, convert it to
-                        // a FloatArray for easier use.
-                        val maskProbabilities = FloatArray(results.buffer.capacity() / 4)
-                        results.buffer.asFloatBuffer().get(maskProbabilities)
+                        // a FloatBuffer for easier use.
+                        val maskProbabilities = results.buffer.asFloatBuffer()
 
-                        // If the pixel foreground likelihood is above the threshold, assign it
-                        // with a color, otherwise assign it transparent so it will be masked out.
-                        val maskColors = maskProbabilities.map { point ->
-                            if (point > backgroundRemovalThreshold) {
-                                Color.WHITE
-                            } else {
-                                Color.TRANSPARENT
+                        // Initialize our mask buffer and intermediate mask bitmap
+                        if (!::maskBuffer.isInitialized) {
+                            maskBitmap = createBitmap(
+                                results.width,
+                                results.height,
+                                Bitmap.Config.ALPHA_8,
+                            )
+                            maskBuffer = ByteBuffer.allocateDirect(
+                                maskBitmap.allocationByteCount,
+                            )
+                        }
+                        maskBuffer.rewind()
+
+                        // Convert the mask to an A8 image from the mask probabilities.
+                        // We use a line buffer hear to optimize reads from the FloatBuffer.
+                        val lineBuffer = FloatArray(results.width)
+                        for (y in 0..<results.height) {
+                            maskProbabilities.get(lineBuffer)
+                            for (point in lineBuffer) {
+                                maskBuffer.put(
+                                    if (point > backgroundRemovalThreshold) {
+                                        255.toByte()
+                                    } else {
+                                        0
+                                    },
+                                )
                             }
-                        }.toIntArray()
+                        }
+                        maskBuffer.rewind()
+                        // Convert the mask buffer to a Bitmap so we can easily rotate and
+                        // mirror.
+                        maskBitmap.copyPixelsFromBuffer(maskBuffer)
 
-                        bitmap = imageProxy.toBitmap()
-                        mask = Bitmap.createBitmap(maskColors, mediaImage.height, mediaImage.width, Bitmap.Config.ARGB_8888)
+                        // Transformation matrix to mirror and rotate our bitmaps
+                        val matrix = Matrix().apply {
+                            setScale(-1f, 1f)
+                        }
 
-                        // Create final bitmap and mask, performing transformations so that they match.
-                        val matrix = Matrix()
-                        matrix.preScale(-1f, 1f)
-                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, false)
+                        // Mirror the ImageProxy
+                        bitmap = Bitmap.createBitmap(
+                            imageProxy.toBitmap(),
+                            0,
+                            0,
+                            imageProxy.width,
+                            imageProxy.height,
+                            matrix,
+                            false,
+                        )
 
-                        matrix.preRotate(90F)
-                        mask = Bitmap.createBitmap(mask, 0, 0, mask.width, mask.height, matrix, false)
+                        // Rotate and mirror the mask. When the rotation is 90 or 270, we need
+                        // to swap the width and height.
+                        val rotation = imageProxy.imageInfo.rotationDegrees
+                        val (rotWidth, rotHeight) = when (rotation) {
+                            90, 270 ->
+                                Pair(maskBitmap.height, maskBitmap.width)
+
+                            else ->
+                                Pair(maskBitmap.width, maskBitmap.height)
+                        }
+                        mask = Bitmap.createBitmap(
+                            maskBitmap,
+                            0,
+                            0,
+                            rotWidth,
+                            rotHeight,
+                            matrix.apply { preRotate(-rotation.toFloat()) },
+                            false,
+                        )
                     }
                     .addOnCompleteListener {
                         // Final cleanup. Close imageProxy for next analysis frame.
