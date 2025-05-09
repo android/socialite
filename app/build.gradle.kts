@@ -94,6 +94,9 @@ dependencies {
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
+    implementation(libs.camera.media3.effect)
+    implementation(libs.vision.common)
+    implementation(libs.segmentation.selfie)
     implementation(libs.litert)
     implementation(libs.litert.gpu)
     implementation(libs.litert.support.api)
@@ -149,6 +152,7 @@ dependencies {
     implementation(libs.camera.core)
     implementation(libs.camera.compose)
     implementation(libs.camera2)
+    implementation(libs.camera.effects)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
 
