@@ -22,7 +22,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -39,11 +38,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.carousel.CarouselDefaults
 import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -70,8 +67,6 @@ import androidx.media3.ui.compose.modifiers.resizeWithContentScale
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
-import com.google.android.samples.socialite.ui.components.PlayArrowIcon
-import com.google.android.samples.socialite.ui.components.VideoPreview
 import com.google.android.samples.socialite.ui.home.timeline.TimelineMediaItem
 import com.google.android.samples.socialite.ui.home.timeline.TimelineMediaType
 
@@ -191,56 +186,6 @@ private fun Scrim(
             .background(brush)
             .then(modifier),
     )
-}
-
-@Composable
-fun TimelineGridItem(
-    mediaItem: TimelineMediaItem,
-    modifier: Modifier = Modifier,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    onClick: () -> Unit = {},
-) {
-    TimelineCard(
-        modifier = modifier.clickable(
-            interactionSource = interactionSource,
-            indication = ripple(),
-            onClick = onClick,
-        ),
-    ) {
-        when (mediaItem.type) {
-            TimelineMediaType.PHOTO -> {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(mediaItem.uri)
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            TimelineMediaType.VIDEO -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.primary),
-                ) {
-                    VideoPreview(
-                        videoUri = mediaItem.uri,
-                        contentScale = ContentScale.Crop,
-                    ) {
-                        PlayArrowIcon(
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-                    }
-                }
-            }
-        }
-        MetadataOverlay(
-            mediaItem = mediaItem,
-            modifier = Modifier.padding(16.dp),
-        )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
