@@ -184,4 +184,23 @@ private fun isInputValid(textFieldState: TextFieldState): Boolean {
     return textFieldState.text.isNotBlank()
 }
 
-data class MediaItem(val uri: String, val mimeType: String)
+data class MediaItem(val uri: String, val mimeType: String) {
+
+    val extension get(): String? {
+        return mimeTypeToExtensionMap[mimeType]
+    }
+
+    companion object {
+        private val mimeTypeToExtensionMap = mapOf(
+            "image/bmp" to "bmp",
+            "image/gif" to "gif",
+            "image/jpeg" to "jpg",
+            "image/jpg" to "jpg",
+            "image/png" to "png",
+            "image/svg+xml" to "svg",
+            "image/webp" to "webp",
+            "video/mp4" to "mp4",
+            "video/mpeg" to "mpeg",
+        )
+    }
+}

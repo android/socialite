@@ -51,6 +51,7 @@
     <string name="open_in_new_window">Open in new window</string>
     <string name="option">Option</string>
     <string name="remove_attachment">Remove attachment</string>
+    <string name="copy">Copy</string>
 
     <!-- Settings -->
     <eat-comment />

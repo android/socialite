@@ -25,4 +25,12 @@ data class ChatMessage(
     val timestamp: Long,
     val isIncoming: Boolean,
     val senderIconUri: Uri?,
-)
+) {
+    val isVideoContentAttached: Boolean get() {
+        return mediaMimeType?.startsWith("video/") == true
+    }
+
+    val isImageContentAttached: Boolean get() {
+        return mediaMimeType?.startsWith("image/") == true
+    }
+}
