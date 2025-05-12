@@ -43,7 +43,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,7 +68,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -85,6 +84,7 @@ import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.ui.SocialTheme
 import com.google.android.samples.socialite.ui.chat.component.InputBar
 import com.google.android.samples.socialite.ui.chat.component.MessageBubble
+import com.google.android.samples.socialite.ui.chat.component.mediaItemDropTarget
 import com.google.android.samples.socialite.ui.chat.component.scrollWithKeyboards
 import com.google.android.samples.socialite.ui.components.tryRequestFocus
 import com.google.android.samples.socialite.ui.rememberIconPainter
@@ -130,6 +130,7 @@ fun ChatScreen(
                 .clip(RoundedCornerShape(5)),
         )
     }
+
     LifecycleEffect(
         onResume = { viewModel.setForeground(foreground) },
         onPause = { viewModel.setForeground(false) },
@@ -141,7 +142,7 @@ private fun LifecycleEffect(
     onResume: () -> Unit = {},
     onPause: () -> Unit = {},
 ) {
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
         val listener = object : DefaultLifecycleObserver {
             override fun onResume(owner: LifecycleOwner) {
@@ -190,7 +191,7 @@ private fun ChatContent(
             )
             .focusProperties {
                 onEnter = {
-                    focusRequester.tryRequestFocus()
+                    focusRequester.tryRequestFocus().onFailure { }
                 }
             }
             .focusGroup(),
@@ -202,7 +203,9 @@ private fun ChatContent(
             )
         },
     ) { innerPadding ->
-        Column {
+        Column(
+            modifier = Modifier.mediaItemDropTarget(onMediaItemAttached = onMediaItemAttached),
+        ) {
             val layoutDirection = LocalLayoutDirection.current
             MessageList(
                 messages = messages,
@@ -271,7 +274,7 @@ private fun ChatAppBar(
             if (onBackPressed != null) {
                 IconButton(onClick = onBackPressed) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back),
                     )
                 }
