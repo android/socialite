@@ -17,15 +17,9 @@
 package com.google.android.samples.socialite.ui.chat
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.indication
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,7 +30,6 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -54,15 +47,12 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -76,10 +66,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -91,23 +78,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.ChatWithLastMessage
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.ui.SocialTheme
 import com.google.android.samples.socialite.ui.chat.component.InputBar
-import com.google.android.samples.socialite.ui.chat.component.isKeyPressed
-import com.google.android.samples.socialite.ui.components.PlayArrowIcon
-import com.google.android.samples.socialite.ui.components.VideoPreview
+import com.google.android.samples.socialite.ui.chat.component.MessageBubble
+import com.google.android.samples.socialite.ui.chat.component.scrollWithKeyboards
 import com.google.android.samples.socialite.ui.components.tryRequestFocus
 import com.google.android.samples.socialite.ui.rememberIconPainter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-
-private const val TAG = "ChatUI"
 
 @Composable
 fun ChatScreen(
@@ -252,57 +232,6 @@ private fun ChatContent(
     }
 }
 
-private fun Modifier.scrollWithKeyboards(
-    scrollState: LazyListState,
-    coroutineScope: CoroutineScope,
-): Modifier {
-    return onKeyEvent { event ->
-        when {
-            event.isKeyPressed(Key.DirectionDown, shouldShiftBePressed = true) -> {
-                scrollState.pageDown(coroutineScope)
-                true
-            }
-
-            event.isKeyPressed(Key.PageDown) -> {
-                scrollState.pageDown(coroutineScope)
-                true
-            }
-
-            event.isKeyPressed(Key.DirectionUp, shouldShiftBePressed = true) -> {
-                scrollState.pageUp(coroutineScope)
-                true
-            }
-
-            event.isKeyPressed(Key.PageUp) -> {
-                scrollState.pageUp(coroutineScope)
-                true
-            }
-
-            else -> false
-        }
-    }
-}
-
-private fun LazyListState.pageUp(
-    coroutineScope: CoroutineScope,
-    fraction: Float = 0.8f,
-) {
-    val amount = layoutInfo.viewportSize.height * fraction
-    coroutineScope.launch {
-        animateScrollBy(amount)
-    }
-}
-
-private fun LazyListState.pageDown(
-    coroutineScope: CoroutineScope,
-    fraction: Float = 0.8f,
-) {
-    val amount = -layoutInfo.viewportSize.height * fraction
-    coroutineScope.launch {
-        animateScrollBy(amount)
-    }
-}
-
 private fun PaddingValues.copy(
     layoutDirection: LayoutDirection,
     start: Dp? = null,
@@ -402,90 +331,6 @@ private fun MessageList(
             }
         }
     }
-}
-
-@Composable
-private fun MessageBubble(
-    message: ChatMessage,
-    modifier: Modifier = Modifier,
-    onVideoClick: () -> Unit = {},
-) {
-    val mimeType = message.mediaMimeType
-    val interactionSource = remember { MutableInteractionSource() }
-    val indication = remember { ripple() }
-
-    Surface(
-        modifier = modifier
-            .then(
-                if (mimeType != null && mimeType.contains("video")) {
-                    Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = indication,
-                        onClick = onVideoClick,
-                    )
-                } else {
-                    Modifier.focusable(interactionSource = interactionSource)
-                },
-            )
-            .indication(interactionSource = interactionSource, indication = indication),
-        color = if (message.isIncoming) {
-            MaterialTheme.colorScheme.secondaryContainer
-        } else {
-            MaterialTheme.colorScheme.primary
-        },
-        shape = MaterialTheme.shapes.large,
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Text(text = message.text)
-            if (message.mediaUri != null) {
-                if (mimeType != null) {
-                    if (mimeType.contains("image")) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(message.mediaUri)
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .height(250.dp)
-                                .padding(10.dp),
-                        )
-                    } else if (mimeType.contains("video")) {
-                        VideoMessagePreview(
-                            videoUri = message.mediaUri,
-                            onClick = onVideoClick,
-                        )
-                    } else {
-                        Log.e(TAG, "Unrecognized media type")
-                    }
-                } else {
-                    Log.e(TAG, "No MIME type associated with media object")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun VideoMessagePreview(
-    videoUri: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    VideoPreview(
-        videoUri = videoUri,
-        modifier = modifier
-            .clickable(onClick = onClick)
-            .padding(10.dp),
-        overlay = {
-            PlayArrowIcon(
-                modifier = Modifier
-                    .size(50.dp)
-                    .align(Alignment.Center),
-            )
-        },
-    )
 }
 
 @Preview

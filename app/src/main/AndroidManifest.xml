@@ -158,6 +158,18 @@
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.google.android.samples.socialite.file_provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/shared_paths" />
+
+        </provider>
+
         <receiver android:name="com.google.android.samples.socialite.ReplyReceiver" />
 
         <!-- Trigger Google Play services to install the backported photo picker module.

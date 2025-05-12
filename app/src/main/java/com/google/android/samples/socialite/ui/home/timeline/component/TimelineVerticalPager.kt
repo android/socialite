@@ -18,6 +18,7 @@ package com.google.android.samples.socialite.ui.home.timeline.component
 
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -69,57 +70,102 @@ internal fun TimelineVerticalPager(
         }
     }
 
+    if (player != null) {
+        TimelineVerticalPager(
+            mediaItems = mediaItems,
+            player = player,
+            pagerState = pagerState,
+            videoRatio = videoRatio,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun TimelineVerticalPager(
+    mediaItems: List<TimelineMediaItem>,
+    player: Player,
+    pagerState: PagerState,
+    videoRatio: Float?,
+    modifier: Modifier = Modifier,
+) {
     VerticalPager(
         state = pagerState,
         modifier = modifier,
     ) { page ->
-        if (player != null) {
-            TimelineCard(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp)
-                    .graphicsLayer {
-                        // Calculate the absolute offset for the current page from the
-                        // scroll position. We use the absolute value which allows us to mirror
-                        // any effects for both directions
-                        val pageOffset = (
-                            (pagerState.currentPage - page) + pagerState
-                                .currentPageOffsetFraction
-                            ).absoluteValue
+        val mediaItem = mediaItems[page]
 
-                        // We animate the alpha, between 0% and 100%
-                        alpha = lerp(
-                            start = 0f,
-                            stop = 1f,
-                            fraction = 1f - pageOffset.coerceIn(0f, 1f),
-                        )
+        TimelinePage(
+            mediaItem = mediaItem,
+            player = player,
+            page = page,
+            pagerState = pagerState,
+            videoRatio = videoRatio,
+            modifier = Modifier
+                .combinedClickable(
+                    enabled = true,
+                    onClick = {},
+                    onLongClick = {
                     },
-            ) {
-                TimelinePage(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    media = mediaItems[page],
-                    player = player,
-                    page,
-                    pagerState,
-                    videoRatio,
                 )
+                .fillMaxSize()
+                .padding(8.dp)
+                .graphicsLayer {
+                    // Calculate the absolute offset for the current page from the
+                    // scroll position. We use the absolute value which allows us to mirror
+                    // any effects for both directions
+                    val pageOffset = (
+                        (pagerState.currentPage - page) + pagerState
+                            .currentPageOffsetFraction
+                        ).absoluteValue
+                    // We animate the alpha, between 0% and 100%
+                    alpha = lerp(
+                        start = 0f,
+                        stop = 1f,
+                        fraction = 1f - pageOffset.coerceIn(0f, 1f),
+                    )
+                },
+        )
+    }
+}
 
-                MetadataOverlay(
-                    modifier = Modifier.padding(16.dp),
-                    mediaItem = mediaItems[page],
-                )
-            }
+@Composable
+private fun TimelinePage(
+    mediaItem: TimelineMediaItem,
+    player: Player,
+    page: Int,
+    pagerState: PagerState,
+    videoRatio: Float?,
+    modifier: Modifier = Modifier,
+) {
+    TimelineCard(
+        modifier = modifier,
+    ) {
+        ContextMenuArea(mediaItem) {
+            MediaItem(
+                modifier = Modifier.Companion
+                    .align(Alignment.Center)
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .draggableMediaItem(mediaItem),
+                media = mediaItem,
+                player = player,
+                page,
+                pagerState,
+                videoRatio,
+            )
         }
+        MetadataOverlay(
+            modifier = Modifier.padding(16.dp),
+            mediaItem = mediaItem,
+        )
     }
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TimelinePage(
+private fun MediaItem(
     modifier: Modifier = Modifier,
     media: TimelineMediaItem,
     player: Player,
