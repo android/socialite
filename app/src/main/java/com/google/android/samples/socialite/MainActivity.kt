@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -28,10 +29,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
+import androidx.lifecycle.lifecycleScope
 import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -42,7 +44,10 @@ class MainActivity : ComponentActivity() {
             window.isNavigationBarContrastEnforced = false
         }
         super.onCreate(savedInstanceState)
-        runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
+        // Avoid calling widget APIs if the platform doesn't support widgets
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_APP_WIDGETS)) {
+            lifecycleScope.launch { SociaLiteAppWidget().updateAll(this@MainActivity) }
+        }
         setContent {
             Main(
                 appArgs = extractAppArgs(intent),
