@@ -19,8 +19,6 @@ package com.google.android.samples.socialite.ui.chat.component
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.content.MediaType
 import androidx.compose.foundation.content.ReceiveContentListener
-import androidx.compose.foundation.content.TransferableContent
-import androidx.compose.foundation.content.consume
 import androidx.compose.foundation.content.contentReceiver
 import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.focusGroup
@@ -87,7 +85,6 @@ internal fun InputBar(
     attachedMedia: MediaItem? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
-    rememberReceiveContentListener(onMediaItemAttached)
 
     Surface(
         modifier = modifier
@@ -272,24 +269,6 @@ private fun rememberReceiveContentListener(
         }
     }
 }
-
-@OptIn(ExperimentalFoundationApi::class)
-private fun TransferableContent.tryCreateMediaItem(
-    mediaType: MediaType,
-    onMediaItemAttached: (MediaItem) -> Unit,
-): TransferableContent? {
-    val mimeTypes = clipMetadata.clipDescription.filterMimeTypes(mediaType.representation)
-    return if (mimeTypes.isEmpty()) {
-        this
-    } else {
-        consume { item ->
-            onMediaItemAttached(MediaItem(item.uri.toString(), mimeTypes.first()))
-            true
-        }
-    }
-}
-
-private val MediaType.Companion.Video get() = MediaType("video/*")
 
 private fun MediaItem.isImage(): Boolean {
     return mimeType.startsWith("image/")
