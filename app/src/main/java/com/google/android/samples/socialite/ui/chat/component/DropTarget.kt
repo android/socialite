@@ -126,10 +126,13 @@ private fun rememberMediaItemDropTarget(
                     val dropPermission =
                         activity.requestDragAndDropPermissions(event.toAndroidDragEvent())
 
-                    val item = clipData.getItemAt(0)
-                    onMediaItemAttached(MediaItem(item.uri.toString(), mimeTypes.first()))
+                    try {
+                        val item = clipData.getItemAt(0)
+                        onMediaItemAttached(MediaItem(item.uri.toString(), mimeTypes.first()))
+                    } finally {
+                        dropPermission.release()
+                    }
 
-                    dropPermission.release()
                     true
                 }
             }
