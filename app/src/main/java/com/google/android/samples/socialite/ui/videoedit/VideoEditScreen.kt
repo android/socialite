@@ -86,6 +86,7 @@ import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
+import com.google.android.samples.socialite.ui.navigation.Route
 
 /**
  * Configuration options for video preview.
@@ -117,7 +118,7 @@ fun VideoEditScreen(
 
     val isFinishedEditing = viewModel.isFinishedEditing.collectAsStateWithLifecycle()
     if (isFinishedEditing.value) {
-        navController.popBackStack("chat/$chatId", false)
+        navController.popBackStack(Route.ChatThread(chatId), false)
     }
 
     val isProcessing = viewModel.isProcessing.collectAsState()
