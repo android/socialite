@@ -64,8 +64,7 @@ class TimelineViewModel @Inject constructor(
     private lateinit var preloadManager: PreloadManagerWrapper
 
     // Playback thread; Internal playback / preload operations are running on the playback thread.
-    private val playerThread: HandlerThread =
-        HandlerThread("playback-thread", Process.THREAD_PRIORITY_AUDIO)
+    private var playerThread: HandlerThread? = null
 
     var playbackStartTimeMs = C.TIME_UNSET
 
@@ -140,12 +139,11 @@ class TimelineViewModel @Inject constructor(
             )
                 .setPrioritizeTimeOverSizeThresholds(true).build()
 
-        playerThread.start()
-
+        val thread = initPlayerThread()
         val newPlayer = ExoPlayer
             .Builder(application.applicationContext)
             .setLoadControl(loadControl)
-            .setPlaybackLooper(playerThread.looper)
+            .setPlaybackLooper(thread.looper)
             .build()
             .also {
                 it.repeatMode = ExoPlayer.REPEAT_MODE_ONE
@@ -158,8 +156,16 @@ class TimelineViewModel @Inject constructor(
         player = newPlayer
 
         if (enablePreloadManager) {
-            initPreloadManager(loadControl, playerThread)
+            initPreloadManager(loadControl, thread)
         }
+    }
+
+    private fun initPlayerThread(): HandlerThread {
+        val thread = HandlerThread("PlayerThread", Process.THREAD_PRIORITY_BACKGROUND).apply {
+            start()
+        }
+        playerThread = thread
+        return thread
     }
 
     private fun initPreloadManager(
@@ -184,7 +190,8 @@ class TimelineViewModel @Inject constructor(
             removeListener(firstFrameListener)
             release()
         }
-        playerThread.quit()
+        playerThread?.quitSafely()
+        playerThread = null
         videoRatio = null
         player = null
     }
