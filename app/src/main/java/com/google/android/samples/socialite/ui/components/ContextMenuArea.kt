@@ -16,7 +16,6 @@
 
 package com.google.android.samples.socialite.ui.components
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -98,7 +97,6 @@ private fun Modifier.rightClickDetector(
                     it.pressed
                 }
                 if (press != null) {
-                    Log.d("ContextMenuArea", "Right click detected: $press, ${press.position}, ${event.type}")
                     onRightClick(press.position)
                 }
                 event.changes.forEach {
