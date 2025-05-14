@@ -40,7 +40,10 @@ private fun Context.tryCreateContentUriWithFileProvider(
     authority: String = "com.google.android.samples.socialite.file_provider",
 ): Result<Uri> {
     return runCatching {
-        val file = File(mediaItem.path!!)
+        val path = mediaItem.path ?: run {
+            throw IllegalArgumentException("Media item path is null")
+        }
+        val file = File(path)
         FileProvider.getUriForFile(this, authority, file)
     }
 }

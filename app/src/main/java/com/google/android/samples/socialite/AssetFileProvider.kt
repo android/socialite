@@ -50,10 +50,12 @@ class AssetFileProvider : ContentProvider() {
                     context?.resources?.assets?.openFd(contact.icon)
                 }
             }
+
             "photo", "video" -> {
                 val filename = segments[1]
                 context?.resources?.assets?.openFd(filename)
             }
+
             else -> null
         }
     }
@@ -66,7 +68,6 @@ class AssetFileProvider : ContentProvider() {
         sortOrder: String?,
     ): Cursor? {
         val segments = uri.pathSegments
-        segments.last()
         return when (segments[0]) {
             "icon", "video", "photo" -> {
                 val columns = arrayOf(
@@ -77,6 +78,7 @@ class AssetFileProvider : ContentProvider() {
                     addRow(arrayOf(segments.last()))
                 }
             }
+
             else -> null
         }
     }
