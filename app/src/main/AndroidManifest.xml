@@ -155,8 +155,13 @@
         <provider
             android:name="com.google.android.samples.socialite.AssetFileProvider"
             android:authorities="com.google.android.samples.socialite"
-            android:exported="true"
-            tools:ignore="ExportedContentProvider" />
+            android:exported="false"
+            android:grantUriPermissions="true"
+            tools:ignore="ExportedContentProvider">
+            <grant-uri-permission android:pathPattern="/photo/.*" />
+            <grant-uri-permission android:pathPattern="/video/.*" />
+            <grant-uri-permission android:pathPattern="/icon/.*" />
+        </provider>
 
         <provider
             android:name="androidx.core.content.FileProvider"
