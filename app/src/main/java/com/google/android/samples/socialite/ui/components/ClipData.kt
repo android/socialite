@@ -19,7 +19,6 @@ package com.google.android.samples.socialite.ui.components
 import android.content.ClipData
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.content.FileProvider
 import java.io.File
 
@@ -31,7 +30,6 @@ internal fun Context.tryCreateClipData(
     return tryCreateContentUriWithFileProvider(uri).recover {
         uri
     }.map { sharableUri ->
-        Log.d("tryCreateClipData", "sharableUri: $sharableUri")
         ClipData.newUri(contentResolver, CLIP_DATA_LABEL, sharableUri)
     }
 }
