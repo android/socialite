@@ -18,21 +18,33 @@ package com.google.android.samples.socialite.ui
 
 import android.app.Activity
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.navigation3.ListDetailPaneScaffoldSceneStrategy
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.navEntryDecorator
+import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.camera.Camera
@@ -62,7 +74,7 @@ fun Main(
     }
 }
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun MainNavigation(
     modifier: Modifier,
@@ -72,134 +84,175 @@ fun MainNavigation(
     val activity = LocalActivity.current
     val backStack = rememberSavableMutableStateListOf(TopLevelDestination.START_DESTINATION.pane)
 
-    SocialiteNavSuite(
-        modifier = modifier,
-        backStack = backStack,
-    ) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { repeat(it) { backStack.removeLastOrNull() } },
-            sceneStrategy = rememberListDetailSceneStrategy(
-                onBack = { repeat(it) { backStack.removeLastOrNull() } },
-            ),
-            entryProvider = { backStackKey ->
-                when (backStackKey) {
-                    is Pane.Timeline -> NavEntry(backStackKey) {
-                        Timeline(Modifier.fillMaxSize())
-                    }
+    /** The [SharedTransitionScope] of the [NavDisplay]. */
+    val localNavSharedTransitionScope: ProvidableCompositionLocal<SharedTransitionScope> =
+        compositionLocalOf {
+            throw IllegalStateException(
+                "Unexpected access to LocalNavSharedTransitionScope. You must provide a " +
+                    "SharedTransitionScope from a call to SharedTransitionLayout() or " +
+                    "SharedTransitionScope()"
+            )
+        }
 
-                    is Pane.Settings -> NavEntry(backStackKey) {
-                        Settings(Modifier.fillMaxSize())
-                    }
-
-                    is Pane.ChatsList -> NavEntry(
-                        key = backStackKey,
-                        metadata = ListDetailPaneScaffoldSceneStrategy.listPane(),
-                    ) {
-                        ChatList(
-                            onOpenChatRequest = { request ->
-                                handleOChatOpenRequest(
-                                    request = request,
-                                    onOpenInSameWindow = { chatId ->
-                                        backStack.add(Pane.ChatThread(chatId = chatId))
-                                    },
-                                    activity = activity,
-                                    coroutineScope = coroutineScope,
-                                )
-                            },
-                        )
-                    }
-
-                    is Pane.ChatThread -> NavEntry(
-                        key = backStackKey,
-                        metadata = ListDetailPaneScaffoldSceneStrategy.detailPane(),
-                    ) {
-                        ChatScreen(
-                            chatId = backStackKey.chatId,
-                            foreground = true,
-                            onBackPressed = { backStack.removeLastOrNull() },
-                            onCameraClick = { backStack.add(Pane.Camera(backStackKey.chatId)) },
-                            onPhotoPickerClick = { backStack.add(Pane.PhotoPicker(backStackKey.chatId)) },
-                            onVideoClick = { uri -> backStack.add(Pane.VideoPlayer(uri)) },
-                            prefilledText = backStackKey.text,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-
-                    is Pane.Camera -> NavEntry(backStackKey) {
-                        val chatId = backStackKey.chatId
-                        Camera(
-                            chatId = backStackKey.chatId,
-                            onMediaCaptured = { capturedMedia: Media? ->
-                                when (capturedMedia?.mediaType) {
-                                    MediaType.PHOTO -> {
-                                        backStack.removeLastOrNull()
-                                    }
-
-                                    MediaType.VIDEO -> {
-                                        backStack.add(
-                                            Pane.VideoEdit(
-                                                chatId,
-                                                capturedMedia.uri.toString(),
-                                            ),
-                                        )
-                                    }
-
-                                    else -> {
-                                        // No media to use.
-                                        backStack.removeLastOrNull()
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-
-                    is Pane.PhotoPicker -> NavEntry(backStackKey) {
-                        PhotoPickerRoute(
-                            chatId = backStackKey.chatId,
-                            onPhotoPicked = { backStack.removeLastOrNull() },
-                        )
-                    }
-
-                    is Pane.VideoEdit -> NavEntry(backStackKey) {
-                        VideoEditScreen(
-                            chatId = backStackKey.chatId,
-                            uri = backStackKey.uri,
-                            onCloseButtonClicked = { backStack.removeLastOrNull() },
-                            onFinishEditing = {
-                                var pane = backStack.lastOrNull()
-                                while (pane != null &&
-                                    (
-                                        pane !is Pane.ChatThread ||
-                                            pane.chatId != backStackKey.chatId
-                                        )
-                                ) {
-                                    backStack.removeLastOrNull()
-                                    pane = backStack.lastOrNull()
-                                }
-                            },
-                        )
-                    }
-
-                    is Pane.VideoPlayer -> NavEntry(backStackKey) {
-                        VideoPlayerScreen(
-                            uri = backStackKey.uri,
-                            onCloseButtonClicked = { backStack.removeLastOrNull() },
-                        )
-                    }
-
-                    else -> NavEntry(backStackKey) {
-                        Text("Unknown pane: $backStackKey")
-                    }
-                }
-            },
-        )
+    /**
+     * A [NavEntryDecorator] that wraps each entry in a shared element that is controlled by the
+     * [Scene].
+     */
+    val sharedEntryInSceneNavEntryDecorator = navEntryDecorator { entry ->
+        with(localNavSharedTransitionScope.current) {
+            Box(
+                Modifier.sharedElement(
+                    rememberSharedContentState(entry.key),
+                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                ),
+            ) {
+                entry.content(entry.key)
+            }
+        }
     }
 
-    LaunchedEffect(appArgs) {
-        if (appArgs != null) {
-            backStack.add(appArgs.toPane())
+    SharedTransitionLayout {
+        CompositionLocalProvider(localNavSharedTransitionScope provides this) {
+            SocialiteNavSuite(
+                modifier = modifier,
+                backStack = backStack,
+            ) {
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = { repeat(it) { backStack.removeLastOrNull() } },
+                    sceneStrategy = rememberListDetailSceneStrategy(),
+                    entryDecorators = listOf(
+                        sharedEntryInSceneNavEntryDecorator,
+                        rememberSceneSetupNavEntryDecorator(),
+                        rememberSavedStateNavEntryDecorator(),
+                        rememberViewModelStoreNavEntryDecorator()
+                    ),
+                    entryProvider = { backStackKey ->
+                        when (backStackKey) {
+                            is Pane.Timeline -> NavEntry(backStackKey) {
+                                Timeline(Modifier.fillMaxSize())
+                            }
+
+                            is Pane.Settings -> NavEntry(backStackKey) {
+                                Settings(Modifier.fillMaxSize())
+                            }
+
+                            is Pane.ChatsList -> NavEntry(
+                                key = backStackKey,
+                                metadata = ListDetailSceneStrategy.listPane(),
+                            ) {
+                                ChatList(
+                                    onOpenChatRequest = { request ->
+                                        handleOChatOpenRequest(
+                                            request = request,
+                                            onOpenInSameWindow = { chatId ->
+                                                backStack.add(Pane.ChatThread(chatId = chatId))
+                                            },
+                                            activity = activity,
+                                            coroutineScope = coroutineScope,
+                                        )
+                                    },
+                                )
+                            }
+
+                            is Pane.ChatThread -> NavEntry(
+                                key = backStackKey,
+                                metadata = ListDetailSceneStrategy.detailPane(),
+                            ) {
+                                ChatScreen(
+                                    chatId = backStackKey.chatId,
+                                    foreground = true,
+                                    onBackPressed = { backStack.removeLastOrNull() },
+                                    onCameraClick = { backStack.add(Pane.Camera(backStackKey.chatId)) },
+                                    onPhotoPickerClick = {
+                                        backStack.add(
+                                            Pane.PhotoPicker(
+                                                backStackKey.chatId
+                                            )
+                                        )
+                                    },
+                                    onVideoClick = { uri -> backStack.add(Pane.VideoPlayer(uri)) },
+                                    prefilledText = backStackKey.text,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+
+                            is Pane.Camera -> NavEntry(backStackKey) {
+                                val chatId = backStackKey.chatId
+                                Camera(
+                                    chatId = backStackKey.chatId,
+                                    onMediaCaptured = { capturedMedia: Media? ->
+                                        when (capturedMedia?.mediaType) {
+                                            MediaType.PHOTO -> {
+                                                backStack.removeLastOrNull()
+                                            }
+
+                                            MediaType.VIDEO -> {
+                                                backStack.add(
+                                                    Pane.VideoEdit(
+                                                        chatId,
+                                                        capturedMedia.uri.toString(),
+                                                    ),
+                                                )
+                                            }
+
+                                            else -> {
+                                                // No media to use.
+                                                backStack.removeLastOrNull()
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+
+                            is Pane.PhotoPicker -> NavEntry(backStackKey) {
+                                PhotoPickerRoute(
+                                    chatId = backStackKey.chatId,
+                                    onPhotoPicked = { backStack.removeLastOrNull() },
+                                )
+                            }
+
+                            is Pane.VideoEdit -> NavEntry(backStackKey) {
+                                VideoEditScreen(
+                                    chatId = backStackKey.chatId,
+                                    uri = backStackKey.uri,
+                                    onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                    onFinishEditing = {
+                                        var pane = backStack.lastOrNull()
+                                        while (pane != null &&
+                                            (
+                                                pane !is Pane.ChatThread ||
+                                                    pane.chatId != backStackKey.chatId
+                                                )
+                                        ) {
+                                            backStack.removeLastOrNull()
+                                            pane = backStack.lastOrNull()
+                                        }
+                                    },
+                                )
+                            }
+
+                            is Pane.VideoPlayer -> NavEntry(backStackKey) {
+                                VideoPlayerScreen(
+                                    uri = backStackKey.uri,
+                                    onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                )
+                            }
+
+                            else -> NavEntry(backStackKey) {
+                                Text("Unknown pane: $backStackKey")
+                            }
+                        }
+                    },
+                )
+            }
+
+            LaunchedEffect(appArgs) {
+                if (appArgs != null) {
+                    backStack.add(appArgs.toPane())
+                }
+            }
         }
     }
 }

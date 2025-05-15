@@ -67,8 +67,8 @@ fun ChatListItem(
             .clickable {
                 onOpenChatRequest(ChatOpenRequest.openInSameWindow(chat))
             }
-            .padding(16.dp)
-            .then(modifier),
+            .then(modifier)
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
