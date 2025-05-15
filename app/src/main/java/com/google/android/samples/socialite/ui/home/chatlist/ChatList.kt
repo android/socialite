@@ -50,6 +50,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -169,39 +172,48 @@ private fun Modifier.draggableWithIntentToOpenChat(
     activity: Activity,
 ): Modifier {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-        dragAndDropSource(
-            block = {
-                detectDragGesturesAfterLongPress { _, _ ->
-                    val intent = activity.tryCreateIntentFrom(params)
+        // TODO: This is a workaround to ensure the items are drawn properly
+        val graphicsLayer = rememberGraphicsLayer()
+        return drawWithCache {
+            graphicsLayer.record { drawContent() }
+            onDrawWithContent { drawLayer(graphicsLayer) }
+        }
+            .dragAndDropSource(
+                drawDragDecoration = {
+                    drawLayer(graphicsLayer)
+                },
+                block = {
+                    detectDragGesturesAfterLongPress { _, _ ->
+                        val intent = activity.tryCreateIntentFrom(params)
 
-                    if (intent != null) {
-                        val pendingIntent = PendingIntent.getActivity(
-                            activity,
-                            AppArgs.LaunchParams.REQUEST_CODE,
-                            intent,
-                            PendingIntent.FLAG_IMMUTABLE,
-                        )
-                        val item = ClipData.Item.Builder()
-                            .setIntentSender(pendingIntent.intentSender)
-                            .build()
+                        if (intent != null) {
+                            val pendingIntent = PendingIntent.getActivity(
+                                activity,
+                                AppArgs.LaunchParams.REQUEST_CODE,
+                                intent,
+                                PendingIntent.FLAG_IMMUTABLE,
+                            )
+                            val item = ClipData.Item.Builder()
+                                .setIntentSender(pendingIntent.intentSender)
+                                .build()
 
-                        val clipData = ClipData(
-                            AppArgs.LaunchParams.INTENT_KEY,
-                            arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
-                            item,
-                        )
+                            val clipData = ClipData(
+                                AppArgs.LaunchParams.INTENT_KEY,
+                                arrayOf(ClipDescription.MIMETYPE_TEXT_INTENT),
+                                item,
+                            )
 
-                        val data = DragAndDropTransferData(
-                            clipData = clipData,
-                            flags =
-                            View.DRAG_FLAG_GLOBAL or
-                                View.DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG,
-                        )
-                        startTransfer(data)
+                            val data = DragAndDropTransferData(
+                                clipData = clipData,
+                                flags =
+                                View.DRAG_FLAG_GLOBAL or
+                                    View.DRAG_FLAG_START_INTENT_SENDER_ON_UNHANDLED_DRAG,
+                            )
+                            startTransfer(data)
+                        }
                     }
-                }
-            },
-        )
+                },
+            )
     } else {
         this
     }

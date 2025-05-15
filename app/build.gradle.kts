@@ -166,7 +166,7 @@ dependencies {
     implementation(libs.generativeai)
     implementation(libs.datastore)
 
-    implementation(libs.androidx.navigation3.adaptive)
+    implementation(libs.adaptive.navigation3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
