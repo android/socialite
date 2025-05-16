@@ -49,6 +49,7 @@ turbine = "1.0.0"
 uiautomator = "2.3.0"
 window = "1.3.0"
 material3-adaptive-navigation-suite = "1.4.0-alpha14"
+material3-adaptive-navigation3 = "1.0.0-SNAPSHOT"
 glance = "1.1.1"
 secrets = "2.0.1"
 generativeai = "0.9.0"
@@ -65,6 +66,7 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout" }
 adaptive-navigation = { module = "androidx.compose.material3.adaptive:adaptive-navigation" }
+adaptive-navigation3 = { module = "androidx.compose.material3.adaptive:adaptive-navigation3", version.ref = "material3-adaptive-navigation3" }
 android-material3 = { group = "com.google.android.material", name = "material", version.ref = "android-material3" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacroJunit4" }
 camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camera" }
@@ -125,7 +127,6 @@ generativeai = { group = "com.google.ai.client.generativeai", name = "generative
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodel" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodel" }
-androidx-navigation3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive-navigation3", version.ref = "navigation3" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 
