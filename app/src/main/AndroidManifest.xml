@@ -33,8 +33,14 @@
         core-performance-play-services dependency requires minSdk 24. We fall back to using
         DefaultDevicePerformance from the core-performance dependency (minSdk 19) if the SDK level
         is <24.
+
+        XR features are only used on SDK level >= 34 (UPSIDE_DOWN_CAKE),
+        so it's safe to override their declared minSdk as well.
     -->
-    <uses-sdk tools:overrideLibrary="androidx.core.performance.play.services" />
+    <uses-sdk tools:overrideLibrary="androidx.core.performance.play.services,
+    com.google.ar.imp.apibindings, androidx.xr.scenecore, androidx.xr.arcore,
+    androidx.xr.compose, androidx.xr.compose.material3,
+    androidx.xr.runtime.openxr, androidx.xr.runtime" />
 
     <application
         android:name=".SocialApp"

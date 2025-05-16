@@ -30,11 +30,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
+import androidx.xr.compose.material3.EnableXrComponentOverrides
+import androidx.xr.compose.material3.ExperimentalMaterial3XrApi
 import com.google.android.samples.socialite.ui.Main
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3XrApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,9 +52,17 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch { SociaLiteAppWidget().updateAll(this@MainActivity) }
         }
         setContent {
-            Main(
-                appArgs = extractAppArgs(intent),
-            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                EnableXrComponentOverrides {
+                    Main(
+                        appArgs = extractAppArgs(intent),
+                    )
+                }
+            } else {
+                Main(
+                    appArgs = extractAppArgs(intent),
+                )
+            }
         }
     }
 
