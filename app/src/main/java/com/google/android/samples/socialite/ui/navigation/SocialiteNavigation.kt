@@ -18,20 +18,30 @@ package com.google.android.samples.socialite.ui.navigation
 
 import android.os.Parcelable
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.dp
+import androidx.xr.compose.platform.LocalSession
+import androidx.xr.compose.platform.LocalSpatialCapabilities
+import androidx.xr.compose.platform.LocalSpatialConfiguration
+import androidx.xr.compose.platform.SpatialConfiguration
+import androidx.xr.runtime.Session
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination.Companion.isTopLevel
 import kotlinx.parcelize.Parcelize
@@ -142,10 +152,16 @@ fun SocialiteNavSuite(
     )
     val layoutType = calculateNavigationLayoutType(currentPane, defaultLayoutType)
 
+    val spatialConfiguration = LocalSpatialConfiguration.current
+    val isSpatialUiEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
+
     NavigationSuiteScaffold(
         modifier = modifier,
         layoutType = layoutType,
         navigationSuiteItems = {
+            if (layoutType == NavigationSuiteType.NavigationRail && spatialConfiguration.hasXrSpatialFeature) {
+                toggleFullSpaceMode(spatialConfiguration, isSpatialUiEnabled)
+            }
             TopLevelDestination.entries.forEach {
                 val isSelected = it == topLevelDestination
                 item(
@@ -171,4 +187,42 @@ fun SocialiteNavSuite(
     ) {
         content()
     }
+}
+
+fun NavigationSuiteScope.toggleFullSpaceMode(
+    spatialConfiguration: SpatialConfiguration,
+    isInFullSpaceMode: Boolean,
+) {
+    val icon = if (isInFullSpaceMode) {
+        R.drawable.ic_collapse_content
+    } else {
+        R.drawable.ic_expand_content
+    }
+    val description = if (isInFullSpaceMode) {
+        R.string.home_space_mode
+    } else {
+        R.string.full_space_mode
+    }
+
+    item(
+        selected = false,
+        onClick = {
+            if (isInFullSpaceMode) {
+                spatialConfiguration.requestHomeSpaceMode()
+            } else {
+                spatialConfiguration.requestFullSpaceMode()
+            }
+        },
+        icon = {
+            Icon(
+                imageVector = ImageVector.vectorResource(icon),
+                modifier = Modifier.size(24.dp),
+                contentDescription = stringResource(description),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        label = {
+            Text(stringResource(description), color = MaterialTheme.colorScheme.primary)
+        }
+    )
 }

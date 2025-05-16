@@ -87,4 +87,6 @@
     <!-- Timeline screen -->
     <string name="close_carousel">Close carousel</string>
 
+    <string name="full_space_mode">Full space</string>
+    <string name="home_space_mode">Home space</string>
 </resources>

@@ -23,6 +23,7 @@ coil = "2.7.0"
 compose = "1.9.0-alpha02"
 compose_bom = "2025.05.00"
 composeCompiler = "1.5.4" # Used in app/build.gradle.kts
+composeXrVersion = "1.0.0-alpha04"
 concurrent = "1.2.0"
 core = "1.16.0"
 core-performance = "1.0.0"
@@ -90,6 +91,7 @@ compose-ui-test-manisfest = { group = "androidx.compose.ui", name = "ui-test-man
 compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-xr = { module = "androidx.xr.compose:compose", version.ref = "composeXrVersion" }
 concurrent-kts = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version.ref = "concurrent" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
 core-performance = { group = "androidx.core", name = "core-performance", version.ref = "core-performance" }

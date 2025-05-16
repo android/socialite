@@ -21,7 +21,7 @@ pluginManagement {
         gradlePluginPortal()
         maven {
             // Currently need to use a snapshot build to get Navigation 3 library
-            url = uri("https://androidx.dev/snapshots/builds/13496827/artifacts/repository")
+            url = uri("https://androidx.dev/snapshots/builds/13510692/artifacts/repository")
         }
     }
 }
@@ -33,7 +33,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url = uri("https://androidx.dev/snapshots/builds/13496827/artifacts/repository")
+            url = uri("https://androidx.dev/snapshots/builds/13510692/artifacts/repository")
         }
     }
 }
