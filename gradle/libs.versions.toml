@@ -56,6 +56,7 @@ generativeai = "0.9.0"
 datastore = "1.1.4"
 lifecycleViewmodel = "1.0.0-SNAPSHOT"
 navigation3 = "1.0.0-SNAPSHOT"
+material3Version = "1.0.0-alpha07"
 
 
 [libraries]
@@ -129,6 +130,7 @@ androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecy
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodel" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+androidx-material3 = { group = "androidx.xr.compose.material3", name = "material3", version.ref = "material3Version" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
