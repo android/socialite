@@ -87,7 +87,7 @@ dependencies {
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
-    implementation(libs.androidx.material3)
+    implementation(libs.androidx.xr.material3)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
