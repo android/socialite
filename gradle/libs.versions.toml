@@ -15,13 +15,13 @@
 [versions]
 accompanist = "0.32.0"
 activity = "1.10.1"
-agp = "8.9.2"
+agp = "8.9.3"
 benchmarkMacroJunit4 = "1.3.4"
 baselineprofile = "1.3.4"
 camera = "1.5.0-beta01"
 coil = "2.7.0"
-compose = "1.9.0-alpha02"
-compose_bom = "2025.05.00"
+compose = "1.9.0-alpha03"
+compose_bom = "2025.05.01"
 composeCompiler = "1.5.4" # Used in app/build.gradle.kts
 concurrent = "1.2.0"
 core = "1.16.0"
@@ -36,10 +36,13 @@ kotlin = "2.1.10"
 kotlinxSerializationJson = "1.8.1"
 ksp = "2.1.10-1.0.30"
 lifecycle = "2.9.0"
+lifecycle-viewmodel = "1.0.0-SNAPSHOT"
 android-material3 = "1.13.0-alpha13"
-material3 = "1.4.0-alpha14"
-media3 = "1.6.1"
-navigation = "2.9.0"
+material3 = "1.4.0-alpha15"
+material3-adaptive-navigation-suite = "1.4.0-alpha15"
+material3-adaptive-navigation3 = "1.0.0-SNAPSHOT"
+media3 = "1.7.1"
+navigation3 = "1.0.0-alpha01"
 profileinstaller = "1.4.1"
 room = "2.7.1"
 spotless = "7.0.2"
@@ -47,15 +50,12 @@ test = "1.2.1"
 truth = "1.1.3"
 turbine = "1.0.0"
 uiautomator = "2.3.0"
-window = "1.3.0"
-material3-adaptive-navigation-suite = "1.4.0-alpha14"
-material3-adaptive-navigation3 = "1.0.0-SNAPSHOT"
+window = "1.4.0"
 glance = "1.1.1"
 secrets = "2.0.1"
 generativeai = "0.9.0"
 datastore = "1.1.4"
-lifecycleViewmodel = "1.0.0-SNAPSHOT"
-navigation3 = "1.0.0-SNAPSHOT"
+
 
 
 [libraries]
@@ -80,7 +80,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose_bom" }
 compose-material-icons = { group = "androidx.compose.material", name = "material-icons-extended" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
-compose-material3-adaptive = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite"}
+compose-material3-adaptive-navigation-suite = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite"}
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose" }
 compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
@@ -105,14 +105,15 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lifecycle-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle-viewmodel" }
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 media3-effect = { group = "androidx.media3", name = "media3-effect", version.ref = "media3" }
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 media3-ui-compose = { group = "androidx.media3", name = "media3-ui-compose", version.ref = "media3" }
-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
+navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -125,10 +126,7 @@ window = { group = "androidx.window", name = "window", version.ref = "window" }
 ktlint = "com.pinterest.ktlint:ktlint-cli:1.1.1" # Used in build.gradle.kts
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai"}
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
-androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodel" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodel" }
-androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
-androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -139,5 +137,6 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+percelize = { id = "kotlin-parcelize" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
