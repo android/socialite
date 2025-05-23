@@ -70,7 +70,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
@@ -98,17 +97,16 @@ class CameraViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
     private val cameraProviderManager: CameraXProcessCameraProviderManager,
     private val repository: ChatRepository,
-    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private lateinit var camera: Camera
     private lateinit var extensionsManager: ExtensionsManager
+    private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
-    val chatId: Long? = savedStateHandle.get("chatId")
     var viewFinderState = MutableStateFlow(ViewFinderState())
 
-    val aspectRatioStrategy =
+    private val aspectRatioStrategy =
         AspectRatioStrategy(AspectRatio.RATIO_16_9, AspectRatioStrategy.FALLBACK_RULE_NONE)
-    var resolutionSelector = ResolutionSelector.Builder()
+    private var resolutionSelector = ResolutionSelector.Builder()
         .setAspectRatioStrategy(aspectRatioStrategy)
         .build()
 
@@ -134,13 +132,12 @@ class CameraViewModel @Inject constructor(
         .build()
 
     private val videoCaptureBuilder = VideoCapture.Builder(recorder)
-    private lateinit var videoCaptureUseCase: VideoCapture<Recorder>
 
     private val imageAnalysisUseCase = ImageAnalysis.Builder()
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
         .build()
 
-    lateinit var greenScreenEffect: OverlayEffect
+    private lateinit var greenScreenEffect: OverlayEffect
     val backgroundRemovalThreshold = 0.8
 
     lateinit var mask: Bitmap
@@ -233,10 +230,6 @@ class CameraViewModel @Inject constructor(
         // } else {
         //    videoCaptureBuilder.setDynamicRange(DynamicRange.SDR)
         // }
-    }
-
-    fun setChatId(chatId: Long) {
-        savedStateHandle.set("chatId", chatId)
     }
 
     @UnstableApi
@@ -376,7 +369,7 @@ class CameraViewModel @Inject constructor(
         videoCaptureUseCase.targetRotation = rotation
     }
 
-    fun capturePhoto(onMediaCaptured: (Media) -> Unit) {
+    fun capturePhoto(chatId: Long, onMediaCaptured: (Media) -> Unit) {
         // Create time stamped name and MediaStore entry.
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
             .format(currentTimeMillis())
@@ -409,7 +402,10 @@ class CameraViewModel @Inject constructor(
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = output.savedUri
                     if (savedUri != null) {
-                        sendPhotoMessage(savedUri.toString())
+                        sendPhotoMessage(
+                            photoUri = savedUri.toString(),
+                            chatId = chatId,
+                        )
                         onMediaCaptured(Media(savedUri, MediaType.PHOTO))
                     } else {
                         val msg = "Photo capture failed."
@@ -454,16 +450,14 @@ class CameraViewModel @Inject constructor(
             .start(ContextCompat.getMainExecutor(context), captureListener)
     }
 
-    fun sendPhotoMessage(photoUri: String) {
+    fun sendPhotoMessage(photoUri: String, chatId: Long) {
         viewModelScope.launch {
-            if (chatId != null) {
-                repository.sendMessage(
-                    chatId = chatId,
-                    text = "",
-                    mediaUri = photoUri,
-                    mediaMimeType = "image/jpeg",
-                )
-            }
+            repository.sendMessage(
+                chatId = chatId,
+                text = "",
+                mediaUri = photoUri,
+                mediaMimeType = "image/jpeg",
+            )
         }
     }
 
