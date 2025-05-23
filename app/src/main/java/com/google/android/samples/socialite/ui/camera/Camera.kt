@@ -81,6 +81,7 @@ import kotlinx.coroutines.asExecutor
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Camera(
+    chatId: Long,
     onMediaCaptured: (Media?) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CameraViewModel = hiltViewModel(),
@@ -304,7 +305,7 @@ fun Camera(
                                 ) {
                                     ShutterButton(
                                         captureMode,
-                                        { viewModel.capturePhoto(onMediaCaptured) },
+                                        { viewModel.capturePhoto(chatId = chatId, onMediaCaptured) },
                                         { onVideoRecordingStart() },
                                         { onVideoRecordingFinish() },
                                     )
@@ -370,7 +371,7 @@ fun Camera(
                             Spacer(modifier = Modifier.size(50.dp))
                             ShutterButton(
                                 captureMode,
-                                { viewModel.capturePhoto(onMediaCaptured) },
+                                { viewModel.capturePhoto(chatId, onMediaCaptured) },
                                 { onVideoRecordingStart() },
                                 { onVideoRecordingFinish() },
                             )

@@ -26,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -34,13 +33,18 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
+import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.repository.ChatRepository
 import com.google.android.samples.socialite.ui.player.preloadmanager.PreloadManagerWrapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flattenConcat
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 
 @UnstableApi
 @HiltViewModel
@@ -48,9 +52,6 @@ class TimelineViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
     private val repository: ChatRepository,
 ) : ViewModel() {
-    // List of videos and photos from chats
-    var media by mutableStateOf<List<TimelineMediaItem>>(emptyList())
-
     // Single player instance - in the future, we can implement a pool of players to improve
     // latency and allow for concurrent playback
     var player by mutableStateOf<ExoPlayer?>(null)
@@ -63,8 +64,7 @@ class TimelineViewModel @Inject constructor(
     private lateinit var preloadManager: PreloadManagerWrapper
 
     // Playback thread; Internal playback / preload operations are running on the playback thread.
-    private val playerThread: HandlerThread =
-        HandlerThread("playback-thread", Process.THREAD_PRIORITY_AUDIO)
+    private var playerThread: HandlerThread? = null
 
     var playbackStartTimeMs = C.TIME_UNSET
 
@@ -87,30 +87,41 @@ class TimelineViewModel @Inject constructor(
         }
     }
 
-    init {
-        viewModelScope.launch {
-            val allChats = repository.getChats().first()
-            val newList = mutableListOf<TimelineMediaItem>()
-            for (chatDetail in allChats) {
-                val messages = repository.findMessages(chatDetail.chatWithLastMessage.id).first()
-                for (message in messages) {
-                    if (message.mediaUri != null) {
-                        newList += TimelineMediaItem(
-                            uri = message.mediaUri,
-                            type = if (message.mediaMimeType?.contains("video") == true) {
-                                TimelineMediaType.VIDEO
-                            } else {
-                                TimelineMediaType.PHOTO
-                            },
-                            timestamp = message.timestamp,
-                            chatName = chatDetail.firstContact.name,
-                            chatIconUri = chatDetail.firstContact.iconUri,
-                        )
-                    }
-                }
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    val media = repository.getChats()
+        .map { chats ->
+            combine(
+                chats.map { chat ->
+                    createTimelineMediaItemList(chat)
+                },
+            ) { timelineMediaItems ->
+                timelineMediaItems.toList().flatten()
             }
-            newList.sortByDescending { it.timestamp }
-            media = newList
+        }
+        .flattenConcat()
+        .onEach { list ->
+            if (::preloadManager.isInitialized && list.isNotEmpty()) {
+                preloadManager.init(list)
+            }
+        }
+
+    private fun createTimelineMediaItemList(chatDetail: ChatDetail): Flow<List<TimelineMediaItem>> {
+        return repository.findMessages(chatDetail.chatWithLastMessage.id).map { messages ->
+            messages.filter {
+                it.mediaUri != null
+            }.map {
+                TimelineMediaItem(
+                    uri = it.mediaUri!!,
+                    type = if (it.mediaMimeType?.contains("video") == true) {
+                        TimelineMediaType.VIDEO
+                    } else {
+                        TimelineMediaType.PHOTO
+                    },
+                    timestamp = it.timestamp,
+                    chatName = chatDetail.firstContact.name,
+                    chatIconUri = chatDetail.firstContact.iconUri,
+                )
+            }
         }
     }
 
@@ -120,15 +131,19 @@ class TimelineViewModel @Inject constructor(
 
         // Reduced buffer durations since the primary use-case is for short-form videos
         val loadControl =
-            DefaultLoadControl.Builder().setBufferDurationsMs(5_000, 20_000, 5_00, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS)
+            DefaultLoadControl.Builder().setBufferDurationsMs(
+                5_000,
+                20_000,
+                5_00,
+                DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
+            )
                 .setPrioritizeTimeOverSizeThresholds(true).build()
 
-        playerThread.start()
-
+        val thread = initPlayerThread()
         val newPlayer = ExoPlayer
             .Builder(application.applicationContext)
             .setLoadControl(loadControl)
-            .setPlaybackLooper(playerThread.looper)
+            .setPlaybackLooper(thread.looper)
             .build()
             .also {
                 it.repeatMode = ExoPlayer.REPEAT_MODE_ONE
@@ -141,8 +156,16 @@ class TimelineViewModel @Inject constructor(
         player = newPlayer
 
         if (enablePreloadManager) {
-            initPreloadManager(loadControl, playerThread)
+            initPreloadManager(loadControl, thread)
         }
+    }
+
+    private fun initPlayerThread(): HandlerThread {
+        val thread = HandlerThread("PlayerThread", Process.THREAD_PRIORITY_BACKGROUND).apply {
+            start()
+        }
+        playerThread = thread
+        return thread
     }
 
     private fun initPreloadManager(
@@ -156,11 +179,6 @@ class TimelineViewModel @Inject constructor(
                 application.applicationContext,
             )
         preloadManager.setPreloadWindowSize(5)
-
-        // Add videos to preload
-        if (media.isNotEmpty()) {
-            preloadManager.init(media)
-        }
     }
 
     fun releasePlayer() {
@@ -172,7 +190,8 @@ class TimelineViewModel @Inject constructor(
             removeListener(firstFrameListener)
             release()
         }
-        playerThread.quit()
+        playerThread?.quitSafely()
+        playerThread = null
         videoRatio = null
         player = null
     }
