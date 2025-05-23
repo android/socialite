@@ -230,7 +230,7 @@ class ChatRepository @Inject internal constructor(
 
     private fun trySaveAttachedMediaItem(mediaItem: MediaItem): Result<MediaItem> {
         return try {
-            var createdUri: String? = null
+            var createdUri: Uri? = null
             appContext.contentResolver.openInputStream(mediaItem.uri.toUri())?.use {
                 val filename = when {
                     mediaItem.extension != null -> {
@@ -247,9 +247,15 @@ class ChatRepository @Inject internal constructor(
                 FileOutputStream(file).use { outputStream ->
                     it.copyTo(outputStream)
                 }
-                createdUri = file.toUri().toString()
+                createdUri = file.toUri()
             }
-            Result.success(MediaItem(createdUri!!, mediaItem.mimeType))
+
+            val mediaItemUri = createdUri?.toString()
+            if (mediaItemUri == null) {
+                Result.failure(Exception("Failed to save media item"))
+            } else {
+                Result.success(MediaItem(mediaItemUri, mediaItem.mimeType))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
