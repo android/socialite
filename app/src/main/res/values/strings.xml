@@ -72,7 +72,7 @@
     <string name="ai_chatbot_setting">AI Chatbot</string>
     <string name="ai_chatbot_setting_enabled">enabled</string>
     <string name="ai_chatbot_setting_disabled">disabled</string>
-    <string name="set_api_key_toast">Please connect your app to Firebase to enable AI Chatbot</string>
+    <string name="set_api_key_toast">Please set your API key in local.properties</string>
     <string name="gemini_error">Gemini error (%1$s)</string>
     <string name="image_error">Can\'t open image</string>
     <string name="unknown_error">Unknown error</string>
