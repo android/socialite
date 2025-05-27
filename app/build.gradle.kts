@@ -25,6 +25,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
     alias(libs.plugins.download)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 kotlin {
@@ -176,6 +177,7 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.compose)
 
-    implementation(libs.generativeai)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
     implementation(libs.datastore)
 }
