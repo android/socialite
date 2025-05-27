@@ -1,0 +1,30 @@
+{
+  "comment": "NOTE: Replace this file with your own google-services.json. Learn more at: https://firebase.google.com/docs/ai-logic/get-started?api=dev#no-existing-firebase",
+  "project_info": {
+    "project_number": "123456",
+    "project_id": "mock_project",
+    "storage_bucket": "mock_project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456:android:123456",
+        "android_client_info": {
+          "package_name": "com.google.android.samples.socialite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "123456-abcde"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
