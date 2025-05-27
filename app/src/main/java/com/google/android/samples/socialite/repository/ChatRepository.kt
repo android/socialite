@@ -19,16 +19,13 @@ package com.google.android.samples.socialite.repository
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.Content
-import com.google.ai.client.generativeai.type.content
-import com.google.android.samples.socialite.BuildConfig
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.ChatDao
 import com.google.android.samples.socialite.data.ContactDao
@@ -38,6 +35,12 @@ import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
 import com.google.android.samples.socialite.widget.model.WidgetModelRepository
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.Content
+import com.google.firebase.ai.type.GenerativeBackend
+import com.google.firebase.ai.type.content
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -97,11 +100,8 @@ class ChatRepository @Inject internal constructor(
         saveMessageAndNotify(chatId, text, 0L, mediaUri, mediaMimeType, detail, PushReason.OutgoingMessage)
 
         // Create a generative AI Model to interact with the Gemini API.
-        val generativeModel = GenerativeModel(
-            modelName = "gemini-1.5-pro-latest",
-            // Set your Gemini API in as an `API_KEY` variable in your local.properties file
-            apiKey = BuildConfig.API_KEY,
-            // Set a system instruction to set the behavior of the model.
+        val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
+            modelName = "gemini-2.0-flash-lite-001",
             systemInstruction = content {
                 text("Please respond to this chat conversation like a friendly ${detail.firstContact.replyModel}.")
             },
@@ -297,7 +297,10 @@ class ChatRepository @Inject internal constructor(
     }
 
     fun toggleChatbotSetting() {
-        if (BuildConfig.API_KEY == "DUMMY_API_KEY") {
+        val firebaseApp = FirebaseApp.getInstance()
+
+        Log.d("ChatRepository", "Firebase App ID: ${firebaseApp.options.projectId}")
+        if (firebaseApp.options.projectId == "mock_project") {
             Toast.makeText(
                 appContext,
                 appContext.getString(R.string.set_api_key_toast),
