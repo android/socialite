@@ -19,7 +19,9 @@ import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.res.AssetFileDescriptor
 import android.database.Cursor
+import android.database.MatrixCursor
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import com.google.android.samples.socialite.model.Contact
 
@@ -29,12 +31,14 @@ class AssetFileProvider : ContentProvider() {
         return true
     }
 
-    override fun getType(uri: Uri): String? {
+    override fun getType(uri: Uri): String {
         val segments = uri.pathSegments
-        return when (segments[0]) {
+        val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+        val mimeType = when (segments[0]) {
             "icon" -> MimeTypeMap.getSingleton().getMimeTypeFromExtension("jpg")
-            else -> "application/octet-stream"
-        }
+            else -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        } ?: "application/octet-stream"
+        return mimeType
     }
 
     override fun openAssetFile(uri: Uri, mode: String): AssetFileDescriptor? {
@@ -46,10 +50,12 @@ class AssetFileProvider : ContentProvider() {
                     context?.resources?.assets?.openFd(contact.icon)
                 }
             }
+
             "photo", "video" -> {
                 val filename = segments[1]
                 context?.resources?.assets?.openFd(filename)
             }
+
             else -> null
         }
     }
@@ -61,7 +67,20 @@ class AssetFileProvider : ContentProvider() {
         selectionArgs: Array<out String>?,
         sortOrder: String?,
     ): Cursor? {
-        throw UnsupportedOperationException("No query")
+        val segments = uri.pathSegments
+        return when (segments[0]) {
+            "icon", "video", "photo" -> {
+                val columns = arrayOf(
+                    OpenableColumns.DISPLAY_NAME,
+                )
+
+                return MatrixCursor(columns).apply {
+                    addRow(arrayOf(segments.last()))
+                }
+            }
+
+            else -> null
+        }
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
