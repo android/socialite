@@ -213,7 +213,7 @@ class ChatRepository @Inject internal constructor(
                 timestamp = System.currentTimeMillis(),
             ),
         )
-        notificationHelper.pushShortcut(detail.firstContact, PushReason.OutgoingMessage)
+        notificationHelper.pushShortcut(detail.firstContact, pushReason)
     }
 
     private suspend fun getMessageHistory(chatId: Long): List<Content> {
