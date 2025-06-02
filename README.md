@@ -49,7 +49,7 @@ Here are the screens that make up SociaLite:
 ### (optional) Add Gemini API via Firebase AI Logic:
 4. Set up a Firebase Project, connect your app to the _Gemini Developer API_ by following [these steps](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev),
 5. Replace google-services.json with your own & Run `app` configuration,
-7. In the app, go to Settings and tap the "AI Chatbot" button.
+6. In the app, go to Settings and tap the "AI Chatbot" button.
 
 ## Reporting Issues
 
