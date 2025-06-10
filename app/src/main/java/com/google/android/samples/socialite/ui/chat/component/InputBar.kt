@@ -17,10 +17,6 @@
 package com.google.android.samples.socialite.ui.chat.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.content.MediaType
-import androidx.compose.foundation.content.ReceiveContentListener
-import androidx.compose.foundation.content.contentReceiver
-import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -152,8 +148,6 @@ internal fun ChatMessageTextField(
     attachedMedia: MediaItem? = null,
     placeholder: @Composable () -> Unit = { Text(stringResource(R.string.message)) },
 ) {
-    val receiveContentListener = rememberReceiveContentListener(onMediaItemAttached)
-
     Column(
         modifier = modifier.focusGroup(),
     ) {
@@ -184,7 +178,6 @@ internal fun ChatMessageTextField(
             modifier = Modifier
                 .height(56.dp)
                 .fillMaxWidth()
-                .contentReceiver(receiveContentListener)
                 .onPreviewKeyEvent { event ->
                     when {
                         event.isKeyPressed(Key.Enter) -> {
@@ -244,28 +237,6 @@ private fun Thumbnail(
                 contentScale = contentScale,
                 modifier = Modifier,
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun rememberReceiveContentListener(
-    onMediaItemAttached: (MediaItem) -> Unit,
-): ReceiveContentListener {
-    return remember(onMediaItemAttached) {
-        ReceiveContentListener { transferableContent ->
-            when {
-                transferableContent.hasMediaType(MediaType.Image) -> {
-                    transferableContent.tryCreateMediaItem(MediaType.Image, onMediaItemAttached)
-                }
-
-                transferableContent.hasMediaType(MediaType.Video) -> {
-                    transferableContent.tryCreateMediaItem(MediaType.Video, onMediaItemAttached)
-                }
-
-                else -> transferableContent
-            }
         }
     }
 }
