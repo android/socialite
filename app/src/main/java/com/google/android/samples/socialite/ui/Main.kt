@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
-import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -120,7 +118,6 @@ fun MainNavigation(
                 NavDisplay(
                     backStack = backStack,
                     onBack = { repeat(it) { backStack.removeLastOrNull() } },
-                    sceneStrategy = rememberListDetailSceneStrategy(),
                     entryDecorators = listOf(
                         sharedEntryInSceneNavEntryDecorator,
                         rememberSceneSetupNavEntryDecorator(),
@@ -139,7 +136,6 @@ fun MainNavigation(
 
                             is Pane.ChatsList -> NavEntry(
                                 key = backStackKey,
-                                metadata = ListDetailSceneStrategy.listPane(),
                             ) {
                                 ChatList(
                                     onOpenChatRequest = { request ->
@@ -157,7 +153,6 @@ fun MainNavigation(
 
                             is Pane.ChatThread -> NavEntry(
                                 key = backStackKey,
-                                metadata = ListDetailSceneStrategy.detailPane(),
                             ) {
                                 ChatScreen(
                                     chatId = backStackKey.chatId,

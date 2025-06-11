@@ -69,15 +69,13 @@ private fun Thumbnail(
     mediaItem: TimelineMediaItem,
     modifier: Modifier = Modifier,
 ) {
-    ContextMenuArea(mediaItem = mediaItem) {
-        when (mediaItem.type) {
-            TimelineMediaType.PHOTO -> {
-                Photo(mediaItem = mediaItem, modifier = modifier)
-            }
+    when (mediaItem.type) {
+        TimelineMediaType.PHOTO -> {
+            Photo(mediaItem = mediaItem, modifier = modifier)
+        }
 
-            TimelineMediaType.VIDEO -> {
-                Video(mediaItem = mediaItem, modifier = modifier)
-            }
+        TimelineMediaType.VIDEO -> {
+            Video(mediaItem = mediaItem, modifier = modifier)
         }
     }
 }

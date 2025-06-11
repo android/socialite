@@ -85,8 +85,6 @@ import com.google.android.samples.socialite.model.Contact
 import com.google.android.samples.socialite.ui.SocialTheme
 import com.google.android.samples.socialite.ui.chat.component.InputBar
 import com.google.android.samples.socialite.ui.chat.component.MessageBubble
-import com.google.android.samples.socialite.ui.chat.component.mediaItemDropTarget
-import com.google.android.samples.socialite.ui.chat.component.scrollWithKeyboards
 import com.google.android.samples.socialite.ui.components.tryRequestFocus
 import com.google.android.samples.socialite.ui.rememberIconPainter
 
@@ -185,10 +183,6 @@ private fun ChatContent(
     Scaffold(
         modifier = modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .scrollWithKeyboards(
-                scrollState = scrollState,
-                coroutineScope = rememberCoroutineScope(),
-            )
             .focusProperties {
                 onEnter = {
                     focusRequester.tryRequestFocus().onFailure { }
@@ -204,7 +198,7 @@ private fun ChatContent(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier.mediaItemDropTarget(onMediaItemAttached = onMediaItemAttached),
+            // TODO: Add drag and drop support
         ) {
             val layoutDirection = LocalLayoutDirection.current
             MessageList(

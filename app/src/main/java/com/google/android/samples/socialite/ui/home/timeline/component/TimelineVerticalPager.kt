@@ -141,20 +141,18 @@ private fun TimelinePage(
     TimelineCard(
         modifier = modifier,
     ) {
-        ContextMenuArea(mediaItem) {
-            MediaItem(
-                modifier = Modifier.Companion
-                    .align(Alignment.Center)
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .draggableMediaItem(mediaItem),
-                media = mediaItem,
-                player = player,
-                page,
-                pagerState,
-                videoRatio,
-            )
-        }
+        MediaItem(
+            modifier = Modifier.Companion
+                .align(Alignment.Center)
+                .padding(8.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .draggableMediaItem(mediaItem),
+            media = mediaItem,
+            player = player,
+            page,
+            pagerState,
+            videoRatio,
+        )
         MetadataOverlay(
             modifier = Modifier.padding(16.dp),
             mediaItem = mediaItem,

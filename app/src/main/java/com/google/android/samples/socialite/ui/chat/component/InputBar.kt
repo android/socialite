@@ -17,10 +17,6 @@
 package com.google.android.samples.socialite.ui.chat.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.content.MediaType
-import androidx.compose.foundation.content.ReceiveContentListener
-import androidx.compose.foundation.content.contentReceiver
-import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,8 +27,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -54,12 +48,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -152,8 +142,6 @@ internal fun ChatMessageTextField(
     attachedMedia: MediaItem? = null,
     placeholder: @Composable () -> Unit = { Text(stringResource(R.string.message)) },
 ) {
-    val receiveContentListener = rememberReceiveContentListener(onMediaItemAttached)
-
     Column(
         modifier = modifier.focusGroup(),
     ) {
@@ -167,11 +155,6 @@ internal fun ChatMessageTextField(
         }
         TextField(
             state = state,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
-                imeAction = ImeAction.Send,
-            ),
-            onKeyboardAction = KeyboardActionHandler { onSendClick() },
             placeholder = placeholder,
             shape = MaterialTheme.shapes.extraLarge,
             colors = TextFieldDefaults.colors(
@@ -184,19 +167,7 @@ internal fun ChatMessageTextField(
             modifier = Modifier
                 .height(56.dp)
                 .fillMaxWidth()
-                .contentReceiver(receiveContentListener)
-                .onPreviewKeyEvent { event ->
-                    when {
-                        event.isKeyPressed(Key.Enter) -> {
-                            onSendClick()
-                            true
-                        }
-
-                        else -> {
-                            false
-                        }
-                    }
-                },
+                // TODO: Add sending message with the "Enter" key
         )
     }
 }
@@ -244,28 +215,6 @@ private fun Thumbnail(
                 contentScale = contentScale,
                 modifier = Modifier,
             )
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun rememberReceiveContentListener(
-    onMediaItemAttached: (MediaItem) -> Unit,
-): ReceiveContentListener {
-    return remember(onMediaItemAttached) {
-        ReceiveContentListener { transferableContent ->
-            when {
-                transferableContent.hasMediaType(MediaType.Image) -> {
-                    transferableContent.tryCreateMediaItem(MediaType.Image, onMediaItemAttached)
-                }
-
-                transferableContent.hasMediaType(MediaType.Video) -> {
-                    transferableContent.tryCreateMediaItem(MediaType.Video, onMediaItemAttached)
-                }
-
-                else -> transferableContent
-            }
         }
     }
 }

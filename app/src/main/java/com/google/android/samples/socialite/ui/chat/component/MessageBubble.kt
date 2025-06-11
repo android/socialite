@@ -112,25 +112,23 @@ private fun AttachedMedia(
 ) {
     val uri = message.mediaUri
     if (uri != null) {
-        ContextMenuArea(chatMessage = message) {
-            when {
-                message.isImageContentAttached -> {
-                    Photo(
-                        uri = uri,
-                        modifier = modifier,
-                    )
-                }
+        when {
+            message.isImageContentAttached -> {
+                Photo(
+                    uri = uri,
+                    modifier = modifier,
+                )
+            }
 
-                message.isVideoContentAttached -> {
-                    Video(
-                        uri = uri,
-                        modifier = modifier,
-                    )
-                }
+            message.isVideoContentAttached -> {
+                Video(
+                    uri = uri,
+                    modifier = modifier,
+                )
+            }
 
-                else -> {
-                    Log.e(TAG, "Unrecognized media type")
-                }
+            else -> {
+                Log.e(TAG, "Unrecognized media type")
             }
         }
     }
