@@ -64,10 +64,10 @@ import kotlinx.coroutines.launch
 fun Main(
     appArgs: AppArgs? = null,
 ) {
+    // TODO: Checkout "codelab-adaptive-apps-step-1" git branch to start the codelab.
     val modifier = Modifier.fillMaxSize()
     SocialTheme {
-        // Step 1 - uncomment line 70
-        /*MainNavigation(modifier, appArgs)*/
+        MainNavigation(modifier, appArgs)
     }
 }
 
@@ -79,8 +79,7 @@ fun MainNavigation(
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ) {
     val activity = LocalActivity.current
-    // Step 2 - uncomment line 83
-    /*val backStack = rememberNavBackStack(ChatsList)*/
+    val backStack = rememberNavBackStack(ChatsList)
 
     SharedTransitionLayout {
         SocialiteNavSuite(
@@ -88,20 +87,9 @@ fun MainNavigation(
             backStack = backStack,
         ) {
             NavDisplay(
-                // Step 3 - uncomment line 92
-                /*backStack = backStack,*/
+                backStack = backStack,
                 entryProvider = { backStackKey ->
                     when (backStackKey) {
-                        // Step 4 - uncomment lines  96-102
-                        /*is Timeline -> NavEntry(backStackKey) {
-                            Timeline(Modifier.fillMaxSize())
-                        }
-
-                        is Settings -> NavEntry(backStackKey) {
-                            Settings(Modifier.fillMaxSize())
-                        }*/
-
-                        // Step 6 - mark ChatsList NavEntry as list pane
                         is ChatsList -> NavEntry(backStackKey) {
                             ChatList(
                                 onOpenChatRequest = { request ->
@@ -117,7 +105,6 @@ fun MainNavigation(
                             )
                         }
 
-                        // Step 7 - mark ChatThread NavEntry as detail pane
                         is ChatThread -> NavEntry(backStackKey) {
                             ChatScreen(
                                 chatId = backStackKey.chatId,
