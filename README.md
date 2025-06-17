@@ -47,16 +47,15 @@ The project is organized into several modules and directories:
 -   `app/`: Contains the main Android application code.
     -   `src/main/`: Source code and resources for the main application.
         -   `java/`: Kotlin/Java source files.
-            -   `com/google/android/samples/socialite/`: The main package for the application.
-                -   `data/`: Data sources, repositories, and related logic.
-                -   `model/`: Data models and entities.
-                -   `ui/`: UI components, screens, and view models.
-                    -   `camera/`: Code related to the in-app camera feature.
-                    -   `chat/`: Code for the chat list and individual chat screens.
-                    -   `settings/`: Code for the settings screen.
-                    -   `timeline/`: Code for the timeline screen.
-                    -   `videoedit/`: Code for the video editing screen.
-                -   `util/`: Utility classes and helper functions.
+            -   `com/google/android/samples/socialite/`: The main package for the application. See the [README](app/src/main/java/com/google/android/samples/socialite/README.md) for more details.
+                -   `data/`: Data sources, repositories, and related logic. See the [README](app/src/main/java/com/google/android/samples/socialite/data/README.md) for more details.
+                -   `model/`: Data models and entities. See the [README](app/src/main/java/com/google/android/samples/socialite/model/README.md) for more details.
+                -   `ui/`: UI components, screens, and view models. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/README.md) for more details.
+                    -   `camera/`: Code related to the in-app camera feature. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/camera/README.md) for more details.
+                    -   `chat/`: Code for the chat list and individual chat screens. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/chat/README.md) for more details.
+                    -   `settings/`: Code for the settings screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/home/settings/README.md) for more details.
+                    -   `timeline/`: Code for the timeline screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/home/timeline/README.md) for more details.
+                    -   `videoedit/`: Code for the video editing screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/videoedit/README.md) for more details.
         -   `res/`: Application resources (layouts, drawables, values, etc.).
         -   `assets/`: Static assets like images and shaders.
     -   `build.gradle.kts`: Gradle build file for the app module.
