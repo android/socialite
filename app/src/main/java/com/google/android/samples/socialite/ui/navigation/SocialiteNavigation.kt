@@ -16,7 +16,6 @@
 
 package com.google.android.samples.socialite.ui.navigation
 
-import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -32,66 +31,55 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.navigation3.runtime.NavKey
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination.Companion.isTopLevel
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
-sealed interface Pane : Parcelable {
-    @Parcelize
     @Serializable
-    data object Timeline : Pane
+    data object Timeline : NavKey()
 
-    @Parcelize
     @Serializable
-    data object ChatsList : Pane
+    data object ChatsList : NavKey()
 
-    @Parcelize
     @Serializable
-    data object Settings : Pane
+    data object Settings : NavKey()
 
-    @Parcelize
     @Serializable
-    data object Home : Pane
+    data object Home : NavKey()
 
-    @Parcelize
     @Serializable
-    data class ChatThread(val chatId: Long, val text: String? = null) : Pane
+    data class ChatThread(val chatId: Long, val text: String? = null) : NavKey()
 
-    @Parcelize
     @Serializable
-    data class Camera(val chatId: Long) : Pane
+    data class Camera(val chatId: Long) : NavKey()
 
-    @Parcelize
     @Serializable
-    data class PhotoPicker(val chatId: Long) : Pane
+    data class PhotoPicker(val chatId: Long) : NavKey()
 
-    @Parcelize
     @Serializable
-    data class VideoEdit(val chatId: Long, val uri: String) : Pane
+    data class VideoEdit(val chatId: Long, val uri: String) : NavKey()
 
-    @Parcelize
     @Serializable
-    data class VideoPlayer(val uri: String) : Pane
-}
+    data class VideoPlayer(val uri: String) : NavKey()
 
 enum class TopLevelDestination(
-    val pane: Pane,
+    val navKey: NavKey,
     @StringRes val label: Int,
     val imageVector: ImageVector,
 ) {
     Timeline(
-        pane = Pane.Timeline,
+        navKey = com.google.android.samples.socialite.ui.navigation.Timeline,
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
     ChatsList(
-        pane = Pane.ChatsList,
+        navKey = com.google.android.samples.socialite.ui.navigation.ChatsList,
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
     ),
     Settings(
-        pane = Pane.Settings,
+        navKey = com.google.android.samples.socialite.ui.navigation.Settings,
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
     ),
@@ -100,27 +88,27 @@ enum class TopLevelDestination(
     companion object {
         val START_DESTINATION = ChatsList
 
-        fun fromPane(pane: Pane?): TopLevelDestination {
-            return entries.find { it.pane::class == pane?.let { r -> r::class } }
+        fun fromNavKey(navKey: NavKey?): TopLevelDestination {
+            return entries.find { it.navKey::class == navKey?.let { r -> r::class } }
                 ?: START_DESTINATION
         }
 
-        fun Pane.isTopLevel(): Boolean {
-            return TopLevelDestination.entries.any { it.pane::class == this::class }
+        fun NavKey.isTopLevel(): Boolean {
+            return TopLevelDestination.entries.any { it.navKey::class == this::class }
         }
     }
 }
 
 private fun calculateNavigationLayoutType(
-    pane: Pane?,
+    navKey: NavKey?,
     defaultLayoutType: NavigationSuiteType,
 ): NavigationSuiteType {
     return when {
-        pane == null -> defaultLayoutType
+        navKey == null -> defaultLayoutType
         // Never show navigation UI on Camera.
-        pane::class == Pane.Camera::class -> NavigationSuiteType.None
+        navKey::class == Camera::class -> NavigationSuiteType.None
         // Top level destinations can show any layout type.
-        pane.isTopLevel() -> defaultLayoutType
+        navKey.isTopLevel() -> defaultLayoutType
         // Every other destination goes through a ChatThread. Hide the bottom nav bar
         // since it interferes with composing chat messages.
         defaultLayoutType == NavigationSuiteType.NavigationBar -> NavigationSuiteType.None
@@ -130,17 +118,17 @@ private fun calculateNavigationLayoutType(
 
 @Composable
 fun SocialiteNavSuite(
-    backStack: MutableList<Pane>,
+    backStack: MutableList<NavKey>,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val currentPane = backStack.lastOrNull()
-    val topLevelDestination = TopLevelDestination.fromPane(currentPane)
+    val currentNavKey = backStack.lastOrNull()
+    val topLevelDestination = TopLevelDestination.fromNavKey(currentNavKey)
 
     val defaultLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
     )
-    val layoutType = calculateNavigationLayoutType(currentPane, defaultLayoutType)
+    val layoutType = calculateNavigationLayoutType(currentNavKey, defaultLayoutType)
 
     NavigationSuiteScaffold(
         modifier = modifier,
@@ -152,7 +140,7 @@ fun SocialiteNavSuite(
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            backStack.add(it.pane)
+                            backStack.add(it.navKey)
                         }
                     },
                     icon = {

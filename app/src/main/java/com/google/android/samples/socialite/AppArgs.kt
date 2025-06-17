@@ -20,16 +20,17 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.navigation3.runtime.NavKey
 import com.google.android.samples.socialite.model.extractChatId
-import com.google.android.samples.socialite.ui.navigation.Pane
+import com.google.android.samples.socialite.ui.navigation.ChatThread
 
 sealed interface AppArgs {
-    fun toPane(): Pane
+    fun toNavKey(): NavKey
 
     data class ShortcutParams(val shortcutId: String, val text: String) : AppArgs {
-        override fun toPane(): Pane {
+        override fun toNavKey(): NavKey {
             val chatId = extractChatId(shortcutId)
-            return Pane.ChatThread(chatId, text)
+            return ChatThread(chatId, text)
         }
 
         companion object {
@@ -50,7 +51,7 @@ sealed interface AppArgs {
         }
     }
     data class LaunchParams(val chatId: Long) : AppArgs {
-        override fun toPane() = Pane.ChatThread(chatId, null)
+        override fun toNavKey() = ChatThread(chatId, null)
 
         companion object {
             const val CHAT_ID_KEY = "chatId"
