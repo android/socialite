@@ -40,6 +40,34 @@ Here are the screens that make up SociaLite:
  - *Video Edit Screen:* After taking a video with the in-app camera, users can do some minor edits on this screen.
  - *Settings Screen:* A basic settings screen for tasks like resetting the chat history.
 
+## Project Structure
+
+The project is organized into several modules and directories:
+
+-   `app/`: Contains the main Android application code.
+    -   `src/main/`: Source code and resources for the main application.
+        -   `java/`: Kotlin/Java source files.
+            -   `com/google/android/samples/socialite/`: The main package for the application.
+                -   `data/`: Data sources, repositories, and related logic.
+                -   `model/`: Data models and entities.
+                -   `ui/`: UI components, screens, and view models.
+                    -   `camera/`: Code related to the in-app camera feature.
+                    -   `chat/`: Code for the chat list and individual chat screens.
+                    -   `settings/`: Code for the settings screen.
+                    -   `timeline/`: Code for the timeline screen.
+                    -   `videoedit/`: Code for the video editing screen.
+                -   `util/`: Utility classes and helper functions.
+        -   `res/`: Application resources (layouts, drawables, values, etc.).
+        -   `assets/`: Static assets like images and shaders.
+    -   `build.gradle.kts`: Gradle build file for the app module.
+-   `baselineprofile/`: Contains code for generating baseline profiles to improve app performance.
+-   `docs/`: Documentation and images.
+-   `gradle/`: Gradle wrapper files.
+-   `build.gradle.kts`: Top-level Gradle build file.
+-   `settings.gradle.kts`: Gradle settings file.
+-   `gradle.properties`: Gradle properties file.
+-   `libs.versions.toml`: Version catalog for dependencies.
+
 ## How to run SociaLite
 
 1. Clone the repository
