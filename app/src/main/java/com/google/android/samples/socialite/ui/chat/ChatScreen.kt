@@ -16,9 +16,14 @@
 
 package com.google.android.samples.socialite.ui.chat
 
+import android.app.Activity
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -57,22 +62,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropEvent
+import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.mimeTypes
+import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -197,17 +210,65 @@ private fun ChatContent(
             )
         },
     ) { innerPadding ->
-        Column(
-            // TODO: Add drag and drop support
-        ) {
+        Column {
+            val context = LocalContext.current
+            val activity = context as Activity
+
+            var isDraggedOver by remember { mutableStateOf(false) }
+
             val layoutDirection = LocalLayoutDirection.current
+
             MessageList(
                 messages = messages,
                 contentPadding = innerPadding.copy(layoutDirection, bottom = 16.dp),
                 state = scrollState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f)
+                    .dragAndDropTarget(
+                        shouldStartDragAndDrop = { event ->
+                            event.mimeTypes().any { it.startsWith("image/") }
+                        },
+                        target = remember {
+                            object : DragAndDropTarget {
+                                override fun onDrop(event: DragAndDropEvent): Boolean {
+                                    val clipData = event.toAndroidDragEvent().clipData
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                                        && clipData != null && clipData.itemCount > 0) {
+                                        repeat(clipData.itemCount) { i ->
+                                            val item = clipData.getItemAt(i)
+                                            val passedUri = item.uri?.toString()
+                                            if (!passedUri.isNullOrEmpty()) {
+                                                val dropPermission = activity
+                                                    .requestDragAndDropPermissions(
+                                                        event.toAndroidDragEvent()
+                                                    )
+                                                try {
+                                                    val mimeType = context.contentResolver
+                                                        .getType(passedUri.toUri()) ?: ""
+                                                    onMediaItemAttached(MediaItem(passedUri, mimeType))
+                                                } finally {
+                                                    dropPermission.release()
+                                                }
+                                            }
+                                        }
+                                        return true
+                                    }
+                                    return false
+                                }
+
+                                override fun onEntered(event: DragAndDropEvent) {
+                                    super.onEntered(event)
+                                    isDraggedOver = true
+                                }
+
+                                override fun onEnded(event: DragAndDropEvent) {
+                                    super.onExited(event)
+                                    isDraggedOver = false
+                                }
+                            }
+                        }
+                    ),
                 onVideoClick = onVideoClick,
             )
             InputBar(
