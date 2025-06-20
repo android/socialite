@@ -214,8 +214,7 @@ private fun ChatContent(
             val context = LocalContext.current
             val activity = context as Activity
 
-            // Step 1 - uncomment line 218
-            /*var isDraggedOver by remember { mutableStateOf(false) }*/
+            var isDraggedOver by remember { mutableStateOf(false) }
 
             val layoutDirection = LocalLayoutDirection.current
 
@@ -225,8 +224,51 @@ private fun ChatContent(
                 state = scrollState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                    // TODO: Implement drag and drop
+                    .weight(1f)
+                    .dragAndDropTarget(
+                        shouldStartDragAndDrop = { event ->
+                            event.mimeTypes().any { it.startsWith("image/") }
+                        },
+                        target = remember {
+                            object : DragAndDropTarget {
+                                override fun onDrop(event: DragAndDropEvent): Boolean {
+                                    val clipData = event.toAndroidDragEvent().clipData
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                                        && clipData != null && clipData.itemCount > 0) {
+                                        repeat(clipData.itemCount) { i ->
+                                            val item = clipData.getItemAt(i)
+                                            val passedUri = item.uri?.toString()
+                                            if (!passedUri.isNullOrEmpty()) {
+                                                val dropPermission = activity
+                                                    .requestDragAndDropPermissions(
+                                                        event.toAndroidDragEvent()
+                                                    )
+                                                try {
+                                                    val mimeType = context.contentResolver
+                                                        .getType(passedUri.toUri()) ?: ""
+                                                    onMediaItemAttached(MediaItem(passedUri, mimeType))
+                                                } finally {
+                                                    dropPermission.release()
+                                                }
+                                            }
+                                        }
+                                        return true
+                                    }
+                                    return false
+                                }
+
+                                override fun onEntered(event: DragAndDropEvent) {
+                                    super.onEntered(event)
+                                    isDraggedOver = true
+                                }
+
+                                override fun onEnded(event: DragAndDropEvent) {
+                                    super.onExited(event)
+                                    isDraggedOver = false
+                                }
+                            }
+                        }
+                    ),
                 onVideoClick = onVideoClick,
             )
             InputBar(
