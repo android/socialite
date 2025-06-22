@@ -48,6 +48,15 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -167,7 +176,18 @@ internal fun ChatMessageTextField(
             modifier = Modifier
                 .height(56.dp)
                 .fillMaxWidth()
-                // TODO: Add sending message with the "Enter" key
+                .onPreviewKeyEvent { event ->
+                    if (event.key == Key.Enter && event.type == KeyEventType.KeyDown
+                        && event.isShiftPressed == false
+                        && event.isAltPressed == false
+                        && event.isCtrlPressed == false
+                        && event.isMetaPressed == false) {
+                        onSendClick()
+                        true
+                    } else {
+                        false
+                    }
+                },
         )
     }
 }
