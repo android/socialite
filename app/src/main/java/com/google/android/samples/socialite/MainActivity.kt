@@ -17,19 +17,23 @@
 package com.google.android.samples.socialite
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.KeyboardShortcutGroup
+import android.view.KeyboardShortcutInfo
+import android.view.Menu
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.glance.appwidget.updateAll
+import androidx.lifecycle.lifecycleScope
 import com.google.android.samples.socialite.ui.Main
-import com.google.android.samples.socialite.ui.ShortcutParams
 import com.google.android.samples.socialite.widget.SociaLiteAppWidget
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -40,20 +44,64 @@ class MainActivity : ComponentActivity() {
             window.isNavigationBarContrastEnforced = false
         }
         super.onCreate(savedInstanceState)
-        runBlocking { SociaLiteAppWidget().updateAll(this@MainActivity) }
+        // Avoid calling widget APIs if the platform doesn't support widgets
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_APP_WIDGETS)) {
+            lifecycleScope.launch { SociaLiteAppWidget().updateAll(this@MainActivity) }
+        }
         setContent {
             Main(
-                shortcutParams = extractShortcutParams(intent),
+                appArgs = extractAppArgs(intent),
             )
         }
     }
 
-    private fun extractShortcutParams(intent: Intent?): ShortcutParams? {
-        if (intent == null || intent.action != Intent.ACTION_SEND) return null
-        val shortcutId = intent.getStringExtra(
-            ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
-        ) ?: return null
-        val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
-        return ShortcutParams(shortcutId, text)
+    private fun extractAppArgs(intent: Intent?): AppArgs? {
+        if (intent == null) return null
+        return AppArgs.ShortcutParams.tryFrom(intent) ?: AppArgs.LaunchParams.tryFrom(intent)
+    }
+
+    override fun onProvideKeyboardShortcuts(
+        data: MutableList<KeyboardShortcutGroup?>?,
+        menu: Menu?,
+        deviceId: Int,
+    ) {
+        data?.add(provideChatShortcuts())
+    }
+
+    private fun provideChatShortcuts(): KeyboardShortcutGroup? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            KeyboardShortcutGroup(
+                resources.getString(R.string.chat),
+                listOf(
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.send_message),
+                        KeyEvent.KEYCODE_ENTER,
+                        0,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_up),
+                        KeyEvent.KEYCODE_PAGE_UP,
+                        0,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_up),
+                        KeyEvent.KEYCODE_DPAD_UP,
+                        KeyEvent.META_SHIFT_ON,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_down),
+                        KeyEvent.KEYCODE_PAGE_DOWN,
+                        0,
+                    ),
+                    KeyboardShortcutInfo(
+                        resources.getString(R.string.page_down),
+                        KeyEvent.KEYCODE_DPAD_DOWN,
+                        KeyEvent.META_SHIFT_ON,
+                    ),
+                ),
+            )
+        } else {
+            null
+        }
     }
 }

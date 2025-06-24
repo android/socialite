@@ -26,6 +26,7 @@ plugins {
     alias(libs.plugins.secrets)
     alias(libs.plugins.download)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.parcelize)
 }
 
 kotlin {
@@ -38,7 +39,7 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
@@ -89,6 +90,10 @@ apply {
 }
 
 dependencies {
+    implementation(libs.adaptive)
+    implementation(libs.adaptive.layout)
+    implementation(libs.adaptive.navigation)
+
     implementation(libs.core.ktx)
     implementation(libs.camera.extensions)
     implementation(libs.profileinstaller)
@@ -121,7 +126,7 @@ dependencies {
     implementation(libs.compose.ui.text.google.fonts)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
-    implementation(libs.compose.material3.adaptive)
+    implementation(libs.compose.material3.adaptive.navigation.suite)
     implementation(libs.compose.material.icons)
     androidTestImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.tooling)
@@ -162,6 +167,7 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.transformer)
     implementation(libs.media3.ui)
+    implementation(libs.media3.ui.compose)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
@@ -180,4 +186,9 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
     implementation(libs.datastore)
+
+    implementation(libs.adaptive.navigation3)
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
+    implementation(libs.lifecycle.viewmodel.navigation3)
 }
