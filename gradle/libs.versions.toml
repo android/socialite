@@ -14,18 +14,19 @@
 
 [versions]
 accompanist = "0.32.0"
-activity = "1.9.3"
-agp = "8.8.0"
-benchmarkMacroJunit4 = "1.3.3"
-baselineprofile = "1.3.3"
-camera = "1.5.0-alpha06"
-cameraMediaEffect = "1.0.0-alpha01"
-cameraEffects = "1.4.1"
-coil = "2.4.0"
-compose_bom = "2024.11.00"
+activity = "1.10.1"
+agp = "8.9.3"
+benchmarkMacroJunit4 = "1.3.4"
+baselineprofile = "1.3.4"
+camera = "1.5.0-beta01"
+camera-effects = "1.4.2"
+camera-media-effect = "1.0.0-alpha03"
+coil = "2.7.0"
+compose = "1.9.0-alpha03"
+compose_bom = "2025.05.01"
 composeCompiler = "1.5.4" # Used in app/build.gradle.kts
 concurrent = "1.2.0"
-core = "1.15.0"
+core = "1.16.0"
 core-performance = "1.0.0"
 core-splashscreen = "1.0.1"
 espresso = "3.6.1"
@@ -33,48 +34,56 @@ firebaseBoM = "33.14.0"
 googleGmsGoogleServices = "4.4.2"
 download = "5.6.0"
 graphics = "1.0.1"
-hilt = "2.49"
+hilt = "2.56.1"
 hiltNavigationCompose = "1.2.0"
 junit = "4.13.2"
-kotlin = "2.0.0"
-kotlinxSerializationJson = "1.7.3"
-ksp = "2.0.0-1.0.21"
-lifecycle = "2.8.7"
-android-material3 = "1.13.0-alpha11"
-material3 = "1.3.1"
-media3 = "1.5.0" # Using this version until CameraX is compatible with 1.6
-navigation = "2.8.5"
+kotlin = "2.1.10"
+kotlinxSerializationJson = "1.8.1"
+ksp = "2.1.10-1.0.30"
+lifecycle = "2.9.0"
+lifecycle-viewmodel = "1.0.0-SNAPSHOT"
+android-material3 = "1.13.0-alpha13"
+material3 = "1.4.0-alpha15"
+material3-adaptive-navigation-suite = "1.4.0-alpha15"
+material3-adaptive-navigation3 = "1.0.0-SNAPSHOT"
+media3 = "1.5.0"
+media3-ui-compose = "1.7.1"
+navigation3 = "1.0.0-alpha01"
 profileinstaller = "1.4.1"
-room = "2.6.1"
-spotless = "6.24.0"
+room = "2.7.1"
+spotless = "7.0.2"
 test = "1.2.1"
 truth = "1.1.3"
 turbine = "1.0.0"
 uiautomator = "2.3.0"
-window = "1.3.0"
-material3-adaptive-navigation-suite = "1.3.1"
+window = "1.4.0"
 glance = "1.1.1"
 secrets = "2.0.1"
-datastore = "1.1.1"
+generativeai = "0.9.0"
 visionCommon = "17.3.0"
 segmentationSelfie = "16.0.0-beta6"
-litertSupportApi = "1.2.0"
-litert = "1.2.0"
-litertGpu = "1.2.0"
+litert = "1.3.0"
+datastore = "1.1.4"
+
+
 
 [libraries]
 accompanist-painter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanist" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
+adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout" }
+adaptive-navigation = { module = "androidx.compose.material3.adaptive:adaptive-navigation" }
+adaptive-navigation3 = { module = "androidx.compose.material3.adaptive:adaptive-navigation3", version.ref = "material3-adaptive-navigation3" }
 android-material3 = { group = "com.google.android.material", name = "material", version.ref = "android-material3" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacroJunit4" }
 camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camera" }
-camera-compose = { group = "androidx.camera", name = "camera-compose", version.ref = "camera"}
+camera-compose = { group = "androidx.camera", name = "camera-compose", version.ref = "camera" }
 camera-extensions = { group = "androidx.camera", name = "camera-extensions", version.ref = "camera" }
 camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camera" }
-camera-media3-effect = { group = "androidx.camera.media3", name = "media3-effect", version.ref = "cameraMediaEffect"}
-camera-effects = { group = "androidx.camera", name = "camera-effects", version.ref = "cameraEffects"}
+camera-media3-effect = { group = "androidx.camera.media3", name = "media3-effect", version.ref = "camera-media-effect" }
+camera-effects = { group = "androidx.camera", name = "camera-effects", version.ref = "camera-effects" }
 camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camera" }
 camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camera" }
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
@@ -82,9 +91,9 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose_bom" }
 compose-material-icons = { group = "androidx.compose.material", name = "material-icons-extended" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
-compose-material3-adaptive = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite"}
-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-material3-adaptive-navigation-suite = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "material3-adaptive-navigation-suite" }
+compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose" }
+compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 compose-ui-test-manisfest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
@@ -107,31 +116,35 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lifecycle-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle-viewmodel" }
+litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
+litert-gpu = { group = "com.google.ai.edge.litert", name = "litert-gpu", version.ref = "litert" }
+litert-support-api = { group = "com.google.ai.edge.litert", name = "litert-support-api", version.ref = "litert" }
 media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 media3-effect = { group = "androidx.media3", name = "media3-effect", version.ref = "media3" }
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+media3-ui-compose = { group = "androidx.media3", name = "media3-ui-compose", version.ref = "media3-ui-compose" }
+navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
+navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+segmentation-selfie = { group = "com.google.mlkit", name = "segmentation-selfie", version.ref = "segmentationSelfie" }
 splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 window = { group = "androidx.window", name = "window", version.ref = "window" }
 ktlint = "com.pinterest.ktlint:ktlint-cli:1.1.1" # Used in build.gradle.kts
+generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBoM" }
 firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
-datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore"}
 vision-common = { group = "com.google.mlkit", name = "vision-common", version.ref = "visionCommon" }
-segmentation-selfie = { group = "com.google.mlkit", name = "segmentation-selfie", version.ref = "segmentationSelfie" }
-litert-support-api = { group = "com.google.ai.edge.litert", name = "litert-support-api", version.ref = "litertSupportApi" }
-litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
-litert-gpu = { group = "com.google.ai.edge.litert", name = "litert-gpu", version.ref = "litertGpu" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -145,4 +158,5 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
 download = { id = "de.undercouch.download", version.ref = "download" }
+parcelize = { id = "kotlin-parcelize" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
