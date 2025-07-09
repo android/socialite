@@ -133,7 +133,6 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manisfest)
 
     implementation(libs.activity.compose)
-    implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.accompanist.painter)
@@ -143,7 +142,6 @@ dependencies {
 
     implementation(libs.lifecycle.ktx)
     implementation(libs.lifecycle.compose)
-    implementation(libs.lifecycle.runtime.compose)
 
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
