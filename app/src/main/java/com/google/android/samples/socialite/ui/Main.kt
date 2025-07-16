@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite.ui
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -251,6 +252,17 @@ fun MainNavigation(
             LaunchedEffect(appArgs) {
                 if (appArgs != null) {
                     backStack.add(appArgs.toPane())
+                }
+            }
+
+            LaunchedEffect(backStack.lastOrNull()) {
+                when (backStack.lastOrNull()) {
+                    is Pane.Camera -> {
+                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                    }
+                    else -> {
+                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    }
                 }
             }
         }
