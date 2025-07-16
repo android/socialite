@@ -17,211 +17,293 @@
 package com.google.android.samples.socialite.ui
 
 import android.app.Activity
-import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.os.Bundle
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleOut
+import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navDeepLink
-import androidx.navigation.toRoute
-import com.google.android.samples.socialite.model.extractChatId
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.navEntryDecorator
+import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import com.google.android.samples.socialite.AppArgs
+import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.camera.Camera
 import com.google.android.samples.socialite.ui.camera.Media
 import com.google.android.samples.socialite.ui.camera.MediaType
 import com.google.android.samples.socialite.ui.chat.ChatScreen
 import com.google.android.samples.socialite.ui.home.chatlist.ChatList
+import com.google.android.samples.socialite.ui.home.chatlist.ChatOpenRequest
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
-import com.google.android.samples.socialite.ui.navigation.Route
+import com.google.android.samples.socialite.ui.navigation.Pane
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
-import com.google.android.samples.socialite.ui.photopicker.navigation.navigateToPhotoPicker
-import com.google.android.samples.socialite.ui.photopicker.navigation.photoPickerScreen
+import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
+import com.google.android.samples.socialite.ui.photopicker.navigation.PhotoPickerRoute
 import com.google.android.samples.socialite.ui.player.VideoPlayerScreen
 import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun Main(
-    shortcutParams: ShortcutParams?,
+    appArgs: AppArgs? = null,
 ) {
     val modifier = Modifier.fillMaxSize()
     SocialTheme {
-        MainNavigation(modifier, shortcutParams)
+        MainNavigation(modifier, appArgs)
+    }
+}
+
+@OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalSharedTransitionApi::class)
+@Composable
+fun MainNavigation(
+    modifier: Modifier,
+    appArgs: AppArgs?,
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
+) {
+    val activity = LocalActivity.current
+    val backStack = rememberSavableMutableStateListOf(TopLevelDestination.START_DESTINATION.pane)
+
+    /** The [SharedTransitionScope] of the [NavDisplay]. */
+    val localNavSharedTransitionScope: ProvidableCompositionLocal<SharedTransitionScope> =
+        compositionLocalOf {
+            throw IllegalStateException(
+                "Unexpected access to LocalNavSharedTransitionScope. You must provide a " +
+                    "SharedTransitionScope from a call to SharedTransitionLayout() or " +
+                    "SharedTransitionScope()",
+            )
+        }
+
+    /**
+     * A [NavEntryDecorator] that wraps each entry in a shared element that is controlled by the
+     * [Scene].
+     */
+    val sharedEntryInSceneNavEntryDecorator = navEntryDecorator { entry ->
+        with(localNavSharedTransitionScope.current) {
+            Box(
+                Modifier.sharedElement(
+                    rememberSharedContentState(entry.key),
+                    animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                ),
+            ) {
+                entry.content(entry.key)
+            }
+        }
+    }
+
+    SharedTransitionLayout {
+        CompositionLocalProvider(localNavSharedTransitionScope provides this) {
+            SocialiteNavSuite(
+                modifier = modifier,
+                backStack = backStack,
+            ) {
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = { repeat(it) { backStack.removeLastOrNull() } },
+                    sceneStrategy = rememberListDetailSceneStrategy(),
+                    entryDecorators = listOf(
+                        sharedEntryInSceneNavEntryDecorator,
+                        rememberSceneSetupNavEntryDecorator(),
+                        rememberSavedStateNavEntryDecorator(),
+                        rememberViewModelStoreNavEntryDecorator(),
+                    ),
+                    entryProvider = { backStackKey ->
+                        when (backStackKey) {
+                            is Pane.Timeline -> NavEntry(backStackKey) {
+                                Timeline(Modifier.fillMaxSize())
+                            }
+
+                            is Pane.Settings -> NavEntry(backStackKey) {
+                                Settings(Modifier.fillMaxSize())
+                            }
+
+                            is Pane.ChatsList -> NavEntry(
+                                key = backStackKey,
+                                metadata = ListDetailSceneStrategy.listPane(),
+                            ) {
+                                ChatList(
+                                    onOpenChatRequest = { request ->
+                                        handleOChatOpenRequest(
+                                            request = request,
+                                            onOpenInSameWindow = { chatId ->
+                                                backStack.add(Pane.ChatThread(chatId = chatId))
+                                            },
+                                            activity = activity,
+                                            coroutineScope = coroutineScope,
+                                        )
+                                    },
+                                )
+                            }
+
+                            is Pane.ChatThread -> NavEntry(
+                                key = backStackKey,
+                                metadata = ListDetailSceneStrategy.detailPane(),
+                            ) {
+                                ChatScreen(
+                                    chatId = backStackKey.chatId,
+                                    foreground = true,
+                                    onBackPressed = { backStack.removeLastOrNull() },
+                                    onCameraClick = { backStack.add(Pane.Camera(backStackKey.chatId)) },
+                                    onPhotoPickerClick = {
+                                        backStack.add(
+                                            Pane.PhotoPicker(
+                                                backStackKey.chatId,
+                                            ),
+                                        )
+                                    },
+                                    onVideoClick = { uri -> backStack.add(Pane.VideoPlayer(uri)) },
+                                    prefilledText = backStackKey.text,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+
+                            is Pane.Camera -> NavEntry(backStackKey) {
+                                val chatId = backStackKey.chatId
+                                Camera(
+                                    chatId = backStackKey.chatId,
+                                    onMediaCaptured = { capturedMedia: Media? ->
+                                        when (capturedMedia?.mediaType) {
+                                            MediaType.PHOTO -> {
+                                                backStack.removeLastOrNull()
+                                            }
+
+                                            MediaType.VIDEO -> {
+                                                backStack.add(
+                                                    Pane.VideoEdit(
+                                                        chatId,
+                                                        capturedMedia.uri.toString(),
+                                                    ),
+                                                )
+                                            }
+
+                                            else -> {
+                                                // No media to use.
+                                                backStack.removeLastOrNull()
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+
+                            is Pane.PhotoPicker -> NavEntry(backStackKey) {
+                                PhotoPickerRoute(
+                                    chatId = backStackKey.chatId,
+                                    onPhotoPicked = { backStack.removeLastOrNull() },
+                                )
+                            }
+
+                            is Pane.VideoEdit -> NavEntry(backStackKey) {
+                                VideoEditScreen(
+                                    chatId = backStackKey.chatId,
+                                    uri = backStackKey.uri,
+                                    onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                    onFinishEditing = {
+                                        var pane = backStack.lastOrNull()
+                                        while (pane != null &&
+                                            (
+                                                pane !is Pane.ChatThread ||
+                                                    pane.chatId != backStackKey.chatId
+                                                )
+                                        ) {
+                                            backStack.removeLastOrNull()
+                                            pane = backStack.lastOrNull()
+                                        }
+                                    },
+                                )
+                            }
+
+                            is Pane.VideoPlayer -> NavEntry(backStackKey) {
+                                VideoPlayerScreen(
+                                    uri = backStackKey.uri,
+                                    onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                )
+                            }
+
+                            else -> NavEntry(backStackKey) {
+                                Text("Unknown pane: $backStackKey")
+                            }
+                        }
+                    },
+                )
+            }
+
+            LaunchedEffect(appArgs) {
+                if (appArgs != null) {
+                    backStack.add(appArgs.toPane())
+                }
+            }
+
+            LaunchedEffect(backStack.lastOrNull()) {
+                when (backStack.lastOrNull()) {
+                    is Pane.Camera -> {
+                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                    }
+                    else -> {
+                        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
-fun MainNavigation(
-    modifier: Modifier,
-    shortcutParams: ShortcutParams?,
-) {
-    val activity = LocalContext.current as Activity
-    val navController = rememberNavController()
-
-    navController.addOnDestinationChangedListener { _: NavController, destination: NavDestination, _: Bundle? ->
-        // Lock the layout of the Camera screen to portrait so that the UI layout remains
-        // constant, even on orientation changes. Note that the camera is still aware of
-        // orientation, and will assign the correct edge as the bottom of the photo or video.
-        if (destination.hasRoute<Route.Camera>()) {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-        } else {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
-    }
-
-    SocialiteNavSuite(
-        navController = navController,
-        modifier = modifier,
-    ) {
-        NavHost(
-            navController = navController,
-            startDestination = Route.ChatsList,
-            popExitTransition = {
-                scaleOut(
-                    targetScale = 0.9f,
-                    transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0.5f),
-                )
-            },
-            popEnterTransition = {
-                EnterTransition.None
-            },
-        ) {
-            composable<Route.ChatsList> {
-                ChatList(
-                    onChatClicked = { chatId -> navController.navigate(Route.ChatThread(chatId)) },
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            composable<Route.Timeline> {
-                Timeline(Modifier.fillMaxSize())
-            }
-
-            composable<Route.Settings> {
-                Settings(Modifier.fillMaxSize())
-            }
-
-            composable<Route.ChatThread>(
-                deepLinks = listOf(
-                    navDeepLink {
-                        action = Intent.ACTION_VIEW
-                        uriPattern = "https://socialite.google.com/chat/{chatId}"
-                    },
-                ),
-            ) { backStackEntry ->
-                val route: Route.ChatThread = backStackEntry.toRoute()
-                val chatId = route.chatId
-                ChatScreen(
-                    chatId = chatId,
-                    foreground = true,
-                    onBackPressed = { navController.popBackStack() },
-                    onCameraClick = { navController.navigate(Route.Camera(chatId)) },
-                    onPhotoPickerClick = { navController.navigateToPhotoPicker(chatId) },
-                    onVideoClick = { uri -> navController.navigate(Route.VideoPlayer(uri)) },
-                    prefilledText = route.text,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            composable<Route.Camera> { backStackEntry ->
-                val route: Route.Camera = backStackEntry.toRoute()
-                val chatId = route.chatId
-                Camera(
-                    onMediaCaptured = { capturedMedia: Media? ->
-                        when (capturedMedia?.mediaType) {
-                            MediaType.PHOTO -> {
-                                navController.popBackStack()
-                            }
-
-                            MediaType.VIDEO -> {
-                                navController.navigate(
-                                    Route.VideoEdit(
-                                        chatId,
-                                        capturedMedia.uri.toString(),
-                                    ),
-                                )
-                            }
-
-                            else -> {
-                                // No media to use.
-                                navController.popBackStack()
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            // Invoke PhotoPicker to select photo or video from device gallery
-            photoPickerScreen(
-                onPhotoPicked = navController::popBackStack,
-            )
-
-            composable<Route.VideoEdit> { backStackEntry ->
-                val route: Route.VideoEdit = backStackEntry.toRoute()
-                val chatId = route.chatId
-                val videoUri = route.uri
-                VideoEditScreen(
-                    chatId = chatId,
-                    uri = videoUri,
-                    onCloseButtonClicked = { navController.popBackStack() },
-                    navController = navController,
-                )
-            }
-
-            composable<Route.VideoPlayer> { backStackEntry ->
-                val route: Route.VideoPlayer = backStackEntry.toRoute()
-                val videoUri = route.uri
-                VideoPlayerScreen(
-                    uri = videoUri,
-                    onCloseButtonClicked = { navController.popBackStack() },
-                )
-            }
-        }
-    }
-
-    if (shortcutParams != null) {
-        val chatId = extractChatId(shortcutParams.shortcutId)
-        val text = shortcutParams.text
-        navController.navigate(Route.ChatThread(chatId, text))
+fun <T : Any> rememberSavableMutableStateListOf(vararg elements: T): SnapshotStateList<T> {
+    return rememberSaveable(saver = snapshotStateListSaver()) {
+        elements.toList().toMutableStateList()
     }
 }
 
-data class ShortcutParams(
-    val shortcutId: String,
-    val text: String,
-)
-
-object AnimationConstants {
-    private const val ENTER_MILLIS = 250
-    private const val EXIT_MILLIS = 250
-
-    val enterTransition = fadeIn(
-        animationSpec = tween(
-            durationMillis = ENTER_MILLIS,
-            easing = FastOutLinearInEasing,
-        ),
+private fun <T : Any> snapshotStateListSaver() =
+    listSaver<SnapshotStateList<T>, T>(
+        save = { stateList -> stateList.toList() },
+        restore = { it.toMutableStateList() },
     )
 
-    val exitTransition = fadeOut(
-        animationSpec = tween(
-            durationMillis = EXIT_MILLIS,
-            easing = FastOutSlowInEasing,
-        ),
-    )
+private fun handleOChatOpenRequest(
+    request: ChatOpenRequest,
+    onOpenInSameWindow: (chatId: Long) -> Unit,
+    activity: Activity?,
+    coroutineScope: CoroutineScope,
+) {
+    when (request) {
+        is ChatOpenRequest.SameWindow -> {
+            coroutineScope.launch {
+                onOpenInSameWindow(request.chatId)
+            }
+        }
+
+        is ChatOpenRequest.NewWindow -> {
+            activity?.launchAnotherInstance(request.toAppArgs())
+        }
+    }
+}
+
+private fun Activity.launchAnotherInstance(params: AppArgs.LaunchParams) {
+    val intent = tryCreateIntentFrom(params)
+    if (intent?.resolveActivity(packageManager) != null) {
+        startActivity(intent)
+    }
 }
