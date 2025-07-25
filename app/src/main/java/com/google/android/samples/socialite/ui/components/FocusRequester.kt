@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package com.google.android.samples.socialite.ui.chat
+package com.google.android.samples.socialite.ui.components
 
-import android.net.Uri
+import androidx.compose.ui.focus.FocusRequester
 
-data class ChatMessage(
-    val text: String,
-    val mediaUri: String?,
-    val mediaMimeType: String?,
-    val timestamp: Long,
-    val isIncoming: Boolean,
-    val senderIconUri: Uri?,
-) {
-    val isVideoContentAttached: Boolean get() {
-        return mediaMimeType?.startsWith("video/") == true
-    }
-
-    val isImageContentAttached: Boolean get() {
-        return mediaMimeType?.startsWith("image/") == true
+fun FocusRequester.tryRequestFocus(): Result<Unit> {
+    return try {
+        requestFocus()
+        Result.success(Unit)
+    } catch (e: IllegalArgumentException) {
+        Result.failure(e)
     }
 }

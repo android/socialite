@@ -29,13 +29,14 @@ import com.google.android.samples.socialite.ui.photopicker.PhotoPickerViewModel
 fun PhotoPickerRoute(
     viewModel: PhotoPickerViewModel = hiltViewModel(),
     onPhotoPicked: () -> Unit,
+    chatId: Long,
 ) {
     val photoPickerLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickVisualMedia(),
             onResult = { uri: Uri? ->
                 if (uri != null) {
-                    viewModel.onPhotoPicked(uri)
+                    viewModel.onPhotoPicked(uri, chatId)
                 }
                 onPhotoPicked()
             },

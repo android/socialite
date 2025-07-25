@@ -83,10 +83,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.CompositionPlayer
 import androidx.media3.ui.PlayerView
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.android.samples.socialite.R
-import com.google.android.samples.socialite.ui.navigation.Route
 
 /**
  * Configuration options for video preview.
@@ -109,7 +106,7 @@ fun VideoEditScreen(
     chatId: Long,
     uri: String,
     onCloseButtonClicked: () -> Unit,
-    navController: NavController,
+    onFinishEditing: (chatId: Long) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -118,7 +115,7 @@ fun VideoEditScreen(
 
     val isFinishedEditing = viewModel.isFinishedEditing.collectAsStateWithLifecycle()
     if (isFinishedEditing.value) {
-        navController.popBackStack(Route.ChatThread(chatId), false)
+        onFinishEditing(chatId)
     }
 
     val isProcessing = viewModel.isProcessing.collectAsState()
@@ -398,7 +395,6 @@ fun TextOverlayOption(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VideoEditFilterChip(
     icon: ImageVector,
@@ -458,6 +454,6 @@ fun VideoEditScreenPreview() {
         chatId = 0L,
         uri = "",
         onCloseButtonClicked = {},
-        navController = rememberNavController(),
+        onFinishEditing = {},
     )
 }
