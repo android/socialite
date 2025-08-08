@@ -18,7 +18,9 @@ package com.google.android.samples.socialite
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.os.Parcelable
 import androidx.core.content.pm.ShortcutManagerCompat
 import com.google.android.samples.socialite.model.extractChatId
 import com.google.android.samples.socialite.ui.navigation.Pane
@@ -26,23 +28,29 @@ import com.google.android.samples.socialite.ui.navigation.Pane
 sealed interface AppArgs {
     fun toPane(): Pane
 
-    data class ShortcutParams(val shortcutId: String, val text: String) : AppArgs {
+    data class ShortcutParams(val shortcutId: String, val text: String?, val mediaUri: String?) :
+        AppArgs {
         override fun toPane(): Pane {
             val chatId = extractChatId(shortcutId)
-            return Pane.ChatThread(chatId, text)
+            return Pane.ChatThread(chatId, text, mediaUri)
         }
 
         companion object {
             fun tryFrom(intent: Intent): ShortcutParams? {
+                var mediaUri: Uri? = null
                 if (intent.action != Intent.ACTION_SEND) return null
+
+                if (intent.type?.startsWith("image/") == true) {
+                    mediaUri = intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri
+                }
 
                 val shortcutId = intent.getStringExtra(
                     ShortcutManagerCompat.EXTRA_SHORTCUT_ID,
                 )
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
 
-                return if (shortcutId != null && text != null) {
-                    ShortcutParams(shortcutId, text)
+                return if (shortcutId != null) {
+                    ShortcutParams(shortcutId, text, mediaUri?.toString())
                 } else {
                     null
                 }
