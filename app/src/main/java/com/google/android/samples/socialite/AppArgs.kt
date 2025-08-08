@@ -28,7 +28,7 @@ import com.google.android.samples.socialite.ui.navigation.Pane
 sealed interface AppArgs {
     fun toPane(): Pane
 
-    data class ShortcutParams(val shortcutId: String, val text: String, val mediaUri: String) :
+    data class ShortcutParams(val shortcutId: String, val text: String?, val mediaUri: String?) :
         AppArgs {
         override fun toPane(): Pane {
             val chatId = extractChatId(shortcutId)
@@ -49,8 +49,8 @@ sealed interface AppArgs {
                 )
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
 
-                return if (shortcutId != null && text != null) {
-                    ShortcutParams(shortcutId, text, mediaUri.toString())
+                return if (shortcutId != null) {
+                    ShortcutParams(shortcutId, text, mediaUri?.toString())
                 } else {
                     null
                 }
