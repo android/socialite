@@ -140,7 +140,7 @@ class ChatViewModel @Inject constructor(
     fun prefillInputImage(inputImage: String) {
         if (inputImagePrefilled) return
         inputImagePrefilled = true
-        attachMedia(MediaItem(inputImage,"image/*"))
+        attachMedia(MediaItem(inputImage, "image/*"))
     }
 
     fun attachMedia(mediaItem: MediaItem) {
