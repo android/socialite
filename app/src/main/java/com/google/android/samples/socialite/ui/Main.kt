@@ -174,6 +174,7 @@ fun MainNavigation(
                                     },
                                     onVideoClick = { uri -> backStack.add(Pane.VideoPlayer(uri)) },
                                     prefilledText = backStackKey.text,
+                                    prefilledImageUri = backStackKey.imageUri,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }

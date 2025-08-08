@@ -56,7 +56,11 @@ sealed interface Pane : Parcelable {
 
     @Parcelize
     @Serializable
-    data class ChatThread(val chatId: Long, val text: String? = null) : Pane
+    data class ChatThread(
+        val chatId: Long,
+        val text: String? = null,
+        val imageUri: String? = null,
+    ) : Pane
 
     @Parcelize
     @Serializable

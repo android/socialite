@@ -100,12 +100,16 @@ fun ChatScreen(
     onVideoClick: (uri: String) -> Unit,
     modifier: Modifier = Modifier,
     prefilledText: String? = null,
+    prefilledImageUri: String? = null,
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(chatId) {
         viewModel.setChatId(chatId)
         if (prefilledText != null) {
             viewModel.prefillInput(prefilledText)
+        }
+        if (prefilledImageUri != null) {
+            viewModel.prefillInputImage(prefilledImageUri)
         }
     }
     val chat by viewModel.chat.collectAsStateWithLifecycle()

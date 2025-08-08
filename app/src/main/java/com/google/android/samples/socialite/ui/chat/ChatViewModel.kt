@@ -105,6 +105,7 @@ class ChatViewModel @Inject constructor(
     )
 
     private var inputPrefilled = false
+    private var inputImagePrefilled = false
 
     /**
      * We want to update the notification when the corresponding chat screen is open. Setting this
@@ -134,6 +135,12 @@ class ChatViewModel @Inject constructor(
         if (inputPrefilled) return
         inputPrefilled = true
         updateInput(input)
+    }
+
+    fun prefillInputImage(inputImage: String) {
+        if (inputImagePrefilled) return
+        inputImagePrefilled = true
+        attachMedia(MediaItem(inputImage,"image/*"))
     }
 
     fun attachMedia(mediaItem: MediaItem) {
