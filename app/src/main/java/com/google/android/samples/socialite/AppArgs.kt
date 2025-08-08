@@ -40,7 +40,7 @@ sealed interface AppArgs {
                 var mediaUri: Uri? = null
                 if (intent.action != Intent.ACTION_SEND) return null
 
-                if (intent.type?.startsWith("image/")!!) {
+                if (intent.type?.startsWith("image/") == true) {
                     mediaUri = intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri
                 }
 
