@@ -19,211 +19,285 @@ package com.google.android.samples.socialite.ui.videoedit
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.util.Log
-import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
+import kotlin.math.max
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private const val TAG = "FrameRangeSlider"
 
-@OptIn(UnstableApi::class)
 @Composable
 fun FrameRangeSlider(
     frames: List<Bitmap>,
-    startFrameIndex: Int,
-    endFrameIndex: Int,
-    onRangeChanged: (Int, Int) -> Unit,
-    onFrameSelected: (Int) -> Unit,
+    state: TrimState,
+    onTrimChanged: (startMs: Long, endMs: Long) -> Unit,
+    modifier: Modifier = Modifier,
+    edgePadding: Dp = 6.dp,
+    handleVisualWidth: Dp = 12.dp,
+    handleHitRadius: Dp = 20.dp,
+    railThickness: Dp = 2.dp,
 ) {
     val density = LocalDensity.current
-    val frameHeight = 64.dp
+    val frameHeight = 56.dp
+    val handleColor = Color(0xFFDDDDDD)
 
-    Column {
-        Box(
-            modifier = Modifier
+    val haptics = LocalHapticFeedback.current
+
+    val edgePadPx = with(density) { edgePadding.toPx() }
+    val handleVisualPx = with(density) { handleVisualWidth.toPx() }
+    val hitRadiusPx = with(density) { handleHitRadius.toPx() }
+
+    var laneWidthPx by remember { mutableFloatStateOf(0f) }
+    var startXPx by remember { mutableFloatStateOf(0f) }
+    var endXPx by remember { mutableFloatStateOf(0f) }
+
+    fun msToX(ms: Long): Float =
+        if (state.durationMs <= 0) edgePadPx else edgePadPx + (ms.toFloat() / state.durationMs) * laneWidthPx
+
+    fun xToMs(x: Float): Long {
+        val clamped = x.coerceIn(edgePadPx, edgePadPx + laneWidthPx)
+        val rel = (clamped - edgePadPx) / laneWidthPx
+        return (rel * state.durationMs).toLong().coerceIn(0, state.durationMs)
+    }
+
+    fun clampAndNotify() {
+        val minGapPx = (state.minTrimMs / state.durationMs.toFloat()).coerceAtMost(1f) * laneWidthPx
+        val minGap = max(minGapPx, handleVisualPx * 1.2f)
+
+        startXPx = startXPx.coerceIn(edgePadPx, endXPx - minGap)
+        endXPx = endXPx.coerceIn(startXPx + minGap, edgePadPx + laneWidthPx)
+        onTrimChanged(xToMs(startXPx), xToMs(endXPx))
+    }
+
+    LaunchedEffect(laneWidthPx, state.startMs, state.endMs, state.durationMs) {
+        if (laneWidthPx > 0f) {
+            startXPx = msToX(state.startMs)
+            endXPx = msToX(state.endMs)
+            clampAndNotify()
+        }
+    }
+
+    var dragging: HandlePosition? by remember { mutableStateOf(null) }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(frameHeight + 24.dp)
+            .onGloballyPositioned {
+                val total = it.size.width.toFloat()
+                laneWidthPx = (total - edgePadPx * 2f).coerceAtLeast(1f)
+            }
+            .pointerInput(state.durationMs) {
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        val x = offset.x
+                        val dStart = kotlin.math.abs(x - startXPx)
+                        val dEnd = kotlin.math.abs(x - endXPx)
+                        dragging = when {
+                            dStart <= dEnd && dStart < hitRadiusPx -> HandlePosition.START
+                            dEnd < hitRadiusPx -> HandlePosition.END
+                            else -> null
+                        }
+                        if (dragging != null) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    },
+                    onDrag = { _, drag ->
+                        when (dragging) {
+                            HandlePosition.START -> {
+                                startXPx += drag.x; clampAndNotify()
+                            }
+
+                            HandlePosition.END -> {
+                                endXPx += drag.x; clampAndNotify()
+                            }
+
+                            null -> Unit
+                        }
+                    },
+                    onDragEnd = {
+                        if (dragging != null) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        dragging = null
+                    },
+                    onDragCancel = { dragging = null },
+                )
+            },
+    ) {
+        Row(
+            Modifier
                 .fillMaxWidth()
-                .height(frameHeight),  // Use frame height for container
+                .height(frameHeight)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFF111314)),
         ) {
-            val availableWidth = LocalConfiguration.current.screenWidthDp.dp - 64.dp // Subtract padding
-            val frameWidth = if (frames.isNotEmpty()) availableWidth / frames.size else 0.dp
-
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(frameHeight),
-                horizontalArrangement = Arrangement.Start,
-            ) {
-                itemsIndexed(frames) { index, frame ->
-                    val isSelected = index >= startFrameIndex && index <= endFrameIndex
-
+            if (frames.isEmpty()) {
+                Spacer(Modifier.fillMaxSize())
+            } else {
+                val weight = 1f / frames.size.toFloat()
+                frames.forEach { bmp ->
                     Image(
-                        bitmap = frame.asImageBitmap(),
+                        bitmap = bmp.asImageBitmap(),
                         contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .width(frameWidth)
+                            .weight(weight)
                             .fillMaxHeight()
-                            .graphicsLayer {
-                                alpha = if (isSelected) 1f else 0.4f
-                            }
-                            .clickable { onFrameSelected(index) },
-                        contentScale = ContentScale.Crop
+                            .border(0.5.dp, Color.Black.copy(alpha = 0.35f)),
                     )
                 }
-            }
-
-            // Start trim boundary thumb (left edge)
-            if (frames.isNotEmpty()) {
-                var startThumbOffset by remember("start_thumb_$startFrameIndex") {
-                    mutableFloatStateOf(
-                        0f,
-                    )
-                }
-                val frameWidthPx = with(density) { frameWidth.toPx() }
-                val startThumbPosition = with(density) {
-                    (startFrameIndex * frameWidthPx - 12).toDp()
-                }
-
-                // Start thumb - White with flat right edge, curved left edge
-                Box(
-                    modifier = Modifier
-                        .offset(x = startThumbPosition + with(density) { startThumbOffset.toDp() })
-                        .width(16.dp)
-                        .height(frameHeight)
-                        .background(
-                            Color.White,
-                            RoundedCornerShape(
-                                topStart = 8.dp,
-                                bottomStart = 8.dp,
-                                topEnd = 0.dp,
-                                bottomEnd = 0.dp,
-                            ),
-                        )
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            RoundedCornerShape(
-                                topStart = 8.dp,
-                                bottomStart = 8.dp,
-                                topEnd = 0.dp,
-                                bottomEnd = 0.dp,
-                            ),
-                        )
-                        .pointerInput("start_thumb_drag_$startFrameIndex") {
-                            detectDragGestures(
-                                onDragStart = { startThumbOffset = 0f },
-                                onDragEnd = {
-                                    val newPosition = startThumbPosition.toPx() + startThumbOffset
-                                    val frameIndex = ((newPosition + 12) / frameWidthPx).toInt()
-                                        .coerceIn(0, endFrameIndex - 1)
-                                    onRangeChanged(frameIndex, endFrameIndex)
-
-                                    startThumbOffset = 0f
-                                },
-                            ) { _, dragAmount ->
-                                startThumbOffset += dragAmount.x
-                            }
-                        }
-                        .align(Alignment.TopStart),
-                )
-            }
-
-            // End trim boundary thumb (right edge)
-            if (frames.isNotEmpty()) {
-                var endThumbOffset by remember("end_thumb_$endFrameIndex") { mutableFloatStateOf(0f) }
-                val frameWidthPx = with(density) { frameWidth.toPx() }
-
-                val endThumbPosition = with(density) {
-                    (endFrameIndex * frameWidthPx + frameWidthPx - 4).toDp()
-                }
-
-                // End thumb - White with flat left edge, curved right edge
-                Box(
-                    modifier = Modifier
-                        .offset(x = endThumbPosition + with(density) { endThumbOffset.toDp() })
-                        .width(16.dp)
-                        .height(frameHeight)
-                        .background(
-                            Color.White,
-                            RoundedCornerShape(
-                                topStart = 0.dp,
-                                bottomStart = 0.dp,
-                                topEnd = 8.dp,
-                                bottomEnd = 8.dp,
-                            ),
-                        )
-                        .border(
-                            2.dp,
-                            Color.Black,
-                            RoundedCornerShape(
-                                topStart = 0.dp,
-                                bottomStart = 0.dp,
-                                topEnd = 8.dp,
-                                bottomEnd = 8.dp,
-                            ),
-                        )
-                        .pointerInput("end_thumb_drag_$endFrameIndex") {
-                            detectDragGestures(
-                                onDragStart = { endThumbOffset = 0f },
-                                onDragEnd = {
-                                    val newPosition = endThumbPosition.toPx() + endThumbOffset
-                                    val frameIndex =
-                                        ((newPosition - frameWidthPx + 4) / frameWidthPx).toInt()
-                                            .coerceIn(startFrameIndex + 1, frames.size - 1)
-                                    onRangeChanged(startFrameIndex, frameIndex)
-                                    endThumbOffset = 0f
-                                },
-                            ) { _, dragAmount ->
-                                endThumbOffset += dragAmount.x
-                            }
-                        }
-                        .align(Alignment.TopStart),
-                )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Box(
+            Modifier
+                .offset { IntOffset(0, 0) }
+                .width(edgePadding)
+                .height(frameHeight)
+                .background(Color.Transparent),
+        )
+        Box(
+            Modifier
+                .align(Alignment.TopEnd)
+                .width(edgePadding)
+                .height(frameHeight)
+                .background(Color.Transparent),
+        )
 
-        Text(
-            text = "Trim range: Frame ${startFrameIndex + 1} to ${endFrameIndex + 1} (${endFrameIndex - startFrameIndex + 1} frames)",
-            color = Color.White,
-            style = MaterialTheme.typography.bodySmall,
+        Box(
+            Modifier
+                .offset { IntOffset(0, 0) }
+                .width(with(density) { (startXPx).toDp() })
+                .height(frameHeight)
+                .background(Color.Black.copy(alpha = 0.45f)),
+        )
+        Box(
+            Modifier
+                .offset { IntOffset(endXPx.toInt(), 0) }
+                .width(with(density) { (edgePadPx + laneWidthPx - (endXPx - edgePadPx)).toDp() })
+                .height(frameHeight)
+                .background(Color.Black.copy(alpha = 0.45f)),
+        )
+
+        Box(
+            Modifier
+                .offset { IntOffset(startXPx.toInt(), 0) }
+                .width(with(density) { (endXPx - startXPx).toDp() })
+                .height(railThickness)
+                .background(handleColor),
+        )
+        Box(
+            Modifier
+                .offset {
+                    IntOffset(
+                        startXPx.toInt(),
+                        frameHeight.roundToPx() - railThickness.roundToPx(),
+                    )
+                }
+                .width(with(density) { (endXPx - startXPx).toDp() })
+                .height(railThickness)
+                .background(handleColor),
+        )
+        Handle(
+            xPx = startXPx,
+            height = frameHeight,
+            color = handleColor,
+            visualWidth = handleVisualWidth,
+            hitRadius = handleHitRadius,
+            isLeftSide = true,
+        )
+        Handle(
+            xPx = endXPx,
+            height = frameHeight,
+            color = handleColor,
+            visualWidth = handleVisualWidth,
+            hitRadius = handleHitRadius,
+            isLeftSide = false,
         )
     }
+}
+
+private enum class HandlePosition { START, END }
+
+@Stable
+data class TrimState(
+    val durationMs: Long,
+    val minTrimMs: Long = 300L,
+    val startMs: Long = 0L,
+    val endMs: Long = durationMs,
+)
+
+@Composable
+private fun Handle(
+    xPx: Float,
+    height: Dp,
+    color: Color,
+    visualWidth: Dp,
+    hitRadius: Dp,
+    isLeftSide: Boolean,
+) {
+    val flatShape = if (isLeftSide) {
+        RoundedCornerShape(
+            topStart = 8.dp, bottomStart = 8.dp,
+            topEnd = 0.dp, bottomEnd = 0.dp,
+        )
+    } else {
+        RoundedCornerShape(
+            topStart = 0.dp, bottomStart = 0.dp,
+            topEnd = 8.dp, bottomEnd = 8.dp,
+        )
+    }
+
+    Box(
+        Modifier
+            .offset { IntOffset(xPx.toInt() - (hitRadius / 2).roundToPx(), 0) }
+            .width(hitRadius)
+            .height(height),
+    )
+
+    Box(
+        Modifier
+            .offset { IntOffset(xPx.toInt() - (visualWidth / 2).roundToPx(), 0) }
+            .width(visualWidth)
+            .height(height)
+            .shadow(4.dp, flatShape, clip = false)
+            .background(color, flatShape),
+    )
 }
 
 @UnstableApi

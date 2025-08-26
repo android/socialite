@@ -62,7 +62,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -95,7 +94,7 @@ import kotlinx.coroutines.withContext
 private const val TAG = "VideoEditScreen"
 
 @ExperimentalMaterial3Api
-@androidx.annotation.OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun VideoEditScreen(
     chatId: Long,
@@ -121,10 +120,8 @@ fun VideoEditScreen(
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
-    var videoTrimStart by rememberSaveable { mutableFloatStateOf(0F) }
-    val videoTrimEnd = rememberSaveable { mutableFloatStateOf(0F) }
-    var startFrameIndex by rememberSaveable { mutableIntStateOf(0) }
-    var endFrameIndex by rememberSaveable { mutableIntStateOf(0) }
+    var videoTrimStart by rememberSaveable { mutableLongStateOf(0L) }
+    var videoTrimEnd by rememberSaveable { mutableLongStateOf(0L) }
     var currentFrameIndex by rememberSaveable { mutableIntStateOf(0) }
     val duration = rememberSaveable { mutableLongStateOf(0L) }
 
@@ -134,7 +131,7 @@ fun VideoEditScreen(
         mediaMetadataRetriever.setDataSource(context, uri.toUri())
         val time: String? = mediaMetadataRetriever.extractMetadata(keyCode)
         duration.longValue = time?.toLong() ?: 0L
-        videoTrimEnd.floatValue = duration.longValue.toFloat()
+        videoTrimEnd = duration.longValue
         var tempBitmap: Bitmap?
         try {
             val frameTime = if (duration.longValue > 0) {
@@ -156,7 +153,6 @@ fun VideoEditScreen(
             val extractedFrames = withContext(Dispatchers.IO) {
                 extractFrames(context, uri, 10)
             }
-            endFrameIndex = 9
             frames = extractedFrames.second
         }
     }
@@ -172,8 +168,8 @@ fun VideoEditScreen(
                         textOverlayText = overlayText,
                         textOverlayRedSelected = redOverlayTextEnabled,
                         textOverlayLargeSelected = largeOverlayTextEnabled,
-                        videoTrimStart = videoTrimStart,
-                        videoTrimEnd = videoTrimEnd.floatValue,
+                        videoTrimStart = videoTrimStart.toFloat(),
+                        videoTrimEnd = videoTrimEnd.toFloat(),
                     )
                 },
                 onCloseButtonClicked = onCloseButtonClicked,
@@ -232,23 +228,20 @@ fun VideoEditScreen(
                     },
                 )
                 val rangeStart = "%.2f".format(videoTrimStart / 1000.0)
-                val rangeEnd = "%.2f".format(videoTrimEnd.floatValue / 1000.0)
+                val rangeEnd = "%.2f".format(videoTrimEnd / 1000.0)
                 Text(text = "Video segment: $rangeStart s .. $rangeEnd s")
 
                 if (frames.isNotEmpty()) {
                     FrameRangeSlider(
                         frames = frames,
-                        startFrameIndex = startFrameIndex,
-                        endFrameIndex = endFrameIndex,
-                        onRangeChanged = { start, end ->
-                            val frameDuration = duration.longValue.toFloat() / frames.size
-                            startFrameIndex = start
-                            endFrameIndex = end
-                            videoTrimStart = start * frameDuration
-                            videoTrimEnd.floatValue = end * frameDuration
-                        },
-                        onFrameSelected = { frameIndex ->
-                            currentFrameIndex = frameIndex
+                        state = TrimState(
+                            durationMs = duration.longValue,
+                            startMs = videoTrimStart,
+                            endMs = videoTrimEnd,
+                        ),
+                        onTrimChanged = { startMs, endMs ->
+                            videoTrimStart = startMs
+                            videoTrimEnd = endMs
                         },
                     )
                 } else {
