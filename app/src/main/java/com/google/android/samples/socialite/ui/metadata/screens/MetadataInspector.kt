@@ -35,12 +35,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,9 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,8 +55,8 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.metadata.AttributeUtil
-import com.google.android.samples.socialite.ui.metadata.InspectMediaViewModel
 import com.google.android.samples.socialite.ui.metadata.MediaMetadata
+import com.google.android.samples.socialite.ui.metadata.MetadataInspectorViewModel
 import com.google.android.samples.socialite.ui.metadata.TrackAttributes
 import com.google.android.samples.socialite.ui.metadata.components.MetadataCard
 import com.google.android.samples.socialite.ui.metadata.components.ShowLoading
@@ -69,7 +66,7 @@ import com.google.android.samples.socialite.ui.metadata.components.ShowLoading
 @Composable
 fun MetadataInspector(
     mediaPath: String,
-    viewModel: InspectMediaViewModel = hiltViewModel(),
+    viewModel: MetadataInspectorViewModel = hiltViewModel(),
 ) {
     Column(
         modifier = Modifier
@@ -90,10 +87,13 @@ fun MetadataInspector(
             style = MaterialTheme.typography.titleLarge.copy(),
         )
 
+        LaunchedEffect(mediaPath) {
+            viewModel.processMedia(mediaPath)
+        }
+
         if (isLoaded) {
             ShowMetadataCardList(mediaPath, mediaMetadata!!)
         } else {
-            viewModel.processMedia(mediaPath)
             ShowLoading()
         }
     }

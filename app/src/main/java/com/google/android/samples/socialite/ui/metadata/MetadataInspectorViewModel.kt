@@ -32,10 +32,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private const val TAG = "InspectorViewModel"
+private const val TAG = "MetadataInspectorViewModel"
 
 @HiltViewModel
-class InspectMediaViewModel @Inject constructor(
+class MetadataInspectorViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
     var isLoaded by mutableStateOf(false)
@@ -49,7 +49,6 @@ class InspectMediaViewModel @Inject constructor(
         }
         viewModelScope.launch(Dispatchers.IO) {
             try {
-//                Thread.sleep(15000) // To test loading
                 val currMediaMetadata =
                     MediaMetadataProcessor(context, mediaPath).populateMediaMetadata()
                 withContext(Dispatchers.Main) {

@@ -76,7 +76,7 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
                 }
             }
         } catch (e: Exception) {
-            throw RuntimeException(e)
+            throw RuntimeException("Failed to retrieve metadata", e)
         } finally {
             metadataRetriever.close()
         }
@@ -139,7 +139,7 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
                 extractor.selectTrack(i)
             }
 
-            val buffer = ByteBuffer.allocate(10 * 1024 * 1024)
+            val buffer = ByteBuffer.allocate(1 * 1024 * 1024)
             var sampleIndex = 0L
             var totalSizeSamples = 0L
             while (true) {
@@ -161,7 +161,7 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
             mediaMetadata.containerAttributes.totalSizeSamplesMb = totalSizeSamplesMb
             Log.d(TAG, "Total Size of Samples: $totalSizeSamplesMb MB")
         } catch (e: Exception) {
-            throw RuntimeException(e)
+            throw RuntimeException("Failed during media extraction", e)
         } finally {
             extractor?.release()
         }

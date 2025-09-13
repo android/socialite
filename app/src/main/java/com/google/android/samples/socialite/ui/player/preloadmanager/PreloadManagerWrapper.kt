@@ -65,15 +65,6 @@ private constructor(
             val trackSelector = DefaultTrackSelector(context)
             trackSelector.init({}, DefaultBandwidthMeter.getSingletonInstance(context))
             val renderersFactory = DefaultRenderersFactory(context)
-//            val preloadManager = DefaultPreloadManager(
-//                PreloadStatusControl(),
-//                DefaultMediaSourceFactory(context),
-//                trackSelector,
-//                DefaultBandwidthMeter.getSingletonInstance(context),
-//                DefaultRendererCapabilitiesList.Factory(renderersFactory),
-//                loadControl.allocator,
-//                playbackLooper,
-//            )
             val targetPreloadStatusControl = MyTargetPreloadStatusControl()
             val preloadManagerBuilder =
                 DefaultPreloadManager.Builder(context, targetPreloadStatusControl)
@@ -160,13 +151,6 @@ private constructor(
     }
 
     //    /** Customize time to preload, by default as per ranking data */
-//    @androidx.media3.common.util.UnstableApi
-//    class PreloadStatusControl : TargetPreloadStatusControl<Int> {
-//        override fun getTargetPreloadStatus(rankingData: Int): DefaultPreloadManager.Status {
-//            // By default preload first 3 seconds of the video
-//            return DefaultPreloadManager.Status(STAGE_LOADED_FOR_DURATION_MS, 3000L)
-//        }
-//    }
     class MyTargetPreloadStatusControl() :
         TargetPreloadStatusControl<Int, DefaultPreloadManager.PreloadStatus> {
         override fun getTargetPreloadStatus(index: Int): DefaultPreloadManager.PreloadStatus? {

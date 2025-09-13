@@ -204,7 +204,7 @@ private fun MediaItem(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Info,
-                                contentDescription = "Icon button",
+                                contentDescription = "Inspect video metadata",
                             )
                         }
                         PlayerSurface(
