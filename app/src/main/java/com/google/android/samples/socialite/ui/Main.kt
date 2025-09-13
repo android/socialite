@@ -59,6 +59,7 @@ import com.google.android.samples.socialite.ui.home.chatlist.ChatList
 import com.google.android.samples.socialite.ui.home.chatlist.ChatOpenRequest
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
+import com.google.android.samples.socialite.ui.metadata.screens.MetadataInspector
 import com.google.android.samples.socialite.ui.navigation.Pane
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
@@ -92,9 +93,7 @@ fun MainNavigation(
     val localNavSharedTransitionScope: ProvidableCompositionLocal<SharedTransitionScope> =
         compositionLocalOf {
             throw IllegalStateException(
-                "Unexpected access to LocalNavSharedTransitionScope. You must provide a " +
-                    "SharedTransitionScope from a call to SharedTransitionLayout() or " +
-                    "SharedTransitionScope()",
+                "Unexpected access to LocalNavSharedTransitionScope. You must provide a " + "SharedTransitionScope from a call to SharedTransitionLayout() or " + "SharedTransitionScope()",
             )
         }
 
@@ -134,7 +133,12 @@ fun MainNavigation(
                     entryProvider = { backStackKey ->
                         when (backStackKey) {
                             is Pane.Timeline -> NavEntry(backStackKey) {
-                                Timeline(Modifier.fillMaxSize())
+                                Timeline(
+                                    Modifier.fillMaxSize(),
+                                    onInspectClicked = { uri ->
+                                        backStack.add(Pane.MetadataInspector(uri))
+                                    },
+                                )
                             }
 
                             is Pane.Settings -> NavEntry(backStackKey) {
@@ -179,6 +183,9 @@ fun MainNavigation(
                                     prefilledText = backStackKey.text,
                                     prefilledImageUri = backStackKey.imageUri,
                                     modifier = Modifier.fillMaxSize(),
+                                    onInspectClicked = { uri ->
+                                        backStack.add(Pane.MetadataInspector(uri))
+                                    },
                                 )
                             }
 
@@ -225,12 +232,7 @@ fun MainNavigation(
                                     onCloseButtonClicked = { backStack.removeLastOrNull() },
                                     onFinishEditing = {
                                         var pane = backStack.lastOrNull()
-                                        while (pane != null &&
-                                            (
-                                                pane !is Pane.ChatThread ||
-                                                    pane.chatId != backStackKey.chatId
-                                                )
-                                        ) {
+                                        while (pane != null && (pane !is Pane.ChatThread || pane.chatId != backStackKey.chatId)) {
                                             backStack.removeLastOrNull()
                                             pane = backStack.lastOrNull()
                                         }
@@ -243,6 +245,10 @@ fun MainNavigation(
                                     uri = backStackKey.uri,
                                     onCloseButtonClicked = { backStack.removeLastOrNull() },
                                 )
+                            }
+
+                            is Pane.MetadataInspector -> NavEntry(backStackKey) {
+                                MetadataInspector(backStackKey.uri)
                             }
 
                             else -> NavEntry(backStackKey) {
@@ -264,6 +270,7 @@ fun MainNavigation(
                     is Pane.Camera -> {
                         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
                     }
+
                     else -> {
                         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                     }
@@ -280,11 +287,10 @@ fun <T : Any> rememberSavableMutableStateListOf(vararg elements: T): SnapshotSta
     }
 }
 
-private fun <T : Any> snapshotStateListSaver() =
-    listSaver<SnapshotStateList<T>, T>(
-        save = { stateList -> stateList.toList() },
-        restore = { it.toMutableStateList() },
-    )
+private fun <T : Any> snapshotStateListSaver() = listSaver<SnapshotStateList<T>, T>(
+    save = { stateList -> stateList.toList() },
+    restore = { it.toMutableStateList() },
+)
 
 private fun handleOChatOpenRequest(
     request: ChatOpenRequest,

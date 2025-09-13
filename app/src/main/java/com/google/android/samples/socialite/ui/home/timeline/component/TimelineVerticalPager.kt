@@ -17,6 +17,7 @@
 package com.google.android.samples.socialite.ui.home.timeline.component
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,10 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
@@ -38,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -57,6 +63,7 @@ internal fun TimelineVerticalPager(
     videoRatio: Float?,
     modifier: Modifier = Modifier,
     onChangePlayerItem: (uri: Uri?, page: Int) -> Unit = { uri: Uri?, i: Int -> },
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     val pagerState = rememberPagerState(pageCount = { mediaItems.count() })
     LaunchedEffect(pagerState) {
@@ -77,6 +84,7 @@ internal fun TimelineVerticalPager(
             pagerState = pagerState,
             videoRatio = videoRatio,
             modifier = modifier,
+            onInspectClicked = onInspectClicked,
         )
     }
 }
@@ -88,6 +96,7 @@ private fun TimelineVerticalPager(
     pagerState: PagerState,
     videoRatio: Float?,
     modifier: Modifier = Modifier,
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     VerticalPager(
         state = pagerState,
@@ -105,8 +114,7 @@ private fun TimelineVerticalPager(
                 .combinedClickable(
                     enabled = true,
                     onClick = {},
-                    onLongClick = {
-                    },
+                    onLongClick = {},
                 )
                 .fillMaxSize()
                 .padding(8.dp)
@@ -114,10 +122,8 @@ private fun TimelineVerticalPager(
                     // Calculate the absolute offset for the current page from the
                     // scroll position. We use the absolute value which allows us to mirror
                     // any effects for both directions
-                    val pageOffset = (
-                        (pagerState.currentPage - page) + pagerState
-                            .currentPageOffsetFraction
-                        ).absoluteValue
+                    val pageOffset =
+                        ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
                     // We animate the alpha, between 0% and 100%
                     alpha = lerp(
                         start = 0f,
@@ -125,6 +131,7 @@ private fun TimelineVerticalPager(
                         fraction = 1f - pageOffset.coerceIn(0f, 1f),
                     )
                 },
+            onInspectClicked = onInspectClicked,
         )
     }
 }
@@ -137,6 +144,7 @@ private fun TimelinePage(
     pagerState: PagerState,
     videoRatio: Float?,
     modifier: Modifier = Modifier,
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     TimelineCard(
         modifier = modifier,
@@ -153,6 +161,7 @@ private fun TimelinePage(
                 page,
                 pagerState,
                 videoRatio,
+                onInspectClicked = onInspectClicked,
             )
         }
         MetadataOverlay(
@@ -172,6 +181,7 @@ private fun MediaItem(
     page: Int,
     state: PagerState,
     videoRatio: Float?,
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     when (media.type) {
         TimelineMediaType.VIDEO -> {
@@ -183,6 +193,20 @@ private fun MediaItem(
                     }
 
                     else -> {
+                        // Add a small i button to the top left
+                        IconButton(
+                            onClick = {
+                                onInspectClicked(media.uri)
+                            },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .zIndex(1f), // Ensure the button is on top of other content
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Info,
+                                contentDescription = "Icon button",
+                            )
+                        }
                         PlayerSurface(
                             player = player,
                             modifier = modifier.resizeWithContentScale(
@@ -197,12 +221,9 @@ private fun MediaItem(
 
         TimelineMediaType.PHOTO -> {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(media.uri)
-                    .build(),
+                model = ImageRequest.Builder(LocalContext.current).data(media.uri).build(),
                 contentDescription = null,
-                modifier = modifier
-                    .fillMaxSize(),
+                modifier = modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit,
             )
         }

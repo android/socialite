@@ -21,3 +21,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+/.idea/AndroidProjectSystem.xml
+/.kotlin/sessions/kotlin-compiler-7267562125463082018.salive
+/app/src/androidTest/assets/predict_float16.tflite
+/app/src/main/assets/predict_float16.tflite
+/app/src/main/assets/predict_int8.tflite
+/.idea/runConfigurations.xml
+/app/src/androidTest/assets/transfer_float16.tflite
+/app/src/main/assets/transfer_float16.tflite
