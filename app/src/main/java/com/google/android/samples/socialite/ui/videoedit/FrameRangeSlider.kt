@@ -315,27 +315,34 @@ suspend fun extractFrames(
     return withContext(Dispatchers.IO) {
         val frames = mutableListOf<Bitmap>()
         val mediaMetadataRetriever = MediaMetadataRetriever()
-        mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
-        val keyCode = MediaMetadataRetriever.METADATA_KEY_DURATION
-        var time: String? = null
+        var duration = 0L
         try {
-            time = mediaMetadataRetriever.extractMetadata(keyCode)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error extracting video metadata: ${e.message}")
-        }
-        val duration = time?.toLong() ?: 0L
-        if (duration > 0) {
-            val frameDuration = duration * 1000 / frameCount
-            for (i in 0 until frameCount) {
-                try {
-                    val frameTime = i * frameDuration
-                    val frame = mediaMetadataRetriever.getFrameAtTime(frameTime)
-                    frame?.let { frames.add(it) }
-                    Log.d(TAG, "Extracted frame $i of $frameCount")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error extracting frame at index $i", e)
+            mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
+            val keyCode = MediaMetadataRetriever.METADATA_KEY_DURATION
+            val time: String? = try {
+                mediaMetadataRetriever.extractMetadata(keyCode)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error extracting video metadata: ${e.message}")
+                null
+            }
+            duration = time?.toLong() ?: 0L
+            if (duration > 0) {
+                val frameDuration = duration * 1000 / frameCount
+                for (i in 0 until frameCount) {
+                    try {
+                        val frameTime = i * frameDuration
+                        val frame = mediaMetadataRetriever.getFrameAtTime(frameTime)
+                        frame?.let { frames.add(it) }
+                        Log.d(TAG, "Extracted frame $i of $frameCount")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error extracting frame at index $i", e)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to extract frames for $videoUri", e)
+        } finally {
+            mediaMetadataRetriever.release()
         }
         Pair(duration, frames)
     }
