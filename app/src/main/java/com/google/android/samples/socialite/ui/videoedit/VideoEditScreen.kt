@@ -16,9 +16,9 @@
 
 package com.google.android.samples.socialite.ui.videoedit
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -64,8 +64,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -333,7 +333,7 @@ fun VideoEditTabs(
                     color = colorResource(id = R.color.aqua),
                 )
             },
-            divider = {}, // Remove default divider
+            divider = {},
         ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
