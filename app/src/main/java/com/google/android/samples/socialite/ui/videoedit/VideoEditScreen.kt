@@ -19,6 +19,7 @@ package com.google.android.samples.socialite.ui.videoedit
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -68,7 +69,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -145,32 +145,22 @@ fun VideoEditScreen(
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var videoTrimStart by rememberSaveable { mutableLongStateOf(0L) }
     var videoTrimEnd by rememberSaveable { mutableLongStateOf(0L) }
-    var currentFrameIndex by rememberSaveable { mutableIntStateOf(0) }
     val duration = rememberSaveable { mutableLongStateOf(0L) }
 
-    LaunchedEffect(currentFrameIndex, uri) {
-        val keyCode = MediaMetadataRetriever.METADATA_KEY_DURATION
+    LaunchedEffect(uri) {
         val mediaMetadataRetriever = MediaMetadataRetriever()
-        mediaMetadataRetriever.setDataSource(context, uri.toUri())
-        val time: String? = mediaMetadataRetriever.extractMetadata(keyCode)
-        duration.longValue = time?.toLong() ?: 0L
-        videoTrimEnd = duration.longValue
-        var tempBitmap: Bitmap?
         try {
-            val frameTime = if (duration.longValue > 0) {
-                (currentFrameIndex * duration.longValue * 1000L / 10)
-            } else {
-                0L
-            }
-            tempBitmap = mediaMetadataRetriever.getFrameAtTime(frameTime)
+            val keyCode = MediaMetadataRetriever.METADATA_KEY_DURATION
+            mediaMetadataRetriever.setDataSource(context, uri.toUri())
+            val time: String? = mediaMetadataRetriever.extractMetadata(keyCode)
+            duration.longValue = time?.toLong() ?: 0L
+            videoTrimEnd = duration.longValue
         } catch (e: Exception) {
-            tempBitmap = mediaMetadataRetriever.frameAtTime
+            Log.d("VideoEditScreen", "Error extracting video metadata: ${e.message}")
+        } finally {
+            mediaMetadataRetriever.release()
         }
 
-        displayBitmap = tempBitmap ?: mediaMetadataRetriever.frameAtTime
-    }
-
-    LaunchedEffect(uri) {
         coroutineScope.launch {
             val extractedFrames = withContext(Dispatchers.IO) {
                 extractFrames(context, uri, 10)
