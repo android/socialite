@@ -18,8 +18,6 @@ package com.google.android.samples.socialite.ui.videoedit
 
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import android.util.Log
-import androidx.compose.foundation.Image
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -45,9 +43,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Style
-import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -58,6 +54,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SecondaryTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -66,7 +65,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -74,7 +73,6 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -258,89 +256,249 @@ fun VideoEditScreen(
             }
             Spacer(modifier = Modifier.height(20.dp))
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally)
-                    .padding(16.dp)
-                    .background(
-                        color = colorResource(R.color.dark_gray),
-                        shape = RoundedCornerShape(size = 28.dp),
-                    )
-                    .padding(15.dp),
-            ) {
-                VideoEditFilterChip(
-                    icon = Icons.AutoMirrored.Filled.VolumeMute,
-                    selected = removeAudioEnabled,
-                    onClick = { removeAudioEnabled = !removeAudioEnabled },
-                    label = stringResource(id = R.string.remove_audio),
-                )
-                VideoEditFilterChip(
-                    icon = Icons.Filled.ColorLens,
-                    selected = rgbAdjustmentEffectEnabled,
-                    onClick = { rgbAdjustmentEffectEnabled = !rgbAdjustmentEffectEnabled },
-                    label = stringResource(id = R.string.add_rgb_adjustment_effect),
-                )
-                VideoEditFilterChip(
-                    icon = Icons.Filled.Brightness1,
-                    selected = periodicVignetteEffectEnabled,
-                    onClick = { periodicVignetteEffectEnabled = !periodicVignetteEffectEnabled },
-                    label = stringResource(id = R.string.add_periodic_vignette_effect),
-                )
-                VideoEditFilterChip(
-                    icon = Icons.Filled.Style,
-                    selected = styleTransferEffectEnabled,
-                    onClick = { styleTransferEffectEnabled = !styleTransferEffectEnabled },
-                    label = stringResource(id = R.string.add_style_transfer_effect),
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                TextOverlayOption(
-                    inputtedText = overlayText,
-                    inputtedTextChange = {
-                        // Limit character count to 20
-                        if (it.length <= 20) {
-                            overlayText = it
-                        }
-                    },
-                    redTextCheckedState = redOverlayTextEnabled,
-                    redTextCheckedStateChange = {
-                        redOverlayTextEnabled = !redOverlayTextEnabled
-                    },
-                    largeTextCheckedState = largeOverlayTextEnabled,
-                    largeTextCheckedStateChange = {
-                        largeOverlayTextEnabled = !largeOverlayTextEnabled
-                    },
-                )
-                val rangeStart = "%.2f".format(videoTrimStart / 1000.0)
-                val rangeEnd = "%.2f".format(videoTrimEnd / 1000.0)
-                Text(text = "Video segment: $rangeStart s .. $rangeEnd s")
-
-                if (frames.isNotEmpty()) {
-                    FrameRangeSlider(
-                        frames = frames,
-                        state = TrimState(
-                            durationMs = duration.longValue,
-                            startMs = videoTrimStart,
-                            endMs = videoTrimEnd,
-                        ),
-                        onTrimChanged = { startMs, endMs ->
-                            videoTrimStart = startMs
-                            videoTrimEnd = endMs
-                        },
-                    )
-                } else {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .align(Alignment.CenterHorizontally),
-                    )
-                }
-            }
+            // Tabbed Controls Area
+            VideoEditTabs(
+                removeAudioEnabled = removeAudioEnabled,
+                onRemoveAudioToggle = { removeAudioEnabled = !removeAudioEnabled },
+                rgbAdjustmentEffectEnabled = rgbAdjustmentEffectEnabled,
+                onRgbAdjustmentEffectToggle = {
+                    rgbAdjustmentEffectEnabled = !rgbAdjustmentEffectEnabled
+                },
+                periodicVignetteEffectEnabled = periodicVignetteEffectEnabled,
+                onPeriodicVignetteEffectToggle = {
+                    periodicVignetteEffectEnabled = !periodicVignetteEffectEnabled
+                },
+                styleTransferEffectEnabled = styleTransferEffectEnabled,
+                onStyleTransferEffectToggle = {
+                    styleTransferEffectEnabled = !styleTransferEffectEnabled
+                },
+                overlayText = overlayText,
+                onOverlayTextChange = { if (it.length <= 20) overlayText = it },
+                redOverlayTextEnabled = redOverlayTextEnabled,
+                onRedOverlayTextToggle = { redOverlayTextEnabled = !redOverlayTextEnabled },
+                largeOverlayTextEnabled = largeOverlayTextEnabled,
+                onLargeOverlayTextToggle = { largeOverlayTextEnabled = !largeOverlayTextEnabled },
+                videoTrimStart = videoTrimStart,
+                videoTrimEnd = videoTrimEnd,
+                onTrimChanged = { startMs, endMs ->
+                    videoTrimStart = startMs
+                    videoTrimEnd = endMs
+                },
+                frames = frames,
+                durationMs = duration,
+            )
         }
     }
 
     // Show a loading indicator while the video is being processed.
     CenteredCircularProgressIndicator(isProcessing.value)
+}
+
+@Composable
+fun VideoEditTabs(
+    removeAudioEnabled: Boolean,
+    onRemoveAudioToggle: () -> Unit,
+    rgbAdjustmentEffectEnabled: Boolean,
+    onRgbAdjustmentEffectToggle: () -> Unit,
+    periodicVignetteEffectEnabled: Boolean,
+    onPeriodicVignetteEffectToggle: () -> Unit,
+    styleTransferEffectEnabled: Boolean,
+    onStyleTransferEffectToggle: () -> Unit,
+    overlayText: String,
+    onOverlayTextChange: (String) -> Unit,
+    redOverlayTextEnabled: Boolean,
+    onRedOverlayTextToggle: () -> Unit,
+    largeOverlayTextEnabled: Boolean,
+    onLargeOverlayTextToggle: () -> Unit,
+    videoTrimStart: Long,
+    videoTrimEnd: Long,
+    onTrimChanged: (startMs: Long, endMs: Long) -> Unit,
+    frames: List<Bitmap>,
+    durationMs: MutableLongState,
+) {
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("Edit", "Overlay", "Trim")
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                top = 16.dp,
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 32.dp,
+            )
+            .background(
+                color = colorResource(R.color.dark_gray),
+                shape = RoundedCornerShape(size = 28.dp),
+            ),
+    ) {
+        SecondaryTabRow(
+            selectedTabIndex = selectedTabIndex,
+            containerColor = colorResource(R.color.dark_gray),
+            contentColor = Color.White,
+            indicator = {
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(selectedTabIndex),
+                    color = colorResource(id = R.color.aqua),
+                )
+            },
+            divider = {}, // Remove default divider
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(title) },
+                    selectedContentColor = colorResource(id = R.color.aqua),
+                    unselectedContentColor = Color.LightGray,
+                )
+            }
+        }
+
+        Box(modifier = Modifier.padding(15.dp)) {
+            when (selectedTabIndex) {
+                0 -> VideoEditControls(
+                    removeAudioEnabled = removeAudioEnabled,
+                    onRemoveAudioToggle = onRemoveAudioToggle,
+                    rgbAdjustmentEffectEnabled = rgbAdjustmentEffectEnabled,
+                    onRgbAdjustmentEffectToggle = onRgbAdjustmentEffectToggle,
+                    periodicVignetteEffectEnabled = periodicVignetteEffectEnabled,
+                    onPeriodicVignetteEffectToggle = onPeriodicVignetteEffectToggle,
+                    styleTransferEffectEnabled = styleTransferEffectEnabled,
+                    onStyleTransferEffectToggle = onStyleTransferEffectToggle,
+                )
+
+                1 -> VideoOverlayControls(
+                    overlayText = overlayText,
+                    onOverlayTextChange = onOverlayTextChange,
+                    redOverlayTextEnabled = redOverlayTextEnabled,
+                    onRedOverlayTextToggle = onRedOverlayTextToggle,
+                    largeOverlayTextEnabled = largeOverlayTextEnabled,
+                    onLargeOverlayTextToggle = onLargeOverlayTextToggle,
+                )
+
+                2 -> VideoTrimControls(
+                    videoTrimStart = videoTrimStart,
+                    videoTrimEnd = videoTrimEnd,
+                    onTrimChanged = onTrimChanged,
+                    frames = frames,
+                    durationMs = durationMs,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun VideoEditControls(
+    removeAudioEnabled: Boolean,
+    onRemoveAudioToggle: () -> Unit,
+    rgbAdjustmentEffectEnabled: Boolean,
+    onRgbAdjustmentEffectToggle: () -> Unit,
+    periodicVignetteEffectEnabled: Boolean,
+    onPeriodicVignetteEffectToggle: () -> Unit,
+    styleTransferEffectEnabled: Boolean,
+    onStyleTransferEffectToggle: () -> Unit,
+) {
+    Column {
+        VideoEditFilterChip(
+            icon = Icons.AutoMirrored.Filled.VolumeMute,
+            selected = removeAudioEnabled,
+            onClick = onRemoveAudioToggle,
+            label = stringResource(id = R.string.remove_audio),
+        )
+        VideoEditFilterChip(
+            icon = Icons.Filled.ColorLens,
+            selected = rgbAdjustmentEffectEnabled,
+            onClick = onRgbAdjustmentEffectToggle,
+            label = stringResource(id = R.string.add_rgb_adjustment_effect),
+        )
+        VideoEditFilterChip(
+            icon = Icons.Filled.Brightness1,
+            selected = periodicVignetteEffectEnabled,
+            onClick = onPeriodicVignetteEffectToggle,
+            label = stringResource(id = R.string.add_periodic_vignette_effect),
+        )
+        VideoEditFilterChip(
+            icon = Icons.Filled.Style,
+            selected = styleTransferEffectEnabled,
+            onClick = onStyleTransferEffectToggle,
+            label = stringResource(id = R.string.add_style_transfer_effect),
+        )
+    }
+}
+
+@Composable
+fun VideoOverlayControls(
+    overlayText: String,
+    onOverlayTextChange: (String) -> Unit,
+    redOverlayTextEnabled: Boolean,
+    onRedOverlayTextToggle: () -> Unit,
+    largeOverlayTextEnabled: Boolean,
+    onLargeOverlayTextToggle: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        TextOverlayOption(
+            inputtedText = overlayText,
+            inputtedTextChange = onOverlayTextChange,
+            redTextCheckedState = redOverlayTextEnabled,
+            redTextCheckedStateChange = onRedOverlayTextToggle,
+            largeTextCheckedState = largeOverlayTextEnabled,
+            largeTextCheckedStateChange = onLargeOverlayTextToggle,
+        )
+    }
+}
+
+@Composable
+fun VideoTrimControls(
+    videoTrimStart: Long,
+    videoTrimEnd: Long,
+    onTrimChanged: (startMs: Long, endMs: Long) -> Unit,
+    frames: List<Bitmap>,
+    durationMs: MutableLongState,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        val rangeStart = "%.2f".format(videoTrimStart / 1000.0)
+        val rangeEnd = "%.2f".format(videoTrimEnd / 1000.0)
+        Text(
+            text = "Video segment: $rangeStart s .. $rangeEnd s",
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+
+        if (frames.isNotEmpty() && durationMs.longValue > 0) {
+            FrameRangeSlider(
+                frames = frames,
+                state = TrimState(
+                    durationMs = durationMs.longValue,
+                    startMs = videoTrimStart,
+                    endMs = videoTrimEnd,
+                ),
+                onTrimChanged = onTrimChanged,
+            )
+        } else if (durationMs.longValue == 0L && videoTrimStart == 0L && videoTrimEnd == 0L) {
+            // Still loading duration and frames
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally),
+            )
+        } else if (frames.isEmpty() && durationMs.longValue > 0) {
+            // Duration loaded but frames not yet (or failed)
+            Text("Loading frames...", color = Color.White)
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally),
+            )
+        } else {
+            Text("Video too short or unable to load trim controls.", color = Color.White)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
