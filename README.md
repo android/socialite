@@ -40,21 +40,43 @@ Here are the screens that make up SociaLite:
  - *Video Edit Screen:* After taking a video with the in-app camera, users can do some minor edits on this screen.
  - *Settings Screen:* A basic settings screen for tasks like resetting the chat history.
 
+## Project Structure
+
+The project is organized into several modules and directories:
+
+-   `app/`: Contains the main Android application code.
+    -   `src/main/`: Source code and resources for the main application.
+        -   `java/`: Kotlin/Java source files.
+            -   `com/google/android/samples/socialite/`: The main package for the application. See the [README](app/src/main/java/com/google/android/samples/socialite/README.md) for more details.
+                -   `data/`: Data sources, repositories, and related logic. See the [README](app/src/main/java/com/google/android/samples/socialite/data/README.md) for more details.
+                -   `model/`: Data models and entities. See the [README](app/src/main/java/com/google/android/samples/socialite/model/README.md) for more details.
+                -   `ui/`: UI components, screens, and view models. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/README.md) for more details.
+                    -   `camera/`: Code related to the in-app camera feature. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/camera/README.md) for more details.
+                    -   `chat/`: Code for the chat list and individual chat screens. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/chat/README.md) for more details.
+                    -   `settings/`: Code for the settings screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/home/settings/README.md) for more details.
+                    -   `timeline/`: Code for the timeline screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/home/timeline/README.md) for more details.
+                    -   `videoedit/`: Code for the video editing screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/videoedit/README.md) for more details.
+        -   `res/`: Application resources (layouts, drawables, values, etc.).
+        -   `assets/`: Static assets like images and shaders.
+    -   `build.gradle.kts`: Gradle build file for the app module.
+-   `baselineprofile/`: Contains code for generating baseline profiles to improve app performance.
+-   `docs/`: Documentation and images.
+-   `gradle/`: Gradle wrapper files.
+-   `build.gradle.kts`: Top-level Gradle build file.
+-   `settings.gradle.kts`: Gradle settings file.
+-   `gradle.properties`: Gradle properties file.
+-   `libs.versions.toml`: Version catalog for dependencies.
+
 ## How to run SociaLite
 
 1. Clone the repository
 2. Open the whole project in Android Studio.
 3. Sync & Run `app` configuration
 
-> Note: The Google AI client SDK for Android used in this code sample is
-recommended for prototyping only. For non-prototyping use cases, we strongly
-recommend that you use [Vertex AI for Firebase](https://firebase.google.com/docs/vertex-ai/migrate-to-vertex-ai?platform=android).
-
-### (optional) Add Gemini API:
-4. Create a Gemini API key in [Google AI studio](https://aistudio.google.com/app/apikey),
-5. Add your Gemini API key as `API_KEY` to your [`local.properties`] file,
-6. Sync & Run `app` configuration,
-7. In the app, go to Settings and tap the "AI Chatbot" button.
+### (optional) Add Gemini API via Firebase AI Logic:
+4. Set up a Firebase Project, connect your app to the _Gemini Developer API_ by following [these steps](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev),
+5. Replace google-services.json with your own & Run `app` configuration,
+6. In the app, go to Settings and tap the "AI Chatbot" button.
 
 ## Reporting Issues
 

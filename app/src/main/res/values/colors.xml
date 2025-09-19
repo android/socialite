@@ -19,5 +19,5 @@
     <color name="light_purple">#FFECDCFF</color>
     <color name="aqua">#FF7CD7BA</color>
     <color name="dark_gray">#FF2C322F</color>
-
+    <color name="colorAppWidgetBackground">#ffe0f3ff</color>
 </resources>

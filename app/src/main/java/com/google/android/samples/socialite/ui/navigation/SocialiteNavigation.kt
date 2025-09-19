@@ -16,6 +16,7 @@
 
 package com.google.android.samples.socialite.ui.navigation
 
+import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -28,66 +29,73 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.navigation.TopLevelDestination.Companion.isTopLevel
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
-sealed interface Route {
+sealed interface Pane : Parcelable {
+    @Parcelize
     @Serializable
-    data object Timeline : Route
+    data object Timeline : Pane
 
+    @Parcelize
     @Serializable
-    data object ChatsList : Route
+    data object ChatsList : Pane
 
+    @Parcelize
     @Serializable
-    data object Settings : Route
+    data object Settings : Pane
 
+    @Parcelize
     @Serializable
-    data object Home : Route
+    data object Home : Pane
 
+    @Parcelize
     @Serializable
-    data class ChatThread(val chatId: Long, val text: String? = null) : Route
+    data class ChatThread(
+        val chatId: Long,
+        val text: String? = null,
+        val imageUri: String? = null,
+    ) : Pane
 
+    @Parcelize
     @Serializable
-    data class Camera(val chatId: Long) : Route
+    data class Camera(val chatId: Long) : Pane
 
+    @Parcelize
     @Serializable
-    data class PhotoPicker(val chatId: Long) : Route
+    data class PhotoPicker(val chatId: Long) : Pane
 
+    @Parcelize
     @Serializable
-    data class VideoEdit(val chatId: Long, val uri: String) : Route
+    data class VideoEdit(val chatId: Long, val uri: String) : Pane
 
+    @Parcelize
     @Serializable
-    data class VideoPlayer(val uri: String) : Route
+    data class VideoPlayer(val uri: String) : Pane
 }
 
 enum class TopLevelDestination(
-    val route: Route,
+    val pane: Pane,
     @StringRes val label: Int,
     val imageVector: ImageVector,
 ) {
     Timeline(
-        route = Route.Timeline,
+        pane = Pane.Timeline,
         label = R.string.timeline,
         imageVector = Icons.Outlined.VideoLibrary,
     ),
     ChatsList(
-        route = Route.ChatsList,
+        pane = Pane.ChatsList,
         label = R.string.chats,
         imageVector = Icons.Outlined.ChatBubbleOutline,
     ),
     Settings(
-        route = Route.Settings,
+        pane = Pane.Settings,
         label = R.string.settings,
         imageVector = Icons.Outlined.Settings,
     ),
@@ -96,32 +104,27 @@ enum class TopLevelDestination(
     companion object {
         val START_DESTINATION = ChatsList
 
-        fun fromNavDestination(destination: NavDestination?): TopLevelDestination {
-            return entries.find { dest ->
-                destination?.hierarchy?.any {
-                    it.hasRoute(dest.route::class)
-                } == true
-            } ?: START_DESTINATION
+        fun fromPane(pane: Pane?): TopLevelDestination {
+            return entries.find { it.pane::class == pane?.let { r -> r::class } }
+                ?: START_DESTINATION
         }
 
-        fun NavDestination.isTopLevel(): Boolean {
-            return entries.any {
-                hasRoute(it.route::class)
-            }
+        fun Pane.isTopLevel(): Boolean {
+            return TopLevelDestination.entries.any { it.pane::class == this::class }
         }
     }
 }
 
 private fun calculateNavigationLayoutType(
-    destination: NavDestination?,
+    pane: Pane?,
     defaultLayoutType: NavigationSuiteType,
 ): NavigationSuiteType {
     return when {
-        destination == null -> defaultLayoutType
+        pane == null -> defaultLayoutType
         // Never show navigation UI on Camera.
-        destination.hasRoute<Route.Camera>() -> NavigationSuiteType.None
+        pane::class == Pane.Camera::class -> NavigationSuiteType.None
         // Top level destinations can show any layout type.
-        destination.isTopLevel() -> defaultLayoutType
+        pane.isTopLevel() -> defaultLayoutType
         // Every other destination goes through a ChatThread. Hide the bottom nav bar
         // since it interferes with composing chat messages.
         defaultLayoutType == NavigationSuiteType.NavigationBar -> NavigationSuiteType.None
@@ -131,18 +134,17 @@ private fun calculateNavigationLayoutType(
 
 @Composable
 fun SocialiteNavSuite(
-    navController: NavController,
+    backStack: MutableList<Pane>,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val destination = navBackStackEntry?.destination
+    val currentPane = backStack.lastOrNull()
+    val topLevelDestination = TopLevelDestination.fromPane(currentPane)
 
-    val topLevelDestination = TopLevelDestination.fromNavDestination(destination)
     val defaultLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
     )
-    val layoutType = calculateNavigationLayoutType(destination, defaultLayoutType)
+    val layoutType = calculateNavigationLayoutType(currentPane, defaultLayoutType)
 
     NavigationSuiteScaffold(
         modifier = modifier,
@@ -154,10 +156,7 @@ fun SocialiteNavSuite(
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            navController.navigate(it.route) {
-                                popUpTo(navController.graph.findStartDestination().id)
-                                launchSingleTop = true
-                            }
+                            backStack.add(it.pane)
                         }
                     },
                     icon = {

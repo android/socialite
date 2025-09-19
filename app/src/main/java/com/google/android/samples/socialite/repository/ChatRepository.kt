@@ -17,18 +17,17 @@
 package com.google.android.samples.socialite.repository
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.Content
-import com.google.ai.client.generativeai.type.content
-import com.google.android.samples.socialite.BuildConfig
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.ChatDao
 import com.google.android.samples.socialite.data.ContactDao
@@ -37,8 +36,17 @@ import com.google.android.samples.socialite.data.utils.ShortsVideoList
 import com.google.android.samples.socialite.di.AppCoroutineScope
 import com.google.android.samples.socialite.model.ChatDetail
 import com.google.android.samples.socialite.model.Message
+import com.google.android.samples.socialite.ui.chat.MediaItem
 import com.google.android.samples.socialite.widget.model.WidgetModelRepository
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.Content
+import com.google.firebase.ai.type.GenerativeBackend
+import com.google.firebase.ai.type.content
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -63,9 +71,8 @@ class ChatRepository @Inject internal constructor(
 ) {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     private val enableChatbotKey = booleanPreferencesKey("enable_chatbot")
-    val isBotEnabled = appContext.dataStore.data.map {
-            preference ->
-        preference[enableChatbotKey] ?: false
+    val isBotEnabled = appContext.dataStore.data.map { preference ->
+        preference[enableChatbotKey] == true
     }
 
     private var currentChat: Long = 0L
@@ -94,14 +101,19 @@ class ChatRepository @Inject internal constructor(
     ) {
         val detail = chatDao.loadDetailById(chatId) ?: return
         // Save the message to the database
-        saveMessageAndNotify(chatId, text, 0L, mediaUri, mediaMimeType, detail, PushReason.OutgoingMessage)
+        saveMessageAndNotify(
+            chatId,
+            text,
+            0L,
+            mediaUri,
+            mediaMimeType,
+            detail,
+            PushReason.OutgoingMessage,
+        )
 
         // Create a generative AI Model to interact with the Gemini API.
-        val generativeModel = GenerativeModel(
-            modelName = "gemini-1.5-pro-latest",
-            // Set your Gemini API in as an `API_KEY` variable in your local.properties file
-            apiKey = BuildConfig.API_KEY,
-            // Set a system instruction to set the behavior of the model.
+        val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
+            modelName = "gemini-2.0-flash-lite-001",
             systemInstruction = content {
                 text("Please respond to this chat conversation like a friendly ${detail.firstContact.replyModel}.")
             },
@@ -128,7 +140,8 @@ class ChatRepository @Inject internal constructor(
                             Uri.parse(mediaUri),
                         ).use {
                             if (it != null) {
-                                chat.sendMessage(BitmapFactory.decodeStream(it)).text?.trim() ?: "..."
+                                chat.sendMessage(BitmapFactory.decodeStream(it)).text?.trim()
+                                    ?: "..."
                             } else {
                                 appContext.getString(
                                     R.string.image_error,
@@ -147,7 +160,15 @@ class ChatRepository @Inject internal constructor(
                 }
 
                 // Save the generated response to the database
-                saveMessageAndNotify(chatId, response, detail.firstContact.id, null, null, detail, PushReason.IncomingMessage)
+                saveMessageAndNotify(
+                    chatId,
+                    response,
+                    detail.firstContact.id,
+                    null,
+                    null,
+                    detail,
+                    PushReason.IncomingMessage,
+                )
             } else {
                 // Simulate a response from the peer.
                 // The code here is just for demonstration purpose in this sample.
@@ -157,7 +178,15 @@ class ChatRepository @Inject internal constructor(
                 delay(5000L)
                 // Receive a reply.
                 val message = detail.firstContact.reply(text).apply { this.chatId = chatId }.build()
-                saveMessageAndNotify(message.chatId, message.text, detail.firstContact.id, message.mediaUri, message.mediaMimeType, detail, PushReason.IncomingMessage)
+                saveMessageAndNotify(
+                    message.chatId,
+                    message.text,
+                    detail.firstContact.id,
+                    message.mediaUri,
+                    message.mediaMimeType,
+                    detail,
+                    PushReason.IncomingMessage,
+                )
             }
 
             // Show notification if the chat is not on the foreground.
@@ -169,7 +198,75 @@ class ChatRepository @Inject internal constructor(
                 )
             }
 
-            widgetModelRepository.updateUnreadMessagesForContact(contactId = detail.firstContact.id, unread = true)
+            widgetModelRepository.updateUnreadMessagesForContact(
+                contactId = detail.firstContact.id,
+                unread = true,
+            )
+        }
+    }
+
+    fun saveAttachedMediaItem(mediaItem: MediaItem): Result<MediaItem> {
+        return tryTakePersistableUriPermission(mediaItem).fold(
+            onSuccess = {
+                Result.success(it)
+            },
+            onFailure = {
+                trySaveAttachedMediaItem(mediaItem)
+            },
+        )
+    }
+
+    private fun tryTakePersistableUriPermission(mediaItem: MediaItem): Result<MediaItem> {
+        return try {
+            appContext.contentResolver.takePersistableUriPermission(
+                mediaItem.uri.toUri(),
+                Intent.FLAG_GRANT_READ_URI_PERMISSION,
+            )
+            Result.success(mediaItem)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun trySaveAttachedMediaItem(mediaItem: MediaItem): Result<MediaItem> {
+        return try {
+            var createdUri: Uri? = null
+            appContext.contentResolver.openInputStream(mediaItem.uri.toUri())?.use {
+                val filename = when {
+                    mediaItem.extension != null -> {
+                        "media_item_${System.currentTimeMillis()}.${mediaItem.extension}"
+                    }
+                    else -> "media_item_${System.currentTimeMillis()}"
+                }
+                val directory = File(appContext.filesDir, "media")
+                if (!directory.exists()) {
+                    directory.mkdirs()
+                }
+                val file = File(directory, filename)
+                file.createNewFile()
+                FileOutputStream(file).use { outputStream ->
+                    it.copyTo(outputStream)
+                }
+                createdUri = file.toUri()
+            }
+
+            val mediaItemUri = createdUri?.toString()
+            if (mediaItemUri == null) {
+                Result.failure(Exception("Failed to save media item"))
+            } else {
+                Result.success(MediaItem(mediaItemUri, mediaItem.mimeType))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun removeAttachedMediaItem(mediaItem: MediaItem): Result<Unit> {
+        try {
+            File(mediaItem.uri).delete()
+            return Result.success(Unit)
+        } catch (e: Exception) {
+            return Result.failure(e)
         }
     }
 
@@ -245,7 +342,7 @@ class ChatRepository @Inject internal constructor(
             return@fold acc
         }
 
-        val lastUserMessage = pastMessages.removeLast()
+        pastMessages.removeLast()
 
         val pastContents = pastMessages.mapNotNull { message: Message ->
             val role = if (message.isIncoming) "model" else "user"
@@ -297,7 +394,10 @@ class ChatRepository @Inject internal constructor(
     }
 
     fun toggleChatbotSetting() {
-        if (BuildConfig.API_KEY == "DUMMY_API_KEY") {
+        val firebaseApp = FirebaseApp.getInstance()
+
+        Log.d("ChatRepository", "Firebase App ID: ${firebaseApp.options.projectId}")
+        if (firebaseApp.options.projectId == "mock_project") {
             Toast.makeText(
                 appContext,
                 appContext.getString(R.string.set_api_key_toast),
@@ -308,7 +408,7 @@ class ChatRepository @Inject internal constructor(
 
         coroutineScope.launch {
             appContext.dataStore.edit { preferences ->
-                preferences[enableChatbotKey] = (preferences[enableChatbotKey]?.not()) ?: false
+                preferences[enableChatbotKey] = (preferences[enableChatbotKey]?.not()) == true
             }
         }
     }

@@ -20,4 +20,8 @@
         <data android:mimeType="text/plain" />
         <category android:name="com.google.android.samples.socialite.category.SHARE_TARGET" />
     </share-target>
+    <share-target android:targetClass="com.google.android.samples.socialite.MainActivity">
+        <data android:mimeType="image/*" />
+        <category android:name="com.google.android.samples.socialite.category.SHARE_TARGET" />
+    </share-target>
 </shortcuts>

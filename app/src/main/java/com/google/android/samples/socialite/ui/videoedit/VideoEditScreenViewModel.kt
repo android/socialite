@@ -17,23 +17,34 @@
 package com.google.android.samples.socialite.ui.videoedit
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.media.MediaMetadataRetriever
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
+import android.util.Log
 import android.widget.Toast
+import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.ByteBufferGlEffect
+import androidx.media3.effect.GlEffect
 import androidx.media3.effect.OverlayEffect
+import androidx.media3.effect.RgbAdjustment
 import androidx.media3.effect.TextOverlay
 import androidx.media3.effect.TextureOverlay
 import androidx.media3.transformer.Composition
+import androidx.media3.transformer.Composition.HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
@@ -52,6 +63,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+private const val TAG = "VideoEditViewModel"
+
+@UnstableApi
 @HiltViewModel
 class VideoEditScreenViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
@@ -94,24 +108,134 @@ class VideoEditScreenViewModel @Inject constructor(
             }
         }
 
-    @androidx.annotation.OptIn(UnstableApi::class)
+    @OptIn(UnstableApi::class)
     fun applyVideoTransformation(
         context: Context,
         videoUri: String,
         removeAudio: Boolean,
+        rgbAdjustmentEffectSelected: Boolean,
+        periodicVignetteEffectSelected: Boolean,
+        styleTransferEffectSelected: Boolean,
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
-        videoTrimStart: Float,
-        videoTrimEnd: Float
+        videoTrimStart: Long,
+        videoTrimEnd: Long
     ) {
         val transformer = Transformer.Builder(context)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
             .addListener(transformerListener)
             .build()
 
+        val composition = prepareComposition(
+            context = context,
+            videoUri = videoUri,
+            removeAudio = removeAudio,
+            rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
+            periodicVignetteEffectSelected = periodicVignetteEffectSelected,
+            styleTransferEffectSelected = styleTransferEffectSelected,
+            textOverlayText = textOverlayText,
+            textOverlayRedSelected = textOverlayRedSelected,
+            textOverlayLargeSelected = textOverlayLargeSelected,
+            videoTrimStart = videoTrimStart,
+            videoTrimEnd = videoTrimEnd
+        )
+
+        val editedVideoFileName = "Socialite-edited-recording-" +
+            SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis()) + ".mp4"
+
+        transformedVideoFilePath = createNewVideoFilePath(context, editedVideoFileName)
+
+        // TODO: Investigate using MediaStoreOutputOptions instead of external cache file for saving
+        //  edited video https://github.com/androidx/media/issues/504
+        transformer.start(composition, transformedVideoFilePath)
+        _isProcessing.value = true
+    }
+
+    /**
+     * Prepares the video composition with the specified edits. This method is used to configure the
+     * video for preview.
+     */
+    @OptIn(UnstableApi::class)
+    fun prepareComposition(
+        context: Context,
+        videoUri: String,
+        removeAudio: Boolean,
+        rgbAdjustmentEffectSelected: Boolean,
+        periodicVignetteEffectSelected: Boolean,
+        styleTransferEffectSelected: Boolean,
+        textOverlayText: String,
+        textOverlayRedSelected: Boolean,
+        textOverlayLargeSelected: Boolean,
+        videoTrimStart: Long,
+        videoTrimEnd: Long
+    ): Composition {
+        val mediaItem = MediaItem.Builder()
+            .setUri(videoUri)
+            .setClippingConfiguration(
+                MediaItem.ClippingConfiguration.Builder()
+                    .setStartPositionMs(videoTrimStart)
+                    .setEndPositionMs(videoTrimEnd)
+                    .build())
+            .build()
+        // Try to retrieve the video duration
+        val retriever = MediaMetadataRetriever()
+        val durationUs = try {
+            retriever.setDataSource(context, videoUri.toUri())
+            val durationStr =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            durationStr?.toLongOrNull()?.times(1000) ?: 0L
+        } catch (e: Exception) {
+            Log.e(TAG, "Error retrieving duration of video")
+            0L
+        } finally {
+            retriever.release()
+        }
+        // Build the list of video effects to apply
+        val videoEffects =
+            buildVideoEffectsList(
+                context = context,
+                rgbAdjustmentEffectSelected = rgbAdjustmentEffectSelected,
+                periodicVignetteEffectSelected = periodicVignetteEffectSelected,
+                styleTransferEffectSelected = styleTransferEffectSelected,
+                textOverlayText = textOverlayText,
+                textOverlayRedSelected = textOverlayRedSelected,
+                textOverlayLargeSelected = textOverlayLargeSelected,
+            )
+
+        val editedMediaItem =
+            EditedMediaItem.Builder(mediaItem)
+                .setRemoveAudio(removeAudio).setDurationUs(durationUs).build()
+        val videoImageSequence = EditedMediaItemSequence(editedMediaItem)
+
+        val compositionBuilder = Composition.Builder(videoImageSequence)
+        // Tone-map to SDR if style transfer is selected since it can only be applied for SDR videos
+        if (styleTransferEffectSelected) {
+            compositionBuilder.setHdrMode(HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL)
+        }
+        compositionBuilder.setEffects(Effects(listOf(), videoEffects))
+
+        return compositionBuilder.build()
+    }
+
+    /**
+     * Builds a list of video effects based on the selected options.
+     */
+    @OptIn(UnstableApi::class)
+    private fun buildVideoEffectsList(
+        context: Context,
+        rgbAdjustmentEffectSelected: Boolean,
+        periodicVignetteEffectSelected: Boolean,
+        styleTransferEffectSelected: Boolean,
+        textOverlayText: String,
+        textOverlayRedSelected: Boolean,
+        textOverlayLargeSelected: Boolean,
+    ): List<Effect> {
+        val videoEffects: MutableList<GlEffect> = mutableListOf()
         val overlaysBuilder = ImmutableList.Builder<TextureOverlay>()
 
+        // Add text overlay effect if text is provided
         if (textOverlayText.isNotEmpty()) {
             val spannableStringBuilder = SpannableStringBuilder(textOverlayText)
 
@@ -144,32 +268,43 @@ class VideoEditScreenViewModel @Inject constructor(
 
             overlaysBuilder.add(textOverlay)
         }
+        videoEffects.add(OverlayEffect(overlaysBuilder.build()))
 
-        val inputMediaItem = MediaItem.Builder()
-            .setUri(videoUri)
-            .setClippingConfiguration(
-                MediaItem.ClippingConfiguration.Builder()
-                    .setStartPositionMs(videoTrimStart.toLong())
-                    .setEndPositionMs(videoTrimEnd.toLong())
-                    .build())
-            .build()
+        // Add RGB adjustment effect if selected
+        if (rgbAdjustmentEffectSelected) {
+            // Create an RgbAdjustment effect to modify the color balance
+            videoEffects.add(
+                RgbAdjustment.Builder()
+                    .setRedScale(1.5f)
+                    .setGreenScale(1.2f)
+                    .setBlueScale(0.8f).build(),
+            )
+        }
+        // Add periodic vignette effect if selected
+        if (periodicVignetteEffectSelected) {
+            // Create a GlEffect that applies a vignette effect that changes over time
+            // The shader program for this effect is defined in PeriodicVignetteShaderProgram
+            videoEffects.add(
+                GlEffect { context: Context?, useHdr: Boolean ->
+                    PeriodicVignetteShaderProgram(
+                        context = context,
+                        useHdr = useHdr,
+                        centerX = 0.5f,
+                        centerY = 0.5f,
+                        minInnerRadius = 0f,
+                        maxInnerRadius = 0.7f,
+                        outerRadius = 0.7f,
+                    )
+                },
+            )
+        }
+        // Add style transfer effect if selected
+        if (styleTransferEffectSelected) {
+            // Apply a style transfer effect using a TensorFlow Lite model
+            videoEffects.add(ByteBufferGlEffect<Bitmap>(StyleTransferEffect(context, "style.jpg")))
+        }
 
-        val editedMediaItem =
-            EditedMediaItem.Builder(inputMediaItem)
-                .setRemoveAudio(removeAudio)
-                .setEffects(Effects(listOf(), listOf(OverlayEffect(overlaysBuilder.build()))))
-                .build()
-
-        val editedVideoFileName = "Socialite-edited-recording-" +
-            SimpleDateFormat(CameraViewModel.FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis()) + ".mp4"
-
-        transformedVideoFilePath = createNewVideoFilePath(context, editedVideoFileName)
-
-        // TODO: Investigate using MediaStoreOutputOptions instead of external cache file for saving
-        //  edited video https://github.com/androidx/media/issues/504
-        transformer.start(editedMediaItem, transformedVideoFilePath)
-        _isProcessing.value = true
+        return videoEffects
     }
 
     private fun createNewVideoFilePath(context: Context, fileName: String): String {

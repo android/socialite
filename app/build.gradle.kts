@@ -24,6 +24,9 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
+    alias(libs.plugins.download)
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.parcelize)
 }
 
 kotlin {
@@ -36,7 +39,7 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
@@ -73,15 +76,36 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    lintOptions {
+        disable("RestrictedApi") // Disabled to use Media3's CompositionPlayer API
+    }
+}
+
+project.ext.set("ASSET_DIR", "$projectDir/src/main/assets")
+project.ext.set("TEST_ASSETS_DIR", "$projectDir/src/androidTest/assets")
+// Download default models; if you wish to use your own models then
+// place them in the "assets" directory and comment out this line.
+apply {
+    from("download_model.gradle")
 }
 
 dependencies {
+    implementation(libs.adaptive)
+    implementation(libs.adaptive.layout)
+    implementation(libs.adaptive.navigation)
+
     implementation(libs.core.ktx)
     implementation(libs.camera.extensions)
     implementation(libs.profileinstaller)
 
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material)
+    implementation(libs.camera.media3.effect)
+    implementation(libs.vision.common)
+    implementation(libs.segmentation.selfie)
+    implementation(libs.litert)
+    implementation(libs.litert.gpu)
+    implementation(libs.litert.support.api)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.truth)
@@ -95,20 +119,20 @@ dependencies {
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
+    implementation(libs.android.material3)
     implementation(libs.compose.foundation)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.ui.text.google.fonts)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
-    implementation(libs.compose.material3.adaptive)
+    implementation(libs.compose.material3.adaptive.navigation.suite)
     implementation(libs.compose.material.icons)
     androidTestImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manisfest)
 
     implementation(libs.activity.compose)
-    implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.accompanist.painter)
@@ -118,7 +142,6 @@ dependencies {
 
     implementation(libs.lifecycle.ktx)
     implementation(libs.lifecycle.compose)
-    implementation(libs.lifecycle.runtime.compose)
 
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
@@ -133,6 +156,7 @@ dependencies {
     implementation(libs.camera.core)
     implementation(libs.camera.compose)
     implementation(libs.camera2)
+    implementation(libs.camera.effects)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
 
@@ -141,6 +165,7 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.transformer)
     implementation(libs.media3.ui)
+    implementation(libs.media3.ui.compose)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
@@ -156,6 +181,12 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.compose)
 
-    implementation(libs.generativeai)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
     implementation(libs.datastore)
+
+    implementation(libs.adaptive.navigation3)
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
+    implementation(libs.lifecycle.viewmodel.navigation3)
 }

@@ -19,6 +19,7 @@
     <string name="timeline">Timeline</string>
     <string name="chats">Chats</string>
     <string name="settings">Settings</string>
+    <string name="chat">Chat</string>
 
     <!-- Timeline -->
     <eat-comment/>
@@ -47,6 +48,10 @@
     <string name="grant_permission">Grant permissions</string>
     <string name="back">Back</string>
     <string name="message">Message</string>
+    <string name="open_in_new_window">Open in new window</string>
+    <string name="option">Option</string>
+    <string name="remove_attachment">Remove attachment</string>
+    <string name="copy">Copy</string>
 
     <!-- Settings -->
     <eat-comment />
@@ -55,6 +60,9 @@
 
     <!-- Video Edit Screen -->
     <string name="remove_audio">Remove audio</string>
+    <string name="add_rgb_adjustment_effect">Add RGB adjustment effect</string>
+    <string name="add_periodic_vignette_effect">Add Periodic Vignette effect</string>
+    <string name="add_style_transfer_effect">Add style transfer effect</string>
     <string name="send">Send</string>
     <string name="add_text_overlay_placeholder">Add text overlay</string>
     <string name="red_text_option">Red</string>
@@ -69,9 +77,17 @@
     <string name="ai_chatbot_setting">AI Chatbot</string>
     <string name="ai_chatbot_setting_enabled">enabled</string>
     <string name="ai_chatbot_setting_disabled">disabled</string>
-    <string name="set_api_key_toast">Please set your API key in local.properties</string>
+    <string name="set_api_key_toast">Please connect your app to Firebase to enable AI Chatbot</string>
     <string name="gemini_error">Gemini error (%1$s)</string>
     <string name="image_error">Can\'t open image</string>
     <string name="unknown_error">Unknown error</string>
+
+    <!-- Keyboard shortcuts helper -->
+    <string name="send_message">Send message</string>
+    <string name="page_up">Page up</string>
+    <string name="page_down">Page down</string>
+
+    <!-- Timeline screen -->
+    <string name="close_carousel">Close carousel</string>
 
 </resources>

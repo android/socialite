@@ -20,6 +20,7 @@ import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.compose.foundation.Image
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,10 +40,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
+import androidx.compose.material.icons.filled.Brightness1
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,6 +65,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -67,12 +74,12 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -80,18 +87,33 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.CompositionPlayer
+import androidx.media3.ui.PlayerView
 import com.google.android.samples.socialite.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private const val TAG = "VideoEditScreen"
+/**
+ * Configuration options for video preview.
+ */
+@Immutable
+private data class VideoPreviewConfig(
+    val uri: String,
+    val removeAudioEnabled: Boolean,
+    val rgbAdjustmentEffectEnabled: Boolean,
+    val periodicVignetteEffectEnabled: Boolean,
+    val styleTransferEffectEnabled: Boolean,
+    val overlayText: String,
+    val redOverlayTextEnabled: Boolean,
+    val largeOverlayTextEnabled: Boolean,
+)
 
 @ExperimentalMaterial3Api
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -100,7 +122,7 @@ fun VideoEditScreen(
     chatId: Long,
     uri: String,
     onCloseButtonClicked: () -> Unit,
-    navController: NavController,
+    onFinishEditing: (chatId: Long) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -111,12 +133,15 @@ fun VideoEditScreen(
 
     val isFinishedEditing = viewModel.isFinishedEditing.collectAsStateWithLifecycle()
     if (isFinishedEditing.value) {
-        navController.popBackStack("chat/$chatId", false)
+        onFinishEditing(chatId)
     }
 
     val isProcessing = viewModel.isProcessing.collectAsState()
 
     var removeAudioEnabled by rememberSaveable { mutableStateOf(false) }
+    var rgbAdjustmentEffectEnabled by rememberSaveable { mutableStateOf(false) }
+    var periodicVignetteEffectEnabled by rememberSaveable { mutableStateOf(false) }
+    var styleTransferEffectEnabled by rememberSaveable { mutableStateOf(false) }
     var overlayText by rememberSaveable { mutableStateOf("") }
     var redOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
     var largeOverlayTextEnabled by rememberSaveable { mutableStateOf(false) }
@@ -141,7 +166,6 @@ fun VideoEditScreen(
             }
             tempBitmap = mediaMetadataRetriever.getFrameAtTime(frameTime)
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting frame at index $currentFrameIndex", e)
             tempBitmap = mediaMetadataRetriever.frameAtTime
         }
 
@@ -157,19 +181,45 @@ fun VideoEditScreen(
         }
     }
 
+    // Create a VideoPreviewConfig based on the current state of the editing options
+    val previewConfig = remember(
+        removeAudioEnabled,
+        rgbAdjustmentEffectEnabled,
+        periodicVignetteEffectEnabled,
+        styleTransferEffectEnabled,
+        overlayText,
+        redOverlayTextEnabled,
+        largeOverlayTextEnabled,
+    ) {
+        VideoPreviewConfig(
+            uri = uri,
+            removeAudioEnabled = removeAudioEnabled,
+            rgbAdjustmentEffectEnabled = rgbAdjustmentEffectEnabled,
+            periodicVignetteEffectEnabled = periodicVignetteEffectEnabled,
+            styleTransferEffectEnabled = styleTransferEffectEnabled,
+            overlayText = overlayText,
+            redOverlayTextEnabled = redOverlayTextEnabled,
+            largeOverlayTextEnabled = largeOverlayTextEnabled,
+        )
+    }
+
     Scaffold(
         topBar = {
             VideoEditTopAppBar(
                 onSendButtonClicked = {
+                    // Trigger the video transformation process in the ViewModel
                     viewModel.applyVideoTransformation(
                         context = context,
                         videoUri = uri,
                         removeAudio = removeAudioEnabled,
+                        rgbAdjustmentEffectSelected = rgbAdjustmentEffectEnabled,
+                        periodicVignetteEffectSelected = periodicVignetteEffectEnabled,
+                        styleTransferEffectSelected = styleTransferEffectEnabled,
                         textOverlayText = overlayText,
                         textOverlayRedSelected = redOverlayTextEnabled,
                         textOverlayLargeSelected = largeOverlayTextEnabled,
-                        videoTrimStart = videoTrimStart.toFloat(),
-                        videoTrimEnd = videoTrimEnd.toFloat(),
+                        videoTrimStart = videoTrimStart,
+                        videoTrimEnd = videoTrimEnd,
                     )
                 },
                 onCloseButtonClicked = onCloseButtonClicked,
@@ -186,10 +236,26 @@ fun VideoEditScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(50.dp))
+            // Display the video preview with applied effects.
             VideoMessagePreview(
-                displayBitmap,
-                isProcessing.value,
-            )
+                context,
+                previewConfig,
+            ) { context, previewConfig ->
+                // Trigger composition preparation process in the viewModel
+                viewModel.prepareComposition(
+                    context = context,
+                    videoUri = previewConfig.uri,
+                    removeAudio = previewConfig.removeAudioEnabled,
+                    rgbAdjustmentEffectSelected = previewConfig.rgbAdjustmentEffectEnabled,
+                    periodicVignetteEffectSelected = previewConfig.periodicVignetteEffectEnabled,
+                    styleTransferEffectSelected = previewConfig.styleTransferEffectEnabled,
+                    textOverlayText = previewConfig.overlayText,
+                    textOverlayRedSelected = previewConfig.redOverlayTextEnabled,
+                    textOverlayLargeSelected = previewConfig.largeOverlayTextEnabled,
+                    videoTrimStart = videoTrimStart,
+                    videoTrimEnd = videoTrimEnd,
+                )
+            }
             Spacer(modifier = Modifier.height(20.dp))
 
             Column(
@@ -208,6 +274,24 @@ fun VideoEditScreen(
                     selected = removeAudioEnabled,
                     onClick = { removeAudioEnabled = !removeAudioEnabled },
                     label = stringResource(id = R.string.remove_audio),
+                )
+                VideoEditFilterChip(
+                    icon = Icons.Filled.ColorLens,
+                    selected = rgbAdjustmentEffectEnabled,
+                    onClick = { rgbAdjustmentEffectEnabled = !rgbAdjustmentEffectEnabled },
+                    label = stringResource(id = R.string.add_rgb_adjustment_effect),
+                )
+                VideoEditFilterChip(
+                    icon = Icons.Filled.Brightness1,
+                    selected = periodicVignetteEffectEnabled,
+                    onClick = { periodicVignetteEffectEnabled = !periodicVignetteEffectEnabled },
+                    label = stringResource(id = R.string.add_periodic_vignette_effect),
+                )
+                VideoEditFilterChip(
+                    icon = Icons.Filled.Style,
+                    selected = styleTransferEffectEnabled,
+                    onClick = { styleTransferEffectEnabled = !styleTransferEffectEnabled },
+                    label = stringResource(id = R.string.add_style_transfer_effect),
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 TextOverlayOption(
@@ -254,6 +338,9 @@ fun VideoEditScreen(
             }
         }
     }
+
+    // Show a loading indicator while the video is being processed.
+    CenteredCircularProgressIndicator(isProcessing.value)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -291,10 +378,16 @@ private fun VideoEditTopAppBar(
     )
 }
 
+/**
+ * Preview of the video with applied effects. This composable uses Media3's [CompositionPlayer] to
+ * render the video with the specified edits.
+ */
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 private fun VideoMessagePreview(
-    bitmap: Bitmap?,
-    isProcessing: Boolean,
+    context: Context,
+    previewConfig: VideoPreviewConfig,
+    prepareComposition: (Context, VideoPreviewConfig) -> Composition,
 ) {
     // Render yellow box instead of frame of captured video for Preview purposes
     if (LocalInspectionMode.current) {
@@ -306,37 +399,38 @@ private fun VideoMessagePreview(
         )
         return
     }
-    if (bitmap != null) {
-        Box(
-            modifier = Modifier
-                .padding(10.dp),
-        ) {
-            Image(
-                modifier = Modifier.width(200.dp),
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
-            )
 
-            Icon(
-                Icons.Filled.Movie,
-                tint = Color.White,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(60.dp)
-                    .padding(10.dp),
-            )
+    val playerView = remember(context) { PlayerView(context) }
+    // CompositionPlayer is still under active development
+    var compositionPlayer by remember { mutableStateOf<CompositionPlayer?>(null) }
 
-            if (isProcessing) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-                        .padding(8.dp),
-                )
+    AndroidView(
+        factory = {
+            playerView.apply {
+                player = compositionPlayer
+                controllerAutoShow = false
             }
-        }
-    } else {
-        Log.e(TAG, "Error rendering preview of video")
+        },
+        modifier = Modifier
+            .width(250.dp)
+            .height(450.dp),
+    )
+
+    LaunchedEffect(previewConfig) {
+        // Release the previous player instance if it exists
+        compositionPlayer?.release()
+        // Create a new CompositionPlayer
+        compositionPlayer = CompositionPlayer.Builder(context).build()
+
+        // Set the player to the PlayerView
+        playerView.player = compositionPlayer
+
+        val composition = prepareComposition(context, previewConfig)
+
+        // Set the composition to the player and start playback
+        compositionPlayer?.setComposition(composition)
+        compositionPlayer?.prepare()
+        compositionPlayer?.play()
     }
 }
 
@@ -384,7 +478,6 @@ fun TextOverlayOption(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VideoEditFilterChip(
     icon: ImageVector,
@@ -416,6 +509,29 @@ private fun VideoEditFilterChip(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Circular progress indicator displayed in the center of the screen when the video is being
+ * processed. This provides visual feedback to the user that an operation is in progress.
+ */
+@Composable
+private fun CenteredCircularProgressIndicator(isProcessing: Boolean) {
+    if (isProcessing) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                    .padding(8.dp),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun VideoEditScreenPreview() {
@@ -423,6 +539,6 @@ fun VideoEditScreenPreview() {
         chatId = 0L,
         uri = "",
         onCloseButtonClicked = {},
-        navController = rememberNavController(),
+        onFinishEditing = {},
     )
 }
