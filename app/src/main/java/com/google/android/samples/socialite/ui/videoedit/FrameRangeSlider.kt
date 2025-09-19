@@ -141,11 +141,13 @@ fun FrameRangeSlider(
                     onDrag = { _, drag ->
                         when (dragging) {
                             HandlePosition.START -> {
-                                startXPx += drag.x; clampAndNotify()
+                                startXPx += drag.x
+                                clampAndNotify()
                             }
 
                             HandlePosition.END -> {
-                                endXPx += drag.x; clampAndNotify()
+                                endXPx += drag.x
+                                clampAndNotify()
                             }
 
                             null -> Unit
@@ -273,13 +275,17 @@ private fun Handle(
 ) {
     val flatShape = if (isLeftSide) {
         RoundedCornerShape(
-            topStart = 8.dp, bottomStart = 8.dp,
-            topEnd = 0.dp, bottomEnd = 0.dp,
+            topStart = 8.dp,
+            bottomStart = 8.dp,
+            topEnd = 0.dp,
+            bottomEnd = 0.dp,
         )
     } else {
         RoundedCornerShape(
-            topStart = 0.dp, bottomStart = 0.dp,
-            topEnd = 8.dp, bottomEnd = 8.dp,
+            topStart = 0.dp,
+            bottomStart = 0.dp,
+            topEnd = 8.dp,
+            bottomEnd = 8.dp,
         )
     }
 

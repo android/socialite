@@ -120,7 +120,7 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
         videoTrimStart: Long,
-        videoTrimEnd: Long
+        videoTrimEnd: Long,
     ) {
         val transformer = Transformer.Builder(context)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
@@ -138,7 +138,7 @@ class VideoEditScreenViewModel @Inject constructor(
             textOverlayRedSelected = textOverlayRedSelected,
             textOverlayLargeSelected = textOverlayLargeSelected,
             videoTrimStart = videoTrimStart,
-            videoTrimEnd = videoTrimEnd
+            videoTrimEnd = videoTrimEnd,
         )
 
         val editedVideoFileName = "Socialite-edited-recording-" +
@@ -169,7 +169,7 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
         videoTrimStart: Long,
-        videoTrimEnd: Long
+        videoTrimEnd: Long,
     ): Composition {
         val mediaItem = MediaItem.Builder()
             .setUri(videoUri)
@@ -177,7 +177,8 @@ class VideoEditScreenViewModel @Inject constructor(
                 MediaItem.ClippingConfiguration.Builder()
                     .setStartPositionMs(videoTrimStart)
                     .setEndPositionMs(videoTrimEnd)
-                    .build())
+                    .build(),
+            )
             .build()
         // Try to retrieve the video duration
         val retriever = MediaMetadataRetriever()
