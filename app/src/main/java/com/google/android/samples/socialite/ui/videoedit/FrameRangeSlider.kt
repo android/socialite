@@ -317,7 +317,12 @@ suspend fun extractFrames(
         val mediaMetadataRetriever = MediaMetadataRetriever()
         mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
         val keyCode = MediaMetadataRetriever.METADATA_KEY_DURATION
-        val time: String? = mediaMetadataRetriever.extractMetadata(keyCode)
+        var time: String? = null
+        try {
+            time = mediaMetadataRetriever.extractMetadata(keyCode)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting video metadata: ${e.message}")
+        }
         val duration = time?.toLong() ?: 0L
         if (duration > 0) {
             val frameDuration = duration * 1000 / frameCount
