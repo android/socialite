@@ -65,6 +65,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "VideoEditViewModel"
 
+@UnstableApi
 @HiltViewModel
 class VideoEditScreenViewModel @Inject constructor(
     @ApplicationContext private val application: Context,
@@ -118,6 +119,8 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
+        videoTrimStart: Long,
+        videoTrimEnd: Long,
     ) {
         val transformer = Transformer.Builder(context)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
@@ -134,6 +137,8 @@ class VideoEditScreenViewModel @Inject constructor(
             textOverlayText = textOverlayText,
             textOverlayRedSelected = textOverlayRedSelected,
             textOverlayLargeSelected = textOverlayLargeSelected,
+            videoTrimStart = videoTrimStart,
+            videoTrimEnd = videoTrimEnd,
         )
 
         val editedVideoFileName = "Socialite-edited-recording-" +
@@ -163,8 +168,18 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayText: String,
         textOverlayRedSelected: Boolean,
         textOverlayLargeSelected: Boolean,
+        videoTrimStart: Long,
+        videoTrimEnd: Long,
     ): Composition {
-        val mediaItem = MediaItem.fromUri(videoUri)
+        val mediaItem = MediaItem.Builder()
+            .setUri(videoUri)
+            .setClippingConfiguration(
+                MediaItem.ClippingConfiguration.Builder()
+                    .setStartPositionMs(videoTrimStart)
+                    .setEndPositionMs(videoTrimEnd)
+                    .build(),
+            )
+            .build()
         // Try to retrieve the video duration
         val retriever = MediaMetadataRetriever()
         val durationUs = try {
@@ -201,6 +216,7 @@ class VideoEditScreenViewModel @Inject constructor(
             compositionBuilder.setHdrMode(HDR_MODE_TONE_MAP_HDR_TO_SDR_USING_OPEN_GL)
         }
         compositionBuilder.setEffects(Effects(listOf(), videoEffects))
+
         return compositionBuilder.build()
     }
 
