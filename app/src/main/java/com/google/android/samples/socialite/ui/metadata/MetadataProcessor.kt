@@ -42,11 +42,14 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         val mediaMetadata = MediaMetadata().apply {
             runMetadataRetriever(this)
             runMediaExtractor(this)
-            print()
         }
         return mediaMetadata
     }
 
+    /**
+     * Retrieves container and track-level metadata using [MetadataRetriever].
+     * This includes details like duration, mime types, bitrate, and resolution.
+     */
     private fun runMetadataRetriever(
         mediaMetadata: MediaMetadata,
     ): MediaMetadata {
@@ -78,11 +81,11 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         } catch (e: Exception) {
             throw RuntimeException("Failed to retrieve metadata", e)
         } finally {
+            // Ensure the retriever is always closed to free up resources.
             metadataRetriever.close()
         }
         return mediaMetadata
     }
-
     private fun retrieveDurationString(metadataRetriever: MetadataRetriever): String {
         val durationUs = metadataRetriever.retrieveDurationUs().get()
         val totalSeconds = (durationUs / 1_000_000L)
@@ -99,6 +102,9 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         }
     }
 
+    /**
+     * Populates common track-level attributes from a [Format] object.
+     */
     private fun populateTrackAttributes(format: Format): TrackAttributes {
         return TrackAttributes().apply {
             trackId = format.id
@@ -111,6 +117,9 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         }
     }
 
+    /**
+     * Populates video-specific attributes from a [Format] object.
+     */
     private fun populateVideoAttributes(format: Format): TrackAttributes.VideoAttributes {
         return TrackAttributes.VideoAttributes().apply {
             width = format.width
@@ -119,6 +128,9 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         }
     }
 
+    /**
+     * Populates audio-specific attributes from a [Format] object.
+     */
     private fun populateAudioAttributes(format: Format): TrackAttributes.AudioAttributes {
         return TrackAttributes.AudioAttributes().apply {
             sampleRateKHz = (format.sampleRate / 1000.0).roundToLong()
@@ -128,6 +140,10 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         }
     }
 
+    /**
+     * Extracts encoded samples from the media file using [MediaExtractorCompat] to calculate
+     * the total number of samples and their combined size.
+     */
     private fun runMediaExtractor(
         mediaMetadata: MediaMetadata,
     ): MediaMetadata {
@@ -135,34 +151,44 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         try {
             extractor = MediaExtractorCompat(context)
             extractor.setDataSource(mediaPath)
+
+            // Select all tracks to process samples from all of them.
             for (i in 0 until extractor.trackCount) {
                 extractor.selectTrack(i)
             }
 
+            // Allocate a large buffer to read sample data into. 1MB should be sufficient.
             val buffer = ByteBuffer.allocate(1 * 1024 * 1024)
-            var sampleIndex = 0L
+            var totalSampleCount = 0L
             var totalSizeSamples = 0L
+
+            // Loop through all the samples in the media file.
             while (true) {
                 val trackIndex = extractor.sampleTrackIndex
-                if (trackIndex < 0) break
+                // A negative track index indicates that there are no more samples.
+                if (trackIndex < 0) {
+                    break
+                }
 
                 val readBytes = extractor.readSampleData(buffer, 0)
-                if (readBytes < 0) break
+                if (readBytes < 0) {
+                    break
+                }
 
-                sampleIndex += 1
+                totalSampleCount++
                 totalSizeSamples += readBytes
 
+                // Advance to the next sample.
                 extractor.advance()
             }
-            mediaMetadata.containerAttributes.numSamples = sampleIndex
-            Log.d(TAG, "Number of Samples: $sampleIndex")
 
-            val totalSizeSamplesMb = Math.round(totalSizeSamples / (1024.0 * 1024.0))
-            mediaMetadata.containerAttributes.totalSizeSamplesMb = totalSizeSamplesMb
-            Log.d(TAG, "Total Size of Samples: $totalSizeSamplesMb MB")
+            mediaMetadata.containerAttributes.numSamples = totalSampleCount
+            mediaMetadata.containerAttributes.totalSizeSamplesMb =
+                (totalSizeSamples / (1024.0 * 1024.0)).roundToLong()
         } catch (e: Exception) {
             throw RuntimeException("Failed during media extraction", e)
         } finally {
+            // Ensure the extractor is always released to free up resources.
             extractor?.release()
         }
         return mediaMetadata

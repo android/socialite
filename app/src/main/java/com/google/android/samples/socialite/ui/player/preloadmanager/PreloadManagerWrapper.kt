@@ -22,12 +22,8 @@ import androidx.annotation.MainThread
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultLoadControl
-import androidx.media3.exoplayer.DefaultRendererCapabilitiesList
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.preload.DefaultPreloadManager
-//import androidx.media3.exoplayer.source.preload.DefaultPreloadManager.Status.STAGE_LOADED_FOR_DURATION_MS
 import androidx.media3.exoplayer.source.preload.TargetPreloadStatusControl
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
@@ -64,7 +60,6 @@ private constructor(
         ): PreloadManagerWrapper {
             val trackSelector = DefaultTrackSelector(context)
             trackSelector.init({}, DefaultBandwidthMeter.getSingletonInstance(context))
-            val renderersFactory = DefaultRenderersFactory(context)
             val targetPreloadStatusControl = MyTargetPreloadStatusControl()
             val preloadManagerBuilder =
                 DefaultPreloadManager.Builder(context, targetPreloadStatusControl)
@@ -150,11 +145,12 @@ private constructor(
         return defaultPreloadManager.getMediaSource(mediaItem)
     }
 
-    //    /** Customize time to preload, by default as per ranking data */
-    class MyTargetPreloadStatusControl() :
+    /** Customize time to preload, by default as per ranking data */
+    class MyTargetPreloadStatusControl :
         TargetPreloadStatusControl<Int, DefaultPreloadManager.PreloadStatus> {
-        override fun getTargetPreloadStatus(index: Int): DefaultPreloadManager.PreloadStatus? {
-            return null
+        override fun getTargetPreloadStatus(rankingData: Int): DefaultPreloadManager.PreloadStatus {
+            // By default preload first 3 seconds of the video
+            return DefaultPreloadManager.PreloadStatus.specifiedRangeLoaded(3000L)
         }
     }
 }

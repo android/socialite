@@ -193,7 +193,8 @@ private fun MediaItem(
                     }
 
                     else -> {
-                        // Add a small i button to the top left
+                        // Display an info button to inspect the video's metadata. This is overlaid on
+                        // top left of the video preview.
                         IconButton(
                             onClick = {
                                 onInspectClicked(media.uri)

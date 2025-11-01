@@ -49,10 +49,10 @@ class MetadataInspectorViewModel @Inject constructor(
         }
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val currMediaMetadata =
+                val currentMediaMetadata =
                     MediaMetadataProcessor(context, mediaPath).populateMediaMetadata()
                 withContext(Dispatchers.Main) {
-                    mediaMetadata = currMediaMetadata
+                    mediaMetadata = currentMediaMetadata
                     isLoaded = true
                 }
             } catch (e: Exception) {

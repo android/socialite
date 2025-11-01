@@ -28,11 +28,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.samples.socialite.R
 
 @Composable
 fun ShowLoading() {
@@ -44,7 +46,7 @@ fun ShowLoading() {
             .fillMaxHeight(),
     ) {
         Text(
-            "Please wait. This might take a few seconds ...",
+            stringResource(R.string.waiting_message),
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Light,

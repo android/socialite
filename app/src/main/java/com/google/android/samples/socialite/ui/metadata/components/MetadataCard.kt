@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -102,11 +103,25 @@ fun MetadataCard(
 @Composable
 fun MediaMetadataCardPreview() {
     val metadataItems = listOf(
-        MetadataItem("Codec", "H.264", "The codec used for video compression"),
-        MetadataItem("Resolution", "1920x1080", "The pixel resolution of the video"),
-        MetadataItem("Bitrate", "5 Mbps", "The average number of bits per second"),
+        MetadataItem(
+            stringResource(R.string.key_codec),
+            stringResource(R.string.value_codec),
+            stringResource(R.string.desc_codec),
+        ),
+        MetadataItem(
+            stringResource(R.string.key_resolution),
+            stringResource(R.string.value_resolution),
+            stringResource(R.string.desc_resolution),
+        ),
+        MetadataItem(
+            stringResource(R.string.key_bitrate),
+            stringResource(R.string.value_bitrate),
+            stringResource(R.string.desc_bitrate),
+        ),
     )
     MetadataCard(
-        iconId = R.drawable.box, title = "Media Metadata", items = metadataItems,
+        iconId = R.drawable.box,
+        title = stringResource(R.string.metadata_card_title),
+        items = metadataItems,
     )
 }

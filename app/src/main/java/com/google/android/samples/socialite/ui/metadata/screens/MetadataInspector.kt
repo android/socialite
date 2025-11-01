@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,7 +81,7 @@ fun MetadataInspector(
 
         Spacer(modifier = Modifier.height(50.dp))
         Text(
-            "Metadata Inspector",
+            stringResource(R.string.metadata_inspector_title),
             modifier = Modifier
                 .padding(15.dp)
                 .align(Alignment.Start),
@@ -106,23 +107,23 @@ private fun ShowMetadataCardList(
 ) {
     MetadataCard(
         iconId = R.drawable.box,
-        title = "Container Metadata",
+        title = stringResource(R.string.container_metadata_title),
         items = AttributeUtil.getContainerAttributes(mediaPath, mediaMetadata),
     )
 
     ShowTrackGroup(
         R.drawable.video,
-        "Video Tracks",
+        stringResource(R.string.video_tracks_title),
         mediaMetadata.trackAttributesList.filter { MimeTypes.isVideo(it.trackMimeType) },
     )
     ShowTrackGroup(
         R.drawable.audio,
-        "Audio Tracks",
+        stringResource(R.string.audio_tracks_title),
         mediaMetadata.trackAttributesList.filter { MimeTypes.isAudio(it.trackMimeType) },
     )
     ShowTrackGroup(
         R.drawable.text,
-        "Subtitle Tracks",
+        stringResource(R.string.subtitle_tracks_title),
         mediaMetadata.trackAttributesList.filter { MimeTypes.isText(it.trackMimeType) },
     )
 }

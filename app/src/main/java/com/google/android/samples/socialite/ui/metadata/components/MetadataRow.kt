@@ -36,11 +36,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.SocialTheme
 
 @Composable
@@ -57,7 +59,7 @@ fun MetadataRow(item: MetadataItem) {
         ) {
             Icon(
                 imageVector = Icons.Default.Info,
-                contentDescription = "Info button",
+                contentDescription = stringResource(R.string.info_button_content_desc),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(15.dp),
             )
@@ -110,7 +112,7 @@ fun MetadataRow(item: MetadataItem) {
             confirmButton = {
                 TextButton(onClick = { showDialog = false }) {
                     Text(
-                        "OK",
+                        stringResource(R.string.ok),
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Medium,
                             fontSize = 18.sp,
@@ -128,9 +130,9 @@ fun MetadataRowPreview() {
     SocialTheme {
         MetadataRow(
             item = MetadataItem(
-                key = "Bitrate",
-                value = "128 kbps",
-                description = "The number of bits processed per unit of time.",
+                key = stringResource(R.string.key_bitrate),
+                value = stringResource(R.string.value_bitrate),
+                description = stringResource(R.string.desc_bitrate),
             ),
         )
     }
@@ -144,7 +146,7 @@ fun AlertDialogPreview() {
             onDismissRequest = {},
             title = {
                 Text(
-                    "Bitrate",
+                    stringResource(R.string.key_bitrate),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 20.sp,
@@ -153,7 +155,7 @@ fun AlertDialogPreview() {
             },
             text = {
                 Text(
-                    "The number of bits processed per unit of time.",
+                    stringResource(R.string.desc_bitrate),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = 18.sp,
                     ),
@@ -162,7 +164,7 @@ fun AlertDialogPreview() {
             confirmButton = {
                 TextButton(onClick = {}) {
                     Text(
-                        "OK",
+                        stringResource(R.string.ok),
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Medium,
                             fontSize = 18.sp,
