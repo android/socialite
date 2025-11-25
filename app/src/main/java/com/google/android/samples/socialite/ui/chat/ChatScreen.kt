@@ -101,6 +101,7 @@ fun ChatScreen(
     modifier: Modifier = Modifier,
     prefilledText: String? = null,
     prefilledImageUri: String? = null,
+    onInspectClicked: (uri: String) -> Unit = {},
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(chatId) {
@@ -131,6 +132,7 @@ fun ChatScreen(
             onVideoClick = onVideoClick,
             onMediaItemAttached = viewModel::attachMedia,
             onRemoveAttachedMediaItem = viewModel::removeAttachedMedia,
+            onInspectClicked = onInspectClicked,
             modifier = modifier
                 .clip(RoundedCornerShape(5)),
         )
@@ -179,6 +181,7 @@ private fun ChatContent(
     onVideoClick: (uri: String) -> Unit,
     onMediaItemAttached: (MediaItem) -> Unit,
     onRemoveAttachedMediaItem: () -> Unit,
+    onInspectClicked: (uri: String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val topAppBarState = rememberTopAppBarState()
@@ -219,6 +222,7 @@ private fun ChatContent(
                     .fillMaxWidth()
                     .weight(1f),
                 onVideoClick = onVideoClick,
+                onInspectClicked = onInspectClicked,
             )
             InputBar(
                 textFieldState = textFieldState,
@@ -306,6 +310,7 @@ private fun MessageList(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
     onVideoClick: (uri: String) -> Unit = {},
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier,
@@ -333,7 +338,10 @@ private fun MessageList(
                 }
                 MessageBubble(
                     message = message,
-                    onVideoClick = { message.mediaUri?.let { onVideoClick(it) } },
+                    onVideoClick = {
+                        message.mediaUri?.let { onVideoClick(it) }
+                    },
+                    onInspectClicked = onInspectClicked,
                 )
             }
         }

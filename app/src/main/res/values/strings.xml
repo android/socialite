@@ -22,7 +22,7 @@
     <string name="chat">Chat</string>
 
     <!-- Timeline -->
-    <eat-comment/>
+    <eat-comment />
     <string name="timeline_empty_title">No photos or video.</string>
     <string name="timeline_empty_message">Videos and photos from messages will display here. Add a message or refine your search.</string>
 
@@ -89,5 +89,25 @@
 
     <!-- Timeline screen -->
     <string name="close_carousel">Close carousel</string>
+
+    <!-- Metadata screen -->
+    <string name="info_button_content_desc">Info button</string>
+    <string name="waiting_message">Please wait. This might take a few seconds …</string>
+    <string name="metadata_card_title">Media Metadata</string>
+    <string name="ok">OK</string>
+    <string name="key_codec">Codec</string>
+    <string name="key_resolution">Resolution</string>
+    <string name="key_bitrate">Bitrate</string>
+    <string name="value_codec">H.264</string>
+    <string name="value_resolution">1920x1080</string>
+    <string name="value_bitrate">5 Mbps</string>
+    <string name="desc_codec">The codec used for video compression</string>
+    <string name="desc_resolution">The pixel resolution of the video</string>
+    <string name="desc_bitrate">The average number of bits per second</string>
+    <string name="metadata_inspector_title">Metadata Inspector</string>
+    <string name="container_metadata_title">Container Metadata</string>
+    <string name="video_tracks_title">Video Tracks</string>
+    <string name="audio_tracks_title">Audio Tracks</string>
+    <string name="subtitle_tracks_title">Subtitle Tracks</string>
 
 </resources>

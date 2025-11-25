@@ -26,6 +26,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.android.samples.socialite.ui.chat.ChatMessage
@@ -49,6 +54,7 @@ internal fun MessageBubble(
     message: ChatMessage,
     modifier: Modifier = Modifier,
     onVideoClick: () -> Unit = {},
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     MessageBubbleSurface(
         isVideoContentAttached = message.isVideoContentAttached,
@@ -65,6 +71,7 @@ internal fun MessageBubble(
             AttachedMedia(
                 message = message,
                 modifier = Modifier.draggableMediaItem(message),
+                onInspectClicked = onInspectClicked,
             )
         }
     }
@@ -109,6 +116,7 @@ private fun MessageBubbleSurface(
 private fun AttachedMedia(
     message: ChatMessage,
     modifier: Modifier = Modifier,
+    onInspectClicked: (uri: String) -> Unit,
 ) {
     val uri = message.mediaUri
     if (uri != null) {
@@ -122,6 +130,22 @@ private fun AttachedMedia(
                 }
 
                 message.isVideoContentAttached -> {
+                    // Display an info button to inspect the video's metadata. This is overlaid on
+                    // top left of the video preview.
+                    IconButton(
+                        onClick = {
+                            onInspectClicked(uri)
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .zIndex(1f),
+                        // Ensure the button is on top of other content
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = "Inspect video metadata",
+                        )
+                    }
                     Video(
                         uri = uri,
                         modifier = modifier,
@@ -142,9 +166,7 @@ private fun Photo(
     modifier: Modifier = Modifier,
 ) {
     AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(uri)
-            .build(),
+        model = ImageRequest.Builder(LocalContext.current).data(uri).build(),
         contentDescription = null,
         modifier = modifier
             .height(250.dp)

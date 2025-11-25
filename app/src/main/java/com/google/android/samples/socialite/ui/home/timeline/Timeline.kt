@@ -43,6 +43,7 @@ fun Timeline(
     modifier: Modifier = Modifier,
     viewModel: TimelineViewModel = hiltViewModel(),
     format: TimelineFormat = rememberTimelineFormat(),
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     val mediaItems by viewModel.media.collectAsStateWithLifecycle(emptyList())
 
@@ -55,6 +56,7 @@ fun Timeline(
                 EmptyTimeline(contentPadding, modifier)
             }
         }
+
         else -> {
             Timeline(
                 player = player,
@@ -64,6 +66,7 @@ fun Timeline(
                 onInitializePlayer = viewModel::initializePlayer,
                 onReleasePlayer = viewModel::releasePlayer,
                 format = format,
+                onInspectClicked = onInspectClicked,
             )
         }
     }
@@ -79,6 +82,7 @@ fun Timeline(
     onChangePlayerItem: (uri: Uri?, page: Int) -> Unit = { uri: Uri?, i: Int -> },
     onInitializePlayer: () -> Unit = {},
     onReleasePlayer: () -> Unit = {},
+    onInspectClicked: (uri: String) -> Unit = {},
 ) {
     val currentOnInitializePlayer by rememberUpdatedState(onInitializePlayer)
     val currentOnReleasePlayer by rememberUpdatedState(onReleasePlayer)
@@ -106,7 +110,10 @@ fun Timeline(
                     player = player,
                     videoRatio = videoRatio,
                     onChangePlayerItem = onChangePlayerItem,
-                    modifier = Modifier.fillMaxSize().padding(contentPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(contentPadding),
+                    onInspectClicked = onInspectClicked,
                 )
             }
         }
