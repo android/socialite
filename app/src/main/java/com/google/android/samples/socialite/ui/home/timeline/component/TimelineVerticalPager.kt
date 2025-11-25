@@ -17,7 +17,6 @@
 package com.google.android.samples.socialite.ui.home.timeline.component
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -201,7 +200,8 @@ private fun MediaItem(
                             },
                             modifier = Modifier
                                 .padding(8.dp)
-                                .zIndex(1f), // Ensure the button is on top of other content
+                                .zIndex(1f),
+                            // Ensure the button is on top of other content
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Info,

@@ -103,7 +103,8 @@ fun MetadataInspector(
 @OptIn(UnstableApi::class)
 @Composable
 private fun ShowMetadataCardList(
-    mediaPath: String, mediaMetadata: MediaMetadata,
+    mediaPath: String,
+    mediaMetadata: MediaMetadata,
 ) {
     MetadataCard(
         iconId = R.drawable.box,
@@ -158,7 +159,8 @@ private fun ShowTrackGroup(
             Text(
                 text = "$trackGroupHeading (${trackMetadataList.size})",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold, fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
                 ),
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.primary,

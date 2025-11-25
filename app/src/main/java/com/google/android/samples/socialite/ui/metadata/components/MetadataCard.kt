@@ -41,12 +41,17 @@ import androidx.compose.ui.unit.sp
 import com.google.android.samples.socialite.R
 
 data class MetadataItem(
-    val key: String, val value: String, val description: String,
+    val key: String,
+    val value: String,
+    val description: String,
 )
 
 @Composable
 fun MetadataCard(
-    iconId: Int, title: String, items: List<MetadataItem>, modifier: Modifier = Modifier,
+    iconId: Int,
+    title: String,
+    items: List<MetadataItem>,
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier

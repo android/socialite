@@ -16,22 +16,9 @@
 
 package com.google.android.samples.socialite.ui.metadata
 
-import android.os.Build
-import android.util.Log
-
-private const val TAG = "MediaMetadata"
-
 class MediaMetadata {
     val containerAttributes: ContainerAttributes = ContainerAttributes()
     val trackAttributesList: MutableList<TrackAttributes> = mutableListOf()
-
-    fun print() {
-        if (Build.TYPE == "debug") {
-            Log.i(TAG, "MediaMetadata:")
-            containerAttributes.print()
-            trackAttributesList.forEach { it.print() }
-        }
-    }
 }
 
 class ContainerAttributes {
@@ -40,17 +27,6 @@ class ContainerAttributes {
     var numTracks: Int? = null
     var numSamples: Long? = null
     var totalSizeSamplesMb: Long? = null
-
-    fun print() {
-        if (Build.TYPE == "debug") {
-            Log.i(TAG, "  ContainerAttributes:")
-            Log.d(TAG, "    mimeType: $containerMimeType")
-            Log.d(TAG, "    numTracks: $numTracks")
-            Log.d(TAG, "    duration: $duration")
-            Log.d(TAG, "    numSamples: $numSamples")
-            Log.d(TAG, "    totalSizeSamplesMb: $totalSizeSamplesMb MB")
-        }
-    }
 }
 
 class TrackAttributes {
@@ -64,33 +40,10 @@ class TrackAttributes {
     var videoAttributes: VideoAttributes? = null
     var audioAttributes: AudioAttributes? = null
 
-    fun print() {
-        if (Build.TYPE == "debug") {
-            Log.i(TAG, " =========== TrackAttributes [$trackId] ===========")
-            Log.d(TAG, "    mimeType: $trackMimeType")
-            Log.d(TAG, "    codecs: $codecs")
-            Log.d(TAG, "    label: $label")
-            Log.d(TAG, "    language: $language")
-            Log.d(TAG, "    averageBitrate: $averageBitrateKbps kbps")
-            Log.d(TAG, "    peakBitrate: $peakBitrateKbps kbps")
-            videoAttributes?.print()
-            audioAttributes?.print()
-        }
-    }
-
     class VideoAttributes {
         var width: Int? = null
         var height: Int? = null
         var frameRate: Int? = null
-
-        fun print() {
-            if (Build.TYPE == "debug") {
-                Log.i(TAG, "    VideoAttributes:")
-                Log.d(TAG, "      width: $width px")
-                Log.d(TAG, "      height: $height px")
-                Log.d(TAG, "      frameRate: $frameRate fps")
-            }
-        }
     }
 
     class AudioAttributes {
@@ -99,16 +52,5 @@ class TrackAttributes {
         var pcmEncoding: String? = null
         var encoderDelay: Int? = null
         var encoderPadding: Int? = null
-
-        fun print() {
-            if (Build.TYPE == "debug") {
-                Log.i(TAG, "    AudioAttributes:")
-                Log.d(TAG, "      sampleRate: $sampleRateKHz KHz")
-                Log.d(TAG, "      channelCount: $channelCount")
-                Log.d(TAG, "      pcmEncoding: $pcmEncoding")
-                Log.d(TAG, "      encoderDelay: $encoderDelay frames")
-                Log.d(TAG, "      encoderPadding: $encoderPadding frames")
-            }
-        }
     }
 }

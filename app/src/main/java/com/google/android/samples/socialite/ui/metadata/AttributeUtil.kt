@@ -24,10 +24,13 @@ import com.google.android.samples.socialite.ui.metadata.components.MetadataItem
 object AttributeUtil {
 
     fun getContainerAttributes(
-        mediaPath: String, metadata: MediaMetadata,
+        mediaPath: String,
+        metadata: MediaMetadata,
     ): List<MetadataItem> = listOf(
         MetadataItem(
-            "Source", mediaPath, "The absolute file path of the media on the device's storage.",
+            "Source",
+            mediaPath,
+            "The absolute file path of the media on the device's storage.",
         ),
         MetadataItem(
             "Format",
@@ -160,4 +163,3 @@ object AttributeUtil {
         return this?.let { "$it $unit" } ?: "-"
     }
 }
-

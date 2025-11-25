@@ -138,7 +138,8 @@ private fun AttachedMedia(
                         },
                         modifier = Modifier
                             .padding(8.dp)
-                            .zIndex(1f), // Ensure the button is on top of other content
+                            .zIndex(1f),
+                        // Ensure the button is on top of other content
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Info,

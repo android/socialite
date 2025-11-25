@@ -18,7 +18,6 @@ package com.google.android.samples.socialite.ui.metadata
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.media3.common.Format
@@ -36,7 +35,7 @@ private const val TAG = "MetadataProcessor"
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(UnstableApi::class)
-class MediaMetadataProcessor(private val context: Context, private val mediaPath: String) {
+class MetadataProcessor(private val context: Context, private val mediaPath: String) {
 
     fun populateMediaMetadata(): MediaMetadata {
         val mediaMetadata = MediaMetadata().apply {
@@ -86,6 +85,7 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         }
         return mediaMetadata
     }
+
     private fun retrieveDurationString(metadataRetriever: MetadataRetriever): String {
         val durationUs = metadataRetriever.retrieveDurationUs().get()
         val totalSeconds = (durationUs / 1_000_000L)
@@ -193,5 +193,4 @@ class MediaMetadataProcessor(private val context: Context, private val mediaPath
         }
         return mediaMetadata
     }
-
 }
