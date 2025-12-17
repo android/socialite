@@ -126,8 +126,13 @@ private fun VideoPlayerScreen(
         Scaffold(
             topBar = { VideoPlayerTopAppBar(onCloseButtonClicked) },
         ) { innerPadding ->
-            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                VideoPlayer(player, shouldEnterPipMode, Modifier.padding(innerPadding))
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+                VideoPlayer(player, shouldEnterPipMode)
             }
         }
     }
