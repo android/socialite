@@ -25,17 +25,17 @@ class ShortsVideoList {
     companion object {
         val mediaUris =
             listOf(
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_1.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_2.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_3.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_4.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_5.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_6.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_7.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_8.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_9.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_10.mp4",
-                "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_11.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_1.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_2.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_3.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_4.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_5.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_6.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_7.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_8.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_9.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_10.mp4",
+                "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_11.mp4",
             )
     }
 
