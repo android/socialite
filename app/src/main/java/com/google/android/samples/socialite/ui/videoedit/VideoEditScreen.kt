@@ -93,6 +93,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.CompositionPlayer
 import androidx.media3.ui.PlayerView
+import androidx.media3.ui.compose.PlayerSurface
 import com.google.android.samples.socialite.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -552,17 +553,12 @@ private fun VideoMessagePreview(
     // CompositionPlayer is still under active development
     var compositionPlayer by remember { mutableStateOf<CompositionPlayer?>(null) }
 
-    AndroidView(
-        factory = {
-            playerView.apply {
-                player = compositionPlayer
-                controllerAutoShow = false
-            }
-        },
+    PlayerSurface(
+        compositionPlayer,
         modifier = Modifier
             .width(250.dp)
             .height(450.dp),
-    )
+        )
 
     LaunchedEffect(previewConfig) {
         // Release the previous player instance if it exists
