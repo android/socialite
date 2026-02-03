@@ -85,14 +85,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.CompositionPlayer
-import androidx.media3.ui.PlayerView
+import androidx.media3.ui.compose.PlayerSurface
 import com.google.android.samples.socialite.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -548,30 +547,21 @@ private fun VideoMessagePreview(
         return
     }
 
-    val playerView = remember(context) { PlayerView(context) }
     // CompositionPlayer is still under active development
     var compositionPlayer by remember { mutableStateOf<CompositionPlayer?>(null) }
 
-    AndroidView(
-        factory = {
-            playerView.apply {
-                player = compositionPlayer
-                controllerAutoShow = false
-            }
-        },
+    PlayerSurface(
+        compositionPlayer,
         modifier = Modifier
             .width(250.dp)
             .height(450.dp),
-    )
+        )
 
     LaunchedEffect(previewConfig) {
         // Release the previous player instance if it exists
         compositionPlayer?.release()
         // Create a new CompositionPlayer
         compositionPlayer = CompositionPlayer.Builder(context).build()
-
-        // Set the player to the PlayerView
-        playerView.player = compositionPlayer
 
         val composition = prepareComposition(context, previewConfig)
 
