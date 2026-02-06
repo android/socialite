@@ -243,17 +243,18 @@ private fun ChatContent(
     }
 }
 
+@Composable
 private fun PaddingValues.copy(
-    layoutDirection: LayoutDirection,
-    start: Dp? = null,
-    top: Dp? = null,
-    end: Dp? = null,
-    bottom: Dp? = null,
+    layoutDirection: LayoutDirection = LocalLayoutDirection.current,
+    start: Dp = calculateStartPadding(layoutDirection),
+    top: Dp = calculateTopPadding(),
+    end: Dp = calculateEndPadding(layoutDirection),
+    bottom: Dp = calculateBottomPadding(),
 ) = PaddingValues(
-    start = start ?: calculateStartPadding(layoutDirection),
-    top = top ?: calculateTopPadding(),
-    end = end ?: calculateEndPadding(layoutDirection),
-    bottom = bottom ?: calculateBottomPadding(),
+    start = start,
+    top = top,
+    end = end,
+    bottom = bottom,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
