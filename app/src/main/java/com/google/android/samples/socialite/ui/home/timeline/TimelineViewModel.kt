@@ -70,6 +70,9 @@ class TimelineViewModel @Inject constructor(
     // Cast player instance
     var castPlayer by mutableStateOf<CastPlayer?>(null)
 
+    // Local ExoPlayer instance
+    private var localPlayer: ExoPlayer? = null
+
     // Keeps track if the current playback location is remote or local
     var isRemote by mutableStateOf(false)
 
@@ -224,7 +227,7 @@ class TimelineViewModel @Inject constructor(
                 .setPrioritizeTimeOverSizeThresholds(true).build()
 
         val thread = initPlayerThread()
-        val newPlayer = ExoPlayer
+        localPlayer = ExoPlayer
             .Builder(application.applicationContext)
             .setLoadControl(loadControl)
             .setPlaybackLooper(thread.looper)
@@ -236,7 +239,7 @@ class TimelineViewModel @Inject constructor(
                 it.addListener(firstFrameListener)
             }
         castPlayer =
-            CastPlayer.Builder(application.applicationContext).setLocalPlayer(newPlayer).build()
+            CastPlayer.Builder(application.applicationContext).setLocalPlayer(localPlayer!!).build()
         castPlayer?.addListener(castPlayerListener)
 
         videoRatio = null
@@ -273,7 +276,6 @@ class TimelineViewModel @Inject constructor(
             preloadManager.release()
         }
         castPlayer?.removeListener(castPlayerListener)
-        castPlayer?.release()
         player?.apply {
             removeListener(videoSizeListener)
             removeListener(firstFrameListener)
@@ -282,6 +284,7 @@ class TimelineViewModel @Inject constructor(
         playerThread?.quitSafely()
         playerThread = null
         videoRatio = null
+        localPlayer = null
         player = null
     }
 
@@ -301,8 +304,8 @@ class TimelineViewModel @Inject constructor(
                     val mediaSource = preloadManager.getMediaSource(mediaItem)
                     Log.d("PreloadManager", "Mediasource $mediaSource ")
 
-                    if (!isRemote && mediaSource != null && this is ExoPlayer) {
-                        setMediaSource(mediaSource)
+                    if (!isRemote && mediaSource != null && localPlayer != null) {
+                        localPlayer?.setMediaSource(mediaSource)
                     } else {
                         setMediaItem(mediaItem)
                     }

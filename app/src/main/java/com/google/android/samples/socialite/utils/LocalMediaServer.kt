@@ -8,6 +8,8 @@ import android.webkit.MimeTypeMap
 import dagger.hilt.android.qualifiers.ApplicationContext
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.net.SocketException
@@ -58,7 +60,7 @@ class LocalMediaServer @Inject constructor(
             val inputStream = if (isContentUri) {
                 androidUri?.let { context.contentResolver.openInputStream(it) }
             } else {
-                File(uriString).takeIf { it.isFile }?.inputStream()
+                File("/$uriString").takeIf { it.isFile }?.inputStream()
             }
 
             if (inputStream != null) {
@@ -72,8 +74,17 @@ class LocalMediaServer @Inject constructor(
                 Log.w(TAG, "Content not found: $uriString")
                 newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Content not found")
             }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security violation accessing file", e)
+            newFixedLengthResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "Forbidden")
+        } catch (e: FileNotFoundException) {
+            Log.e(TAG, "File not found", e)
+            newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "File not found")
+        } catch (e: IOException) {
+            Log.e(TAG, "IO error serving file", e)
+            newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Internal Error")
         } catch (e: Exception) {
-            Log.e(TAG, "Error serving file", e)
+            Log.e(TAG, "Unexpected error serving file", e)
             newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Internal Error")
         }
     }

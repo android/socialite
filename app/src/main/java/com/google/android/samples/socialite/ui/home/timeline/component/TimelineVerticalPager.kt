@@ -232,6 +232,8 @@ private fun MediaItem(
     }
 }
 
+private val MediaRouteButtonIntrinsicPadding = 15.dp
+
 @Composable
 private fun PlayerControls(
     uri: String,
@@ -241,7 +243,7 @@ private fun PlayerControls(
     Row(
         modifier = modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy((-15).dp),
+        horizontalArrangement = Arrangement.spacedBy(-MediaRouteButtonIntrinsicPadding),
     ) {
         // Display an info button to inspect the video's metadata.
         IconButton(
