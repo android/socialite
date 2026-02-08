@@ -73,7 +73,6 @@ class TimelineViewModel @Inject constructor(
     // Keeps track if the current playback location is remote or local
     var isRemote by mutableStateOf(false)
 
-
     // Width/Height ratio of the current media item, used to properly size the Surface
     var videoRatio by mutableStateOf<Float?>(null)
 

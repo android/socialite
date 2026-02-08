@@ -31,8 +31,8 @@ import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.C.TRACK_TYPE_VIDEO
 import androidx.media3.common.C.TRACK_TYPE_AUDIO
+import androidx.media3.common.C.TRACK_TYPE_VIDEO
 import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes

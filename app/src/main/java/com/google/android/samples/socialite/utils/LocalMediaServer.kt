@@ -23,7 +23,7 @@ private const val TAG = "LocalMediaServer"
  */
 @Singleton
 class LocalMediaServer @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) : NanoHTTPD(0) {
 
     /**
