@@ -49,6 +49,7 @@ fun Timeline(
 
     val player = viewModel.player
     val videoRatio = viewModel.videoRatio
+    val isRemote = viewModel.isRemote
 
     when {
         mediaItems.isEmpty() -> {
@@ -62,6 +63,7 @@ fun Timeline(
                 player = player,
                 mediaItems = mediaItems,
                 videoRatio = videoRatio,
+                isRemote = isRemote,
                 onChangePlayerItem = viewModel::changePlayerItem,
                 onInitializePlayer = viewModel::initializePlayer,
                 onReleasePlayer = viewModel::releasePlayer,
@@ -77,6 +79,7 @@ fun Timeline(
     mediaItems: List<TimelineMediaItem>,
     player: Player?,
     videoRatio: Float?,
+    isRemote: Boolean,
     modifier: Modifier = Modifier,
     format: TimelineFormat = rememberTimelineFormat(),
     onChangePlayerItem: (uri: Uri?, page: Int) -> Unit = { uri: Uri?, i: Int -> },
@@ -109,6 +112,7 @@ fun Timeline(
                     mediaItems = mediaItems,
                     player = player,
                     videoRatio = videoRatio,
+                    isRemote = isRemote,
                     onChangePlayerItem = onChangePlayerItem,
                     modifier = Modifier
                         .fillMaxSize()

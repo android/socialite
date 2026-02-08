@@ -555,7 +555,7 @@ private fun VideoMessagePreview(
         modifier = Modifier
             .width(250.dp)
             .height(450.dp),
-        )
+    )
 
     LaunchedEffect(previewConfig) {
         // Release the previous player instance if it exists

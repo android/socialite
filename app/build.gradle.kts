@@ -43,7 +43,7 @@ android {
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -166,6 +166,8 @@ dependencies {
     implementation(libs.media3.transformer)
     implementation(libs.media3.ui)
     implementation(libs.media3.ui.compose)
+    implementation(libs.media3.cast)
+    implementation(libs.nanohttpd)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)

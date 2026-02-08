@@ -31,6 +31,8 @@ import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.C.TRACK_TYPE_AUDIO
+import androidx.media3.common.C.TRACK_TYPE_VIDEO
 import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
@@ -208,7 +210,9 @@ class VideoEditScreenViewModel @Inject constructor(
         val editedMediaItem =
             EditedMediaItem.Builder(mediaItem)
                 .setRemoveAudio(removeAudio).setDurationUs(durationUs).build()
-        val videoImageSequence = EditedMediaItemSequence(editedMediaItem)
+        val videoImageSequence =
+            EditedMediaItemSequence.Builder(mutableSetOf(TRACK_TYPE_VIDEO, TRACK_TYPE_AUDIO))
+                .addItem(editedMediaItem).build()
 
         val compositionBuilder = Composition.Builder(videoImageSequence)
         // Tone-map to SDR if style transfer is selected since it can only be applied for SDR videos
