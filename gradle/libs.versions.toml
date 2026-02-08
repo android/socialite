@@ -46,7 +46,7 @@ android-material3 = "1.13.0-alpha13"
 material3 = "1.4.0-alpha15"
 material3-adaptive-navigation-suite = "1.4.0-alpha15"
 material3-adaptive-navigation3 = "1.0.0-SNAPSHOT"
-media3 = "1.8.0"
+media3 = "1.9.0"
 media3-ui-compose = "1.7.1"
 navigation3 = "1.0.0-alpha01"
 profileinstaller = "1.4.1"
@@ -126,6 +126,8 @@ media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", versi
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 media3-ui-compose = { group = "androidx.media3", name = "media3-ui-compose", version.ref = "media3-ui-compose" }
+media3-cast = { group = "androidx.media3", name = "media3-cast", version.ref = "media3" }
+nanohttpd = { group = "org.nanohttpd", name = "nanohttpd", version = "2.3.1" }
 navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
