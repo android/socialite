@@ -19,6 +19,7 @@ package com.google.android.samples.socialite.ui.chat
 import android.net.Uri
 
 data class ChatMessage(
+    val id: Long,
     val text: String,
     val mediaUri: String?,
     val mediaMimeType: String?,

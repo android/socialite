@@ -81,6 +81,10 @@ sealed interface Pane : Parcelable {
     @Parcelize
     @Serializable
     data class MetadataInspector(val uri: String) : Pane
+
+    @Parcelize
+    @Serializable
+    data class ImageEnhancement(val chatId: Long, val messageId: Long, val uri: String) : Pane
 }
 
 enum class TopLevelDestination(

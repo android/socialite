@@ -63,6 +63,7 @@ visionCommon = "17.3.0"
 segmentationSelfie = "16.0.0-beta6"
 litert = "1.3.0"
 datastore = "1.1.4"
+playServicesMediaEffectEnhancement = "16.0.0-beta04"
 
 
 
@@ -148,6 +149,7 @@ firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 firebase-messaging = {group = "com.google.firebase", name = "firebase-messaging" }
 vision-common = { group = "com.google.mlkit", name = "vision-common", version.ref = "visionCommon" }
+play-services-media-effect-enhancement = { module = "com.google.android.gms:play-services-media-effect-enhancement", version.ref = "playServicesMediaEffectEnhancement" }
 
 
 [plugins]
