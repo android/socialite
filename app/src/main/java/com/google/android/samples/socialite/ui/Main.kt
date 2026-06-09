@@ -255,7 +255,6 @@ fun MainNavigation(
                             is Pane.ImageEnhancement -> NavEntry(backStackKey) {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                                     ImageEnhancementScreen(
-                                        chatId = backStackKey.chatId,
                                         messageId = backStackKey.messageId,
                                         uri = backStackKey.uri,
                                         onCloseButtonClicked = { backStack.removeLastOrNull() },
