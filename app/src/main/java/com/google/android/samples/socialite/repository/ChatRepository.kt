@@ -412,4 +412,8 @@ class ChatRepository @Inject internal constructor(
             }
         }
     }
+    // Message update needed to save the Enhanced image bitmap so it persists
+    suspend fun updateMessageMediaUri(messageId: Long, newUri: String) {
+        messageDao.updateMessageMediaUri(messageId, newUri)
+    }
 }

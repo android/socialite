@@ -12,6 +12,7 @@ Jetpack APIs used:
  - [CameraX](https://developer.android.com/jetpack/androidx/releases/camera) Capturing photos and videos
  - [Room](https://developer.android.com/jetpack/androidx/releases/room) Persisting messages in a SQLite database
  - [Window](https://developer.android.com/jetpack/androidx/releases/window) Detecting foldable device states
+ - [Media Effect Enhancement](https://developers.google.com/android/reference/com/google/android/gms/media/effect/enhancement/package-summary) On-device AI image enhancement powered by Google Play Services
 
 The app also integrates the Gemini API that powers chatbot capabilities:
 
@@ -38,6 +39,7 @@ Here are the screens that make up SociaLite:
     [Photo Picker](https://developer.android.com/training/data-storage/shared/photopicker)).
  - *Camera Screen:* Clicking the camera icon in the Chat Screen opens the in-app camera for taking photos and videos.
  - *Video Edit Screen:* After taking a video with the in-app camera, users can do some minor edits on this screen.
+ - *Image Enhancement Screen:* Clicking the AI Enhance icon on an image in the Chat Screen opens this screen to apply on-device AI enhancements like tonemapping, deblurring, and upscaling.
  - *Settings Screen:* A basic settings screen for tasks like resetting the chat history.
 
 ## Project Structure
@@ -56,6 +58,7 @@ The project is organized into several modules and directories:
                     -   `settings/`: Code for the settings screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/home/settings/README.md) for more details.
                     -   `timeline/`: Code for the timeline screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/home/timeline/README.md) for more details.
                     -   `videoedit/`: Code for the video editing screen. See the [README](app/src/main/java/com/google/android/samples/socialite/ui/videoedit/README.md) for more details.
+                    -   `mediaenhancement/`: Code for the on-device AI image enhancement screen. It leverages Google Play Services to perform background processing for features like tonemapping, deblurring, and upscaling.
         -   `res/`: Application resources (layouts, drawables, values, etc.).
         -   `assets/`: Static assets like images and shaders.
     -   `build.gradle.kts`: Gradle build file for the app module.

@@ -74,6 +74,7 @@ class ChatViewModel @Inject constructor(
             }
 
             ChatMessage(
+                id = message.id,
                 text = message.text,
                 mediaUri = message.mediaUri,
                 mediaMimeType = message.mediaMimeType,

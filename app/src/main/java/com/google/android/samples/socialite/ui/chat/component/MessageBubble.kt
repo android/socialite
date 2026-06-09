@@ -17,16 +17,20 @@
 package com.google.android.samples.socialite.ui.chat.component
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -53,8 +58,10 @@ private const val TAG = "ChatUI"
 internal fun MessageBubble(
     message: ChatMessage,
     modifier: Modifier = Modifier,
+    isEnhancementSupported: Boolean = false,
     onVideoClick: () -> Unit = {},
     onInspectClicked: (uri: String) -> Unit = {},
+    onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
 ) {
     MessageBubbleSurface(
         isVideoContentAttached = message.isVideoContentAttached,
@@ -71,7 +78,9 @@ internal fun MessageBubble(
             AttachedMedia(
                 message = message,
                 modifier = Modifier.draggableMediaItem(message),
+                isEnhancementSupported = isEnhancementSupported,
                 onInspectClicked = onInspectClicked,
+                onEnhanceClicked = onEnhanceClicked,
             )
         }
     }
@@ -116,17 +125,40 @@ private fun MessageBubbleSurface(
 private fun AttachedMedia(
     message: ChatMessage,
     modifier: Modifier = Modifier,
+    isEnhancementSupported: Boolean = false,
     onInspectClicked: (uri: String) -> Unit,
+    onEnhanceClicked: (messageId: Long, uri: String) -> Unit,
 ) {
     val uri = message.mediaUri
     if (uri != null) {
         ContextMenuArea(chatMessage = message) {
             when {
                 message.isImageContentAttached -> {
-                    Photo(
-                        uri = uri,
-                        modifier = modifier,
-                    )
+                    Box {
+                        Photo(
+                            uri = uri,
+                            modifier = modifier,
+                        )
+                        if (isEnhancementSupported) {
+                            IconButton(
+                                onClick = { onEnhanceClicked(message.id, uri) },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f),
+                                        shape = CircleShape
+                                    )
+                                    .zIndex(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AutoAwesome,
+                                    contentDescription = "AI Enhance",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
                 }
 
                 message.isVideoContentAttached -> {

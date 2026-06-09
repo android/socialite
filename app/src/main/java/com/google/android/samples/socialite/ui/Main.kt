@@ -66,6 +66,7 @@ import com.google.android.samples.socialite.ui.navigation.TopLevelDestination
 import com.google.android.samples.socialite.ui.photopicker.navigation.PhotoPickerRoute
 import com.google.android.samples.socialite.ui.player.VideoPlayerScreen
 import com.google.android.samples.socialite.ui.videoedit.VideoEditScreen
+import com.google.android.samples.socialite.ui.mediaenhancement.ImageEnhancementScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -186,6 +187,9 @@ fun MainNavigation(
                                     onInspectClicked = { uri ->
                                         backStack.add(Pane.MetadataInspector(uri))
                                     },
+                                    onEnhanceClicked = { messageId, uri ->
+                                        backStack.add(Pane.ImageEnhancement(backStackKey.chatId, messageId, uri))
+                                    }
                                 )
                             }
 
@@ -244,6 +248,16 @@ fun MainNavigation(
                                 VideoPlayerScreen(
                                     uri = backStackKey.uri,
                                     onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                )
+                            }
+
+                            is Pane.ImageEnhancement -> NavEntry(backStackKey) {
+                                ImageEnhancementScreen(
+                                    chatId = backStackKey.chatId,
+                                    messageId = backStackKey.messageId,
+                                    uri = backStackKey.uri,
+                                    onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                    onFinishEditing = { backStack.removeLastOrNull() }
                                 )
                             }
 
