@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
-class EnhancementFailedException( message: String) : Exception(message)
+class EnhancementFailedException(message: String) : Exception(message)
 
 /**
  * A modern coroutine wrapper for the enhancement process.
