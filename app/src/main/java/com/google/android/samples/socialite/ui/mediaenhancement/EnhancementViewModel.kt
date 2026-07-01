@@ -175,8 +175,8 @@ class EnhancementViewModel @Inject constructor(
                     enhancementError = null,
                 )
             }
-            // Release any previous session, since we have a new image. Confined to Main thread.
-            withContext(Dispatchers.Main) {
+            // Release any previous session, since we have a new image.
+            withContext(Dispatchers.IO) {
                 enhancementSession?.release()
                 enhancementSession = null
             }

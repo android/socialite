@@ -195,4 +195,6 @@ dependencies {
     implementation(libs.navigation3.ui)
     implementation(libs.lifecycle.viewmodel.navigation3)
     implementation(libs.play.services.media.effect.enhancement)
+    implementation(libs.glide)
+    implementation(libs.glide.compose)
 }

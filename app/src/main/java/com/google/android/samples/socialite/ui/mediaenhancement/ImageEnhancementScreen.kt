@@ -40,6 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.gms.media.effect.enhancement.EnhancementMode
 import java.text.DecimalFormat
 
@@ -156,6 +159,7 @@ fun ImageEnhancementScreen(
                     imageInfo = uiState.enhancedImage,
                     isLoading = uiState.isLoading,
                     error = uiState.enhancementError,
+                    useGlide = true,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -186,6 +190,7 @@ fun ImageEnhancementScreen(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun EnhancementImageCard(
     title: String,
@@ -193,6 +198,7 @@ fun EnhancementImageCard(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     error: String? = null,
+    useGlide: Boolean = false,
 ) {
     Box(
         modifier = modifier
@@ -213,12 +219,27 @@ fun EnhancementImageCard(
                 )
             }
             imageInfo?.bitmap != null -> {
-                Image(
-                    bitmap = imageInfo.bitmap.asImageBitmap(),
-                    contentDescription = title,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit,
-                )
+                if (useGlide) {
+                    // Showcase how to use Glide for loading an in-memory Bitmap.
+                    // We disable memory and disk caching since the enhanced bitmap is already in memory,
+                    // which avoids unnecessary I/O and indexing overhead while maintaining Glide integration.
+                    GlideImage(
+                        model = imageInfo.bitmap,
+                        contentDescription = title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit,
+                    ) {
+                        it.diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .skipMemoryCache(true)
+                    }
+                } else {
+                    Image(
+                        bitmap = imageInfo.bitmap.asImageBitmap(),
+                        contentDescription = title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
                 InfoTag(
                     title = title,
                     latency = imageInfo.latency,
