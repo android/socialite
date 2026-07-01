@@ -20,6 +20,7 @@ package com.google.android.samples.socialite.ui
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -59,6 +60,7 @@ import com.google.android.samples.socialite.ui.home.chatlist.ChatList
 import com.google.android.samples.socialite.ui.home.chatlist.ChatOpenRequest
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
+import com.google.android.samples.socialite.ui.mediaenhancement.ImageEnhancementScreen
 import com.google.android.samples.socialite.ui.metadata.screens.MetadataInspector
 import com.google.android.samples.socialite.ui.navigation.Pane
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
@@ -186,6 +188,9 @@ fun MainNavigation(
                                     onInspectClicked = { uri ->
                                         backStack.add(Pane.MetadataInspector(uri))
                                     },
+                                    onEnhanceClicked = { messageId, uri ->
+                                        backStack.add(Pane.ImageEnhancement(backStackKey.chatId, messageId, uri))
+                                    },
                                 )
                             }
 
@@ -247,8 +252,21 @@ fun MainNavigation(
                                 )
                             }
 
+                            is Pane.ImageEnhancement -> NavEntry(backStackKey) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    ImageEnhancementScreen(
+                                        messageId = backStackKey.messageId,
+                                        uri = backStackKey.uri,
+                                        onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                        onFinishEditing = { backStack.removeLastOrNull() },
+                                    )
+                                }
+                            }
+
                             is Pane.MetadataInspector -> NavEntry(backStackKey) {
-                                MetadataInspector(backStackKey.uri)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    MetadataInspector(backStackKey.uri)
+                                }
                             }
 
                             else -> NavEntry(backStackKey) {

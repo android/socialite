@@ -42,4 +42,7 @@ interface MessageDao {
 
     @Query("DELETE FROM Message")
     suspend fun clearAll()
+
+    @Query("UPDATE Message SET mediaUri = :newUri WHERE id = :messageId")
+    suspend fun updateMessageMediaUri(messageId: Long, newUri: String)
 }

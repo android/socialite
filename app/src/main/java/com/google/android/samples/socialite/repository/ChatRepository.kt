@@ -30,7 +30,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.data.ChatDao
-import com.google.android.samples.socialite.data.ContactDao
 import com.google.android.samples.socialite.data.MessageDao
 import com.google.android.samples.socialite.data.utils.ShortsVideoList
 import com.google.android.samples.socialite.di.AppCoroutineScope
@@ -62,7 +61,6 @@ import kotlinx.coroutines.launch
 class ChatRepository @Inject internal constructor(
     private val chatDao: ChatDao,
     private val messageDao: MessageDao,
-    private val contactDao: ContactDao,
     private val notificationHelper: NotificationHelper,
     private val widgetModelRepository: WidgetModelRepository,
     @AppCoroutineScope
@@ -323,7 +321,7 @@ class ChatRepository @Inject internal constructor(
                 acc.add(message)
             } else {
                 if (acc.last().isIncoming == message.isIncoming) {
-                    val lastMessage = acc.removeLast()
+                    val lastMessage = acc.removeAt(acc.lastIndex)
                     val combinedMessage = Message(
                         id = lastMessage.id,
                         chatId = chatId,
@@ -342,7 +340,7 @@ class ChatRepository @Inject internal constructor(
             return@fold acc
         }
 
-        pastMessages.removeLast()
+        pastMessages.removeAt(pastMessages.lastIndex)
 
         val pastContents = pastMessages.mapNotNull { message: Message ->
             val role = if (message.isIncoming) "model" else "user"
@@ -411,5 +409,10 @@ class ChatRepository @Inject internal constructor(
                 preferences[enableChatbotKey] = (preferences[enableChatbotKey]?.not()) == true
             }
         }
+    }
+
+    // Message update needed to save the Enhanced image bitmap so it persists
+    suspend fun updateMessageMediaUri(messageId: Long, newUri: String) {
+        messageDao.updateMessageMediaUri(messageId, newUri)
     }
 }

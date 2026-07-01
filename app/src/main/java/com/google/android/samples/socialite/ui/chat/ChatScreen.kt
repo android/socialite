@@ -59,6 +59,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,6 +68,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -88,6 +90,7 @@ import com.google.android.samples.socialite.ui.chat.component.MessageBubble
 import com.google.android.samples.socialite.ui.chat.component.mediaItemDropTarget
 import com.google.android.samples.socialite.ui.chat.component.scrollWithKeyboards
 import com.google.android.samples.socialite.ui.components.tryRequestFocus
+import com.google.android.samples.socialite.ui.mediaenhancement.EnhancementSupportManager
 import com.google.android.samples.socialite.ui.rememberIconPainter
 
 @Composable
@@ -102,8 +105,12 @@ fun ChatScreen(
     prefilledText: String? = null,
     prefilledImageUri: String? = null,
     onInspectClicked: (uri: String) -> Unit = {},
+    onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+    var isEnhancementSupported by remember { androidx.compose.runtime.mutableStateOf(false) }
+
     LaunchedEffect(chatId) {
         viewModel.setChatId(chatId)
         if (prefilledText != null) {
@@ -112,6 +119,7 @@ fun ChatScreen(
         if (prefilledImageUri != null) {
             viewModel.prefillInputImage(prefilledImageUri)
         }
+        isEnhancementSupported = EnhancementSupportManager.checkSupport(context)
     }
     val chat by viewModel.chat.collectAsStateWithLifecycle()
     val messages by viewModel.messages.collectAsStateWithLifecycle()
@@ -125,6 +133,7 @@ fun ChatScreen(
             textFieldState = textFieldState,
             attachedMedia = attachedMedia,
             sendEnabled = sendEnabled,
+            isEnhancementSupported = isEnhancementSupported,
             onBackPressed = onBackPressed,
             onSendClick = { viewModel.send() },
             onCameraClick = onCameraClick,
@@ -133,6 +142,7 @@ fun ChatScreen(
             onMediaItemAttached = viewModel::attachMedia,
             onRemoveAttachedMediaItem = viewModel::removeAttachedMedia,
             onInspectClicked = onInspectClicked,
+            onEnhanceClicked = onEnhanceClicked,
             modifier = modifier
                 .clip(RoundedCornerShape(5)),
         )
@@ -174,6 +184,7 @@ private fun ChatContent(
     textFieldState: TextFieldState,
     attachedMedia: MediaItem?,
     sendEnabled: Boolean,
+    isEnhancementSupported: Boolean = false,
     onBackPressed: (() -> Unit)?,
     onSendClick: () -> Unit,
     onCameraClick: () -> Unit,
@@ -182,6 +193,7 @@ private fun ChatContent(
     onMediaItemAttached: (MediaItem) -> Unit,
     onRemoveAttachedMediaItem: () -> Unit,
     onInspectClicked: (uri: String) -> Unit = {},
+    onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val topAppBarState = rememberTopAppBarState()
@@ -221,8 +233,10 @@ private fun ChatContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
+                isEnhancementSupported = isEnhancementSupported,
                 onVideoClick = onVideoClick,
                 onInspectClicked = onInspectClicked,
+                onEnhanceClicked = onEnhanceClicked,
             )
             InputBar(
                 textFieldState = textFieldState,
@@ -309,8 +323,10 @@ private fun MessageList(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
+    isEnhancementSupported: Boolean = false,
     onVideoClick: (uri: String) -> Unit = {},
     onInspectClicked: (uri: String) -> Unit = {},
+    onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
 ) {
     LazyColumn(
         modifier = modifier,
@@ -338,10 +354,12 @@ private fun MessageList(
                 }
                 MessageBubble(
                     message = message,
+                    isEnhancementSupported = isEnhancementSupported,
                     onVideoClick = {
                         message.mediaUri?.let { onVideoClick(it) }
                     },
                     onInspectClicked = onInspectClicked,
+                    onEnhanceClicked = onEnhanceClicked,
                 )
             }
         }
@@ -355,11 +373,11 @@ private fun PreviewChatContent() {
         ChatContent(
             chat = ChatDetail(ChatWithLastMessage(0L), listOf(Contact.CONTACTS[0])),
             messages = listOf(
-                ChatMessage("Hi!", null, null, 0L, false, null),
-                ChatMessage("Hello", null, null, 0L, true, null),
-                ChatMessage("world", null, null, 0L, true, null),
-                ChatMessage("!", null, null, 0L, true, null),
-                ChatMessage("Hello, world!", null, null, 0L, true, null),
+                ChatMessage(1, "Hi!", null, null, 0L, false, null),
+                ChatMessage(2, "Hello", null, null, 0L, true, null),
+                ChatMessage(3, "world", null, null, 0L, true, null),
+                ChatMessage(4, "!", null, null, 0L, true, null),
+                ChatMessage(5, "Hello, world!", null, null, 0L, true, null),
             ),
             textFieldState = TextFieldState("Hello"),
             attachedMedia = null,
