@@ -20,7 +20,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.google.android.samples.socialite.ui.Bubble
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class BubbleActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
