@@ -110,4 +110,35 @@
     <string name="audio_tracks_title">Audio Tracks</string>
     <string name="subtitle_tracks_title">Subtitle Tracks</string>
 
+    <!-- Video enhancement screen -->
+    <string name="video_enhancement_module_status">Module Status: %1$s</string>
+    <string name="video_enhancement_status_unknown">Unknown</string>
+    <string name="video_enhancement_status_checking">Checking for device support…</string>
+    <string name="video_enhancement_status_not_supported">Device not supported</string>
+    <string name="video_enhancement_status_installing">Installing…</string>
+    <string name="video_enhancement_status_installed">Installed</string>
+    <string name="video_enhancement_status_install_failed">Install Failed</string>
+    <string name="video_enhancement_status_error">Error</string>
+    <string name="video_enhancement_effect_tonemap">Tonemap</string>
+    <string name="video_enhancement_effect_deblur">Deblur &amp; DeNoise</string>
+    <string name="video_enhancement_effect_upscale">Upscale</string>
+    <string name="video_enhancement_effect_unavailable_output">Output would exceed 2K</string>
+    <string name="video_enhancement_action_enhance">AI Enhance</string>
+    <string name="video_enhancement_action_installing">Installing…</string>
+    <string name="video_enhancement_action_enhancing">Enhancing…</string>
+    <string name="video_enhancement_action_cancel_run">Cancel</string>
+    <string name="video_enhancement_action_close">Cancel</string>
+    <string name="video_enhancement_action_confirm">Confirm</string>
+    <string name="video_enhancement_module_download">Downloading Enhancement module (%1$d%%)</string>
+    <string name="video_enhancement_transcode_progress">Enhancing video (%1$d%%)</string>
+    <string name="video_enhancement_source_too_large">Source exceeds 2K</string>
+    <string name="video_enhancement_preview_original">Original</string>
+    <string name="video_enhancement_preview_enhanced">Enhanced</string>
+    <string name="video_enhancement_resolution">%1$dx%2$d</string>
+    <string name="video_enhancement_latency">AI Latency: %1$dms</string>
+    <string name="video_enhancement_error_unreadable">Can\'t read this video</string>
+    <string name="video_enhancement_error_failed">Enhancement failed: %1$s</string>
+    <string name="video_enhancement_module_install_failed">Module installation failed or cancelled.</string>
+    <string name="video_enhancement_module_error">Failed to check or install module: %1$s</string>
+
 </resources>

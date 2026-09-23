@@ -34,7 +34,12 @@
         DefaultDevicePerformance from the core-performance dependency (minSdk 19) if the SDK level
         is <24.
     -->
-    <uses-sdk tools:overrideLibrary="androidx.core.performance.play.services" />
+    <!--
+        Overriding minSdk for play-services-media-effect-enhancement (minSdk 24) is safe
+        because all entry points into the enhancement SDK are gated on API 30+ (R) via
+        EnhancementSupportManager.checkSupport().
+    -->
+    <uses-sdk tools:overrideLibrary="androidx.core.performance.play.services,com.google.android.gms.media.effect.enhancement" />
 
     <application
         android:name=".SocialApp"

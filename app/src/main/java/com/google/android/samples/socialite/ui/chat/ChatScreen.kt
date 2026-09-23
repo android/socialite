@@ -106,6 +106,7 @@ fun ChatScreen(
     prefilledImageUri: String? = null,
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -143,6 +144,7 @@ fun ChatScreen(
             onRemoveAttachedMediaItem = viewModel::removeAttachedMedia,
             onInspectClicked = onInspectClicked,
             onEnhanceClicked = onEnhanceClicked,
+            onEnhanceVideoClicked = onEnhanceVideoClicked,
             modifier = modifier
                 .clip(RoundedCornerShape(5)),
         )
@@ -194,6 +196,7 @@ private fun ChatContent(
     onRemoveAttachedMediaItem: () -> Unit,
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val topAppBarState = rememberTopAppBarState()
@@ -237,6 +240,7 @@ private fun ChatContent(
                 onVideoClick = onVideoClick,
                 onInspectClicked = onInspectClicked,
                 onEnhanceClicked = onEnhanceClicked,
+                onEnhanceVideoClicked = onEnhanceVideoClicked,
             )
             InputBar(
                 textFieldState = textFieldState,
@@ -327,6 +331,7 @@ private fun MessageList(
     onVideoClick: (uri: String) -> Unit = {},
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
 ) {
     LazyColumn(
         modifier = modifier,
@@ -360,6 +365,7 @@ private fun MessageList(
                     },
                     onInspectClicked = onInspectClicked,
                     onEnhanceClicked = onEnhanceClicked,
+                    onEnhanceVideoClicked = onEnhanceVideoClicked,
                 )
             }
         }

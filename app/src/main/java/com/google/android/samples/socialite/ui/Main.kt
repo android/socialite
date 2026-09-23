@@ -61,6 +61,7 @@ import com.google.android.samples.socialite.ui.home.chatlist.ChatOpenRequest
 import com.google.android.samples.socialite.ui.home.settings.Settings
 import com.google.android.samples.socialite.ui.home.timeline.Timeline
 import com.google.android.samples.socialite.ui.mediaenhancement.ImageEnhancementScreen
+import com.google.android.samples.socialite.ui.mediaenhancement.VideoEnhancementScreen
 import com.google.android.samples.socialite.ui.metadata.screens.MetadataInspector
 import com.google.android.samples.socialite.ui.navigation.Pane
 import com.google.android.samples.socialite.ui.navigation.SocialiteNavSuite
@@ -191,6 +192,9 @@ fun MainNavigation(
                                     onEnhanceClicked = { messageId, uri ->
                                         backStack.add(Pane.ImageEnhancement(backStackKey.chatId, messageId, uri))
                                     },
+                                    onEnhanceVideoClicked = { messageId, uri ->
+                                        backStack.add(Pane.VideoEnhancement(backStackKey.chatId, messageId, uri))
+                                    },
                                 )
                             }
 
@@ -255,6 +259,17 @@ fun MainNavigation(
                             is Pane.ImageEnhancement -> NavEntry(backStackKey) {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                                     ImageEnhancementScreen(
+                                        messageId = backStackKey.messageId,
+                                        uri = backStackKey.uri,
+                                        onCloseButtonClicked = { backStack.removeLastOrNull() },
+                                        onFinishEditing = { backStack.removeLastOrNull() },
+                                    )
+                                }
+                            }
+
+                            is Pane.VideoEnhancement -> NavEntry(backStackKey) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                    VideoEnhancementScreen(
                                         messageId = backStackKey.messageId,
                                         uri = backStackKey.uri,
                                         onCloseButtonClicked = { backStack.removeLastOrNull() },
