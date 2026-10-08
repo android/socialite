@@ -44,10 +44,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.android.samples.socialite.R
 import com.google.android.samples.socialite.ui.chat.ChatMessage
 import com.google.android.samples.socialite.ui.components.PlayArrowIcon
 import com.google.android.samples.socialite.ui.components.VideoPreview
@@ -62,6 +64,7 @@ internal fun MessageBubble(
     onVideoClick: () -> Unit = {},
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
 ) {
     MessageBubbleSurface(
         isVideoContentAttached = message.isVideoContentAttached,
@@ -81,6 +84,7 @@ internal fun MessageBubble(
                 isEnhancementSupported = isEnhancementSupported,
                 onInspectClicked = onInspectClicked,
                 onEnhanceClicked = onEnhanceClicked,
+                onEnhanceVideoClicked = onEnhanceVideoClicked,
             )
         }
     }
@@ -128,6 +132,7 @@ private fun AttachedMedia(
     isEnhancementSupported: Boolean = false,
     onInspectClicked: (uri: String) -> Unit,
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit,
+    onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit,
 ) {
     val uri = message.mediaUri
     if (uri != null) {
@@ -153,7 +158,9 @@ private fun AttachedMedia(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.AutoAwesome,
-                                    contentDescription = "AI Enhance",
+                                    contentDescription = stringResource(
+                                        R.string.video_enhancement_action_enhance,
+                                    ),
                                     tint = Color.White,
                                 )
                             }
@@ -162,26 +169,51 @@ private fun AttachedMedia(
                 }
 
                 message.isVideoContentAttached -> {
-                    // Display an info button to inspect the video's metadata. This is overlaid on
-                    // top left of the video preview.
-                    IconButton(
-                        onClick = {
-                            onInspectClicked(uri)
-                        },
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .zIndex(1f),
-                        // Ensure the button is on top of other content
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = "Inspect video metadata",
+                    Box {
+                        // Display an info button to inspect the video's metadata. This is overlaid
+                        // on top left of the video preview.
+                        IconButton(
+                            onClick = {
+                                onInspectClicked(uri)
+                            },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .zIndex(1f),
+                            // Ensure the button is on top of other content
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Info,
+                                contentDescription = stringResource(
+                                    R.string.info_button_content_desc,
+                                ),
+                            )
+                        }
+                        Video(
+                            uri = uri,
+                            modifier = modifier,
                         )
+                        if (isEnhancementSupported) {
+                            IconButton(
+                                onClick = { onEnhanceVideoClicked(message.id, uri) },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f),
+                                        shape = CircleShape,
+                                    )
+                                    .zIndex(1f),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AutoAwesome,
+                                    contentDescription = stringResource(
+                                        R.string.video_enhancement_action_enhance,
+                                    ),
+                                    tint = Color.White,
+                                )
+                            }
+                        }
                     }
-                    Video(
-                        uri = uri,
-                        modifier = modifier,
-                    )
                 }
 
                 else -> {

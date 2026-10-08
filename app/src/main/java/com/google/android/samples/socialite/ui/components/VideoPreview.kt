@@ -19,6 +19,7 @@ package com.google.android.samples.socialite.ui.components
 import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -37,6 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+private const val TAG = "VideoPreview"
 
 @Composable
 internal fun VideoPreview(
@@ -116,15 +119,24 @@ private fun VideoPreview(
 private suspend fun createVideoPreviewBitmap(videoUri: String, context: Context): Bitmap? {
     return withContext(Dispatchers.IO) {
         val mediaMetadataRetriever = MediaMetadataRetriever()
-
-        // Remote url
-        if (videoUri.contains("https://")) {
-            mediaMetadataRetriever.setDataSource(videoUri, HashMap<String, String>())
-        } else { // Locally saved files
-            mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
+        try {
+            // Remote url
+            if (videoUri.contains("https://")) {
+                mediaMetadataRetriever.setDataSource(videoUri, HashMap<String, String>())
+            } else { // Locally saved files
+                mediaMetadataRetriever.setDataSource(context, videoUri.toUri())
+            }
+            // Return any frame that the framework considers representative of a valid frame
+            mediaMetadataRetriever.frameAtTime
+        } catch (e: RuntimeException) {
+            // A video can become unreadable at any time: the user deletes it from the gallery, a
+            // transient content-provider grant lapses, or the file is corrupt. A missing thumbnail
+            // is recoverable, so degrade to null rather than letting this kill the process.
+            Log.w(TAG, "Could not read a preview frame from $videoUri", e)
+            null
+        } finally {
+            mediaMetadataRetriever.release()
         }
-        // Return any frame that the framework considers representative of a valid frame
-        mediaMetadataRetriever.frameAtTime
     }
 }
 

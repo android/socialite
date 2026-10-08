@@ -63,7 +63,7 @@ visionCommon = "17.3.0"
 segmentationSelfie = "16.0.0-beta6"
 litert = "1.3.0"
 datastore = "1.1.4"
-playServicesMediaEffectEnhancement = "16.0.0-beta04"
+playServicesMediaEffectEnhancement = "16.0.0-beta08"
 glide = "4.16.0"
 glideCompose = "1.0.0-beta01"
 
