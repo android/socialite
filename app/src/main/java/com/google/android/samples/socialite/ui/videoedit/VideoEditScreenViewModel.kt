@@ -20,6 +20,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.MediaMetadataRetriever
+import android.os.Build
+import android.os.SystemClock
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -36,6 +38,7 @@ import androidx.media3.common.C.TRACK_TYPE_VIDEO
 import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.ExperimentalApi
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.ByteBufferGlEffect
 import androidx.media3.effect.GlEffect
@@ -67,6 +70,9 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "VideoEditViewModel"
 
+// Grep-able tag for export latency benchmarks: adb logcat -s mlog
+private const val MLOG_TAG = "mlog"
+
 @UnstableApi
 @HiltViewModel
 class VideoEditScreenViewModel @Inject constructor(
@@ -76,6 +82,9 @@ class VideoEditScreenViewModel @Inject constructor(
 
     private val chatId = MutableStateFlow(0L)
     private var transformedVideoFilePath = ""
+    private var exportTapMs = 0L
+    private var transformer: Transformer? = null
+    private var exportStartedMs = 0L
 
     private val _isFinishedEditing = MutableStateFlow(false)
     val isFinishedEditing: StateFlow<Boolean> = _isFinishedEditing
@@ -90,6 +99,8 @@ class VideoEditScreenViewModel @Inject constructor(
     private val transformerListener: Transformer.Listener =
         @UnstableApi object : Transformer.Listener {
             override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                transformer = null
+                logExportLatency(exportResult)
                 Toast.makeText(application, "Edited video saved", Toast.LENGTH_LONG).show()
 
                 sendVideo()
@@ -103,6 +114,7 @@ class VideoEditScreenViewModel @Inject constructor(
                 exportResult: ExportResult,
                 exportException: ExportException,
             ) {
+                transformer = null
                 exportException.printStackTrace()
                 Toast.makeText(application, "Error applying edits on video", Toast.LENGTH_LONG)
                     .show()
@@ -110,7 +122,7 @@ class VideoEditScreenViewModel @Inject constructor(
             }
         }
 
-    @OptIn(UnstableApi::class)
+    @OptIn(UnstableApi::class, ExperimentalApi::class)
     fun applyVideoTransformation(
         context: Context,
         videoUri: String,
@@ -123,11 +135,20 @@ class VideoEditScreenViewModel @Inject constructor(
         textOverlayLargeSelected: Boolean,
         videoTrimStart: Long,
         videoTrimEnd: Long,
+        aiEnhancement: AiEnhancementOptions = AiEnhancementOptions(),
     ) {
-        val transformer = Transformer.Builder(context)
+        exportTapMs = SystemClock.elapsedRealtime()
+        val transformerBuilder = Transformer.Builder(context)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
             .addListener(transformerListener)
-            .build()
+        // With AI enhancement on, Media3 applies the edits on the GPU and then enhances each frame
+        // with Google Play services.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && aiEnhancement.isEnabled) {
+            transformerBuilder.setFrameProcessorFactory(
+                aiEnhancement.createFrameProcessorFactory(context),
+            )
+        }
+        val transformer = transformerBuilder.build().also { this.transformer = it }
 
         val composition = prepareComposition(
             context = context,
@@ -153,6 +174,27 @@ class VideoEditScreenViewModel @Inject constructor(
         //  edited video https://github.com/androidx/media/issues/504
         transformer.start(composition, transformedVideoFilePath)
         _isProcessing.value = true
+        exportStartedMs = SystemClock.elapsedRealtime()
+        Log.i(MLOG_TAG, "export started: setup=${exportStartedMs - exportTapMs}ms $aiEnhancement")
+    }
+
+    /**
+     * Logs tap-to-done (Send tap until [Transformer.Listener.onCompleted]) and start-to-done
+     * ([Transformer.start] until onCompleted, which includes enhancement session creation).
+     */
+    private fun logExportLatency(exportResult: ExportResult) {
+        val doneMs = SystemClock.elapsedRealtime()
+        val exportMs = doneMs - exportStartedMs
+        val frames = exportResult.videoFrameCount
+        val msPerFrame =
+            if (frames > 0) "%.1f".format(Locale.US, exportMs.toDouble() / frames) else "n/a"
+        Log.i(
+            MLOG_TAG,
+            "export done: tapToDone=${doneMs - exportTapMs}ms startToDone=${exportMs}ms " +
+                "frames=$frames msPerFrame=$msPerFrame " +
+                "output=${exportResult.width}x${exportResult.height} " +
+                "durationMs=${exportResult.approximateDurationMs} encoder=${exportResult.videoEncoderName}",
+        )
     }
 
     /**
@@ -326,6 +368,14 @@ class VideoEditScreenViewModel @Inject constructor(
         }
         check(file.createNewFile()) { "Could not create the transformer output file" }
         return file
+    }
+
+    override fun onCleared() {
+        // Stop an export that is still running when the user leaves the screen. Otherwise it would
+        // keep the app's only enhancement session busy and post the video later.
+        transformer?.cancel()
+        transformer = null
+        super.onCleared()
     }
 
     fun sendVideo() {

@@ -208,7 +208,7 @@ private fun MediaItem(
                                 player = player,
                                 modifier = modifier.resizeWithContentScale(
                                     ContentScale.Fit,
-                                    null,
+                                    sourceSizeDp = null,
                                 ),
                             )
                         }

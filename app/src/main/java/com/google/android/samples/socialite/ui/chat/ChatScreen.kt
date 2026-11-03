@@ -107,6 +107,7 @@ fun ChatScreen(
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEditVideoClicked: (uri: String) -> Unit = {},
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -145,6 +146,7 @@ fun ChatScreen(
             onInspectClicked = onInspectClicked,
             onEnhanceClicked = onEnhanceClicked,
             onEnhanceVideoClicked = onEnhanceVideoClicked,
+            onEditVideoClicked = onEditVideoClicked,
             modifier = modifier
                 .clip(RoundedCornerShape(5)),
         )
@@ -197,6 +199,7 @@ private fun ChatContent(
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEditVideoClicked: (uri: String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val topAppBarState = rememberTopAppBarState()
@@ -241,6 +244,7 @@ private fun ChatContent(
                 onInspectClicked = onInspectClicked,
                 onEnhanceClicked = onEnhanceClicked,
                 onEnhanceVideoClicked = onEnhanceVideoClicked,
+                onEditVideoClicked = onEditVideoClicked,
             )
             InputBar(
                 textFieldState = textFieldState,
@@ -332,6 +336,7 @@ private fun MessageList(
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEditVideoClicked: (uri: String) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier,
@@ -366,6 +371,7 @@ private fun MessageList(
                     onInspectClicked = onInspectClicked,
                     onEnhanceClicked = onEnhanceClicked,
                     onEnhanceVideoClicked = onEnhanceVideoClicked,
+                    onEditVideoClicked = onEditVideoClicked,
                 )
             }
         }

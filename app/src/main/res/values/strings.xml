@@ -124,6 +124,9 @@
     <string name="video_enhancement_effect_upscale">Upscale</string>
     <string name="video_enhancement_effect_unavailable_output">Output would exceed 2K</string>
     <string name="video_enhancement_action_enhance">AI Enhance</string>
+    <string name="video_edit_action_edit">Edit video</string>
+    <string name="video_edit_tab_ai_enhance">Enhance</string>
+    <string name="video_edit_ai_enhance_upscale">2x Upscale</string>
     <string name="video_enhancement_action_installing">Installing…</string>
     <string name="video_enhancement_action_enhancing">Enhancing…</string>
     <string name="video_enhancement_action_cancel_run">Cancel</string>

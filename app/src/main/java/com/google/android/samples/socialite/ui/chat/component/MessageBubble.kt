@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,6 +66,7 @@ internal fun MessageBubble(
     onInspectClicked: (uri: String) -> Unit = {},
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
     onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit = { _, _ -> },
+    onEditVideoClicked: (uri: String) -> Unit = {},
 ) {
     MessageBubbleSurface(
         isVideoContentAttached = message.isVideoContentAttached,
@@ -85,6 +87,7 @@ internal fun MessageBubble(
                 onInspectClicked = onInspectClicked,
                 onEnhanceClicked = onEnhanceClicked,
                 onEnhanceVideoClicked = onEnhanceVideoClicked,
+                onEditVideoClicked = onEditVideoClicked,
             )
         }
     }
@@ -133,6 +136,7 @@ private fun AttachedMedia(
     onInspectClicked: (uri: String) -> Unit,
     onEnhanceClicked: (messageId: Long, uri: String) -> Unit,
     onEnhanceVideoClicked: (messageId: Long, uri: String) -> Unit,
+    onEditVideoClicked: (uri: String) -> Unit,
 ) {
     val uri = message.mediaUri
     if (uri != null) {
@@ -192,6 +196,24 @@ private fun AttachedMedia(
                             uri = uri,
                             modifier = modifier,
                         )
+                        // Opens the video edit screen, which includes Media3 AI enhancement.
+                        IconButton(
+                            onClick = { onEditVideoClicked(uri) },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(8.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f),
+                                    shape = CircleShape,
+                                )
+                                .zIndex(1f),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = stringResource(R.string.video_edit_action_edit),
+                                tint = Color.White,
+                            )
+                        }
                         if (isEnhancementSupported) {
                             IconButton(
                                 onClick = { onEnhanceVideoClicked(message.id, uri) },

@@ -16,9 +16,9 @@
 
 package com.google.android.samples.socialite.ui.videoedit
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
+import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,12 +39,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeMute
+import androidx.compose.material.icons.filled.BlurOff
 import androidx.compose.material.icons.filled.Brightness1
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DonutLarge
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.filled.Tonality
+import androidx.compose.material.icons.filled.ZoomOutMap
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -64,6 +67,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableLongState
@@ -88,8 +92,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.util.ExperimentalApi
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.transformer.Composition
 import androidx.media3.transformer.CompositionPlayer
 import androidx.media3.ui.compose.PlayerSurface
 import com.google.android.samples.socialite.R
@@ -110,10 +114,11 @@ private data class VideoPreviewConfig(
     val overlayText: String,
     val redOverlayTextEnabled: Boolean,
     val largeOverlayTextEnabled: Boolean,
+    val aiEnhancement: AiEnhancementOptions,
 )
 
 @ExperimentalMaterial3Api
-@androidx.annotation.OptIn(UnstableApi::class)
+@androidx.annotation.OptIn(UnstableApi::class, ExperimentalApi::class)
 @Composable
 fun VideoEditScreen(
     chatId: Long,
@@ -145,6 +150,14 @@ fun VideoEditScreen(
     var videoTrimStart by rememberSaveable { mutableLongStateOf(0L) }
     var videoTrimEnd by rememberSaveable { mutableLongStateOf(0L) }
     val duration = rememberSaveable { mutableLongStateOf(0L) }
+    var tonemapEnabled by rememberSaveable { mutableStateOf(false) }
+    var deblurAndDenoiseEnabled by rememberSaveable { mutableStateOf(false) }
+    var upscaleEnabled by rememberSaveable { mutableStateOf(false) }
+    var aiEnhancementSupported by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        aiEnhancementSupported = isAiEnhancementSupported(context)
+    }
 
     LaunchedEffect(uri) {
         val mediaMetadataRetriever = MediaMetadataRetriever()
@@ -177,6 +190,9 @@ fun VideoEditScreen(
         overlayText,
         redOverlayTextEnabled,
         largeOverlayTextEnabled,
+        tonemapEnabled,
+        deblurAndDenoiseEnabled,
+        upscaleEnabled,
     ) {
         VideoPreviewConfig(
             uri = uri,
@@ -187,13 +203,62 @@ fun VideoEditScreen(
             overlayText = overlayText,
             redOverlayTextEnabled = redOverlayTextEnabled,
             largeOverlayTextEnabled = largeOverlayTextEnabled,
+            aiEnhancement = AiEnhancementOptions(
+                tonemap = tonemapEnabled,
+                deblurAndDenoise = deblurAndDenoiseEnabled,
+                upscale = upscaleEnabled,
+            ),
         )
+    }
+
+    // CompositionPlayer is still under active development
+    var previewPlayer by remember { mutableStateOf<CompositionPlayer?>(null) }
+
+    // Recreate the player whenever the edits change: the enhancement decorator locks in the input
+    // format on the first frame, so a prepared player can't switch to new enhancement settings.
+    LaunchedEffect(previewConfig, isProcessing.value) {
+        previewPlayer?.release()
+        previewPlayer = null
+        // No preview while exporting, or once the export is done and the screen is closing.
+        if (isProcessing.value || isFinishedEditing.value) return@LaunchedEffect
+        val composition = viewModel.prepareComposition(
+            context = context,
+            videoUri = previewConfig.uri,
+            removeAudio = previewConfig.removeAudioEnabled,
+            rgbAdjustmentEffectSelected = previewConfig.rgbAdjustmentEffectEnabled,
+            periodicVignetteEffectSelected = previewConfig.periodicVignetteEffectEnabled,
+            styleTransferEffectSelected = previewConfig.styleTransferEffectEnabled,
+            textOverlayText = previewConfig.overlayText,
+            textOverlayRedSelected = previewConfig.redOverlayTextEnabled,
+            textOverlayLargeSelected = previewConfig.largeOverlayTextEnabled,
+            videoTrimStart = videoTrimStart,
+            videoTrimEnd = videoTrimEnd,
+        )
+        val playerBuilder = CompositionPlayer.Builder(context)
+        val aiEnhancement = previewConfig.aiEnhancement
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && aiEnhancement.isEnabled) {
+            playerBuilder.setFrameProcessorFactory(aiEnhancement.createFrameProcessorFactory(context))
+        }
+        previewPlayer = playerBuilder.build().apply {
+            setComposition(composition)
+            prepare()
+            play()
+        }
+    }
+
+    // The preview holds an enhancement session, so don't leak it past this screen.
+    DisposableEffect(Unit) {
+        onDispose { previewPlayer?.release() }
     }
 
     Scaffold(
         topBar = {
             VideoEditTopAppBar(
                 onSendButtonClicked = {
+                    // An app can only have one active enhancement session, so release the
+                    // preview's session before the export opens its own.
+                    previewPlayer?.release()
+                    previewPlayer = null
                     // Trigger the video transformation process in the ViewModel
                     viewModel.applyVideoTransformation(
                         context = context,
@@ -207,6 +272,7 @@ fun VideoEditScreen(
                         textOverlayLargeSelected = largeOverlayTextEnabled,
                         videoTrimStart = videoTrimStart,
                         videoTrimEnd = videoTrimEnd,
+                        aiEnhancement = previewConfig.aiEnhancement,
                     )
                 },
                 onCloseButtonClicked = onCloseButtonClicked,
@@ -224,25 +290,7 @@ fun VideoEditScreen(
         ) {
             Spacer(modifier = Modifier.height(50.dp))
             // Display the video preview with applied effects.
-            VideoMessagePreview(
-                context,
-                previewConfig,
-            ) { context, previewConfig ->
-                // Trigger composition preparation process in the viewModel
-                viewModel.prepareComposition(
-                    context = context,
-                    videoUri = previewConfig.uri,
-                    removeAudio = previewConfig.removeAudioEnabled,
-                    rgbAdjustmentEffectSelected = previewConfig.rgbAdjustmentEffectEnabled,
-                    periodicVignetteEffectSelected = previewConfig.periodicVignetteEffectEnabled,
-                    styleTransferEffectSelected = previewConfig.styleTransferEffectEnabled,
-                    textOverlayText = previewConfig.overlayText,
-                    textOverlayRedSelected = previewConfig.redOverlayTextEnabled,
-                    textOverlayLargeSelected = previewConfig.largeOverlayTextEnabled,
-                    videoTrimStart = videoTrimStart,
-                    videoTrimEnd = videoTrimEnd,
-                )
-            }
+            VideoMessagePreview(previewPlayer)
             Spacer(modifier = Modifier.height(20.dp))
 
             // Tabbed Controls Area
@@ -275,6 +323,13 @@ fun VideoEditScreen(
                 },
                 frames = frames,
                 durationMs = duration,
+                aiEnhancementSupported = aiEnhancementSupported,
+                tonemapEnabled = tonemapEnabled,
+                onTonemapToggle = { tonemapEnabled = !tonemapEnabled },
+                deblurAndDenoiseEnabled = deblurAndDenoiseEnabled,
+                onDeblurAndDenoiseToggle = { deblurAndDenoiseEnabled = !deblurAndDenoiseEnabled },
+                upscaleEnabled = upscaleEnabled,
+                onUpscaleToggle = { upscaleEnabled = !upscaleEnabled },
             )
         }
     }
@@ -304,9 +359,20 @@ fun VideoEditTabs(
     onTrimChanged: (startMs: Long, endMs: Long) -> Unit,
     frames: List<Bitmap>,
     durationMs: MutableLongState,
+    aiEnhancementSupported: Boolean = false,
+    tonemapEnabled: Boolean = false,
+    onTonemapToggle: () -> Unit = {},
+    deblurAndDenoiseEnabled: Boolean = false,
+    onDeblurAndDenoiseToggle: () -> Unit = {},
+    upscaleEnabled: Boolean = false,
+    onUpscaleToggle: () -> Unit = {},
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Edit", "Overlay", "Trim")
+    val aiEnhanceTab = stringResource(R.string.video_edit_tab_ai_enhance)
+    // The AI enhance tab needs API 33 and a device supported by Google Play services.
+    val tabs = listOf("Edit", "Overlay", "Trim") + listOfNotNull(
+        aiEnhanceTab.takeIf { aiEnhancementSupported },
+    )
 
     Column(
         modifier = Modifier
@@ -374,6 +440,15 @@ fun VideoEditTabs(
                     frames = frames,
                     durationMs = durationMs,
                 )
+
+                3 -> AiEnhanceControls(
+                    tonemapEnabled = tonemapEnabled,
+                    onTonemapToggle = onTonemapToggle,
+                    deblurAndDenoiseEnabled = deblurAndDenoiseEnabled,
+                    onDeblurAndDenoiseToggle = onDeblurAndDenoiseToggle,
+                    upscaleEnabled = upscaleEnabled,
+                    onUpscaleToggle = onUpscaleToggle,
+                )
             }
         }
     }
@@ -414,6 +489,37 @@ fun VideoEditControls(
             selected = styleTransferEffectEnabled,
             onClick = onStyleTransferEffectToggle,
             label = stringResource(id = R.string.add_style_transfer_effect),
+        )
+    }
+}
+
+@Composable
+fun AiEnhanceControls(
+    tonemapEnabled: Boolean,
+    onTonemapToggle: () -> Unit,
+    deblurAndDenoiseEnabled: Boolean,
+    onDeblurAndDenoiseToggle: () -> Unit,
+    upscaleEnabled: Boolean,
+    onUpscaleToggle: () -> Unit,
+) {
+    Column {
+        VideoEditFilterChip(
+            icon = Icons.Filled.Tonality,
+            selected = tonemapEnabled,
+            onClick = onTonemapToggle,
+            label = stringResource(id = R.string.video_enhancement_effect_tonemap),
+        )
+        VideoEditFilterChip(
+            icon = Icons.Filled.BlurOff,
+            selected = deblurAndDenoiseEnabled,
+            onClick = onDeblurAndDenoiseToggle,
+            label = stringResource(id = R.string.video_enhancement_effect_deblur),
+        )
+        VideoEditFilterChip(
+            icon = Icons.Filled.ZoomOutMap,
+            selected = upscaleEnabled,
+            onClick = onUpscaleToggle,
+            label = stringResource(id = R.string.video_edit_ai_enhance_upscale),
         )
     }
 }
@@ -531,11 +637,7 @@ private fun VideoEditTopAppBar(
  */
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-private fun VideoMessagePreview(
-    context: Context,
-    previewConfig: VideoPreviewConfig,
-    prepareComposition: (Context, VideoPreviewConfig) -> Composition,
-) {
+private fun VideoMessagePreview(player: CompositionPlayer?) {
     // Render yellow box instead of frame of captured video for Preview purposes
     if (LocalInspectionMode.current) {
         Box(
@@ -547,29 +649,12 @@ private fun VideoMessagePreview(
         return
     }
 
-    // CompositionPlayer is still under active development
-    var compositionPlayer by remember { mutableStateOf<CompositionPlayer?>(null) }
-
     PlayerSurface(
-        compositionPlayer,
+        player,
         modifier = Modifier
             .width(250.dp)
             .height(450.dp),
     )
-
-    LaunchedEffect(previewConfig) {
-        // Release the previous player instance if it exists
-        compositionPlayer?.release()
-        // Create a new CompositionPlayer
-        compositionPlayer = CompositionPlayer.Builder(context).build()
-
-        val composition = prepareComposition(context, previewConfig)
-
-        // Set the composition to the player and start playback
-        compositionPlayer?.setComposition(composition)
-        compositionPlayer?.prepare()
-        compositionPlayer?.play()
-    }
 }
 
 @Composable
