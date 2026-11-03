@@ -39,11 +39,11 @@ secrets {
 
 android {
     namespace = "com.google.android.samples.socialite"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.google.android.samples.socialite"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -163,6 +163,7 @@ dependencies {
     implementation(libs.media3.common)
     implementation(libs.media3.cast)
     implementation(libs.media3.effect)
+    implementation(libs.media3.effect.play.services)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.inspector)
     implementation(libs.media3.transformer)

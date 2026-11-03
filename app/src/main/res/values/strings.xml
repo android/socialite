@@ -136,6 +136,9 @@
     <string name="video_enhancement_preview_enhanced">Enhanced</string>
     <string name="video_enhancement_resolution">%1$dx%2$d</string>
     <string name="video_enhancement_latency">AI Latency: %1$dms</string>
+    <string name="video_enhancement_pipeline_label">Pipeline</string>
+    <string name="video_enhancement_pipeline_custom">Custom pipeline</string>
+    <string name="video_enhancement_pipeline_media3">Media3 Transformer</string>
     <string name="video_enhancement_error_unreadable">Can\'t read this video</string>
     <string name="video_enhancement_error_failed">Enhancement failed: %1$s</string>
     <string name="video_enhancement_module_install_failed">Module installation failed or cancelled.</string>

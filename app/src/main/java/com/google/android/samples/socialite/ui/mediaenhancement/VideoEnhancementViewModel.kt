@@ -49,8 +49,26 @@ enum class VideoEnhancementEffect {
     UPSCALE,
 }
 
+/**
+ * The engine that runs the enhancement. Both apply the same effects so their latency can be
+ * compared on the same video.
+ */
+enum class VideoEnhancementPipeline {
+    /** `MediaCodec` + `EnhancementSession` driven by [VideoEnhancementRepository]. */
+    CUSTOM,
+
+    /** Media3 `Transformer` + `EnhancementSessionDecorator`, see [Media3VideoEnhancer]. */
+    MEDIA3,
+}
+
 /** Defines the state of the video enhancement UI. */
 data class VideoEnhancementUiState(
+    val pipeline: VideoEnhancementPipeline = VideoEnhancementPipeline.CUSTOM,
+    /** `EnhancementSessionDecorator` requires API 33. */
+    val isMedia3PipelineAvailable: Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+    /** The pipeline that produced [enhancedVideoUri] and [enhancementLatencyMs]. */
+    val enhancedWithPipeline: VideoEnhancementPipeline? = null,
     @StringRes val moduleStatus: Int = R.string.video_enhancement_status_unknown,
     val isDeviceSupported: Boolean = true,
     val isModuleInstalling: Boolean = false,
@@ -91,6 +109,11 @@ class VideoEnhancementViewModel @Inject constructor(
         enhancementClient = enhancementClient,
         enhancementExecutor = enhancementExecutor,
     )
+    private val media3VideoEnhancer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Media3VideoEnhancer(application)
+    } else {
+        null
+    }
 
     private var sourceInfo: VideoInfo? = null
     private var warmUpJob: Job? = null
@@ -245,6 +268,32 @@ class VideoEnhancementViewModel @Inject constructor(
         warmUpSession(debounce = true)
     }
 
+    /**
+     * Switches the engine used by [enhanceVideo].
+     *
+     * Only one enhancement session can be active per app. The Media3 decorator creates its own,
+     * so selecting Media3 releases the session pre-warmed for the custom pipeline, and switching
+     * back pre-warms it again.
+     */
+    fun onPipelineSelected(pipeline: VideoEnhancementPipeline) {
+        val state = _uiState.value
+        val isUnavailable = pipeline == VideoEnhancementPipeline.MEDIA3 &&
+            !state.isMedia3PipelineAvailable
+        if (state.pipeline == pipeline || state.isEnhancing || isUnavailable) {
+            return
+        }
+
+        _uiState.update { it.copy(pipeline = pipeline) }
+        when (pipeline) {
+            VideoEnhancementPipeline.MEDIA3 -> {
+                warmUpJob?.cancel()
+                videoEnhancementRepository.releaseSession()
+            }
+
+            VideoEnhancementPipeline.CUSTOM -> warmUpSession(debounce = false)
+        }
+    }
+
     fun enhanceVideo() {
         val state = _uiState.value
         val uri = state.sourceUri ?: return
@@ -252,7 +301,16 @@ class VideoEnhancementViewModel @Inject constructor(
             return
         }
 
-        warmUpJob?.cancel()
+        val pipeline = state.pipeline
+        val media3Enhancer = media3VideoEnhancer.takeIf {
+            pipeline == VideoEnhancementPipeline.MEDIA3
+        }
+        if (pipeline == VideoEnhancementPipeline.MEDIA3 && media3Enhancer == null) {
+            return
+        }
+
+        val pendingWarmUp = warmUpJob
+        pendingWarmUp?.cancel()
         enhancementJob?.cancel()
         enhancementJob = viewModelScope.launch {
             val startTime = System.currentTimeMillis()
@@ -273,9 +331,16 @@ class VideoEnhancementViewModel @Inject constructor(
             previewFile = outputFile
 
             try {
-                videoEnhancementRepository
-                    .enhance(uri.toUri(), outputFile, selectedOptions())
-                    .collect { progress -> onProgress(progress, startTime) }
+                val progressFlow = if (media3Enhancer != null) {
+                    // Only one enhancement session can be active per app, and the decorator
+                    // creates its own, so make sure no custom pipeline session is left behind.
+                    pendingWarmUp?.join()
+                    videoEnhancementRepository.releaseSession()
+                    media3Enhancer.enhance(uri.toUri(), outputFile, selectedOptions())
+                } else {
+                    videoEnhancementRepository.enhance(uri.toUri(), outputFile, selectedOptions())
+                }
+                progressFlow.collect { progress -> onProgress(progress, startTime, pipeline) }
             } catch (e: CancellationException) {
                 deletePreviewFile()
                 throw e
@@ -395,7 +460,11 @@ class VideoEnhancementViewModel @Inject constructor(
         super.onCleared()
     }
 
-    private fun onProgress(progress: VideoEnhancementProgress, startTimeMs: Long) {
+    private fun onProgress(
+        progress: VideoEnhancementProgress,
+        startTimeMs: Long,
+        pipeline: VideoEnhancementPipeline,
+    ) {
         when (progress) {
             VideoEnhancementProgress.Preparing -> {
                 _uiState.update { it.copy(transcodeProgress = 0) }
@@ -410,7 +479,7 @@ class VideoEnhancementViewModel @Inject constructor(
                 val timings = progress.timings
                 Log.i(
                     TAG,
-                    "Tap to playable: ${wallClockMs}ms | measured phases: $timings | " +
+                    "[$pipeline] Tap to playable: ${wallClockMs}ms | measured phases: $timings | " +
                         "unaccounted=${wallClockMs - timings.totalMs}ms",
                 )
                 _uiState.update {
@@ -419,6 +488,7 @@ class VideoEnhancementViewModel @Inject constructor(
                         enhancedVideoUri = Uri.fromFile(File(progress.outputPath)).toString(),
                         enhancementLatencyMs = wallClockMs,
                         enhancementTimings = timings,
+                        enhancedWithPipeline = pipeline,
                     )
                 }
             }
@@ -435,7 +505,10 @@ class VideoEnhancementViewModel @Inject constructor(
     private fun warmUpSession(debounce: Boolean) {
         val info = sourceInfo ?: return
         val state = _uiState.value
-        if (state.isSourceTooLarge || state.isEnhancing) {
+        // The Media3 decorator manages its own session, so there is nothing to pre-warm.
+        if (state.isSourceTooLarge || state.isEnhancing ||
+            state.pipeline == VideoEnhancementPipeline.MEDIA3
+        ) {
             return
         }
 

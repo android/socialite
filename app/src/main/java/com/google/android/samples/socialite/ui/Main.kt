@@ -45,11 +45,10 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.navEntryDecorator
-import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.runtime.NavEntryDecorator
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.google.android.samples.socialite.AppArgs
 import com.google.android.samples.socialite.tryCreateIntentFrom
 import com.google.android.samples.socialite.ui.camera.Camera
@@ -104,15 +103,15 @@ fun MainNavigation(
      * A [NavEntryDecorator] that wraps each entry in a shared element that is controlled by the
      * [Scene].
      */
-    val sharedEntryInSceneNavEntryDecorator = navEntryDecorator { entry ->
+    val sharedEntryInSceneNavEntryDecorator = NavEntryDecorator<Pane> { entry ->
         with(localNavSharedTransitionScope.current) {
             Box(
                 Modifier.sharedElement(
-                    rememberSharedContentState(entry.key),
+                    rememberSharedContentState(entry.contentKey),
                     animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                 ),
             ) {
-                entry.content(entry.key)
+                entry.Content()
             }
         }
     }
@@ -125,12 +124,13 @@ fun MainNavigation(
             ) {
                 NavDisplay(
                     backStack = backStack,
-                    onBack = { repeat(it) { backStack.removeLastOrNull() } },
+                    // NavDisplay calls onBack once for every entry it pops.
+                    onBack = { backStack.removeLastOrNull() },
                     sceneStrategy = rememberListDetailSceneStrategy(),
+                    // NavDisplay now adds the scene setup decorator itself.
                     entryDecorators = listOf(
                         sharedEntryInSceneNavEntryDecorator,
-                        rememberSceneSetupNavEntryDecorator(),
-                        rememberSavedStateNavEntryDecorator(),
+                        rememberSaveableStateHolderNavEntryDecorator(),
                         rememberViewModelStoreNavEntryDecorator(),
                     ),
                     entryProvider = { backStackKey ->

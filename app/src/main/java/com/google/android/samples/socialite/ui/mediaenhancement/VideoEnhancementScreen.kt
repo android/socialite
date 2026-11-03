@@ -105,6 +105,16 @@ fun VideoEnhancementScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // The Media3 pipeline needs API 33, so the switch is hidden below that.
+            if (uiState.isMedia3PipelineAvailable) {
+                PipelineSelector(
+                    selected = uiState.pipeline,
+                    enabled = !uiState.isEnhancing && !uiState.isSaving,
+                    onSelected = videoEnhancementViewModel::onPipelineSelected,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             // FlowRow wraps all effect chips onto the visible width without horizontal scrolling.
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -234,6 +244,9 @@ fun VideoEnhancementScreen(
                     isUpscaled = isEnhanced &&
                         VideoEnhancementEffect.UPSCALE in uiState.selectedEffects,
                     latency = uiState.enhancementLatencyMs.takeIf { isEnhanced },
+                    pipeline = uiState.enhancedWithPipeline.takeIf {
+                        isEnhanced && uiState.isMedia3PipelineAvailable
+                    },
                     modifier = Modifier.align(Alignment.TopStart),
                 )
             }
@@ -359,6 +372,7 @@ private fun PreviewTag(
     height: Int,
     isUpscaled: Boolean,
     latency: Long?,
+    pipeline: VideoEnhancementPipeline?,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -395,7 +409,47 @@ private fun PreviewTag(
                 fontWeight = FontWeight.SemiBold,
             )
         }
+        if (pipeline != null) {
+            Text(
+                text = stringResource(pipeline.labelResId()),
+                color = Color.White,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PipelineSelector(
+    selected: VideoEnhancementPipeline,
+    enabled: Boolean,
+    onSelected: (VideoEnhancementPipeline) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.video_enhancement_pipeline_label),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            VideoEnhancementPipeline.entries.forEach { pipeline ->
+                FilterChip(
+                    selected = pipeline == selected,
+                    onClick = { onSelected(pipeline) },
+                    enabled = enabled,
+                    label = { Text(stringResource(pipeline.labelResId())) },
+                )
+            }
+        }
+    }
+}
+
+@StringRes
+private fun VideoEnhancementPipeline.labelResId(): Int = when (this) {
+    VideoEnhancementPipeline.CUSTOM -> R.string.video_enhancement_pipeline_custom
+    VideoEnhancementPipeline.MEDIA3 -> R.string.video_enhancement_pipeline_media3
 }
 
 @StringRes
