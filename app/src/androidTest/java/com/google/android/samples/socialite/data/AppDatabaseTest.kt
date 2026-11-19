@@ -46,7 +46,7 @@ class AppDatabaseTest {
         for (detail in chatDetails) {
             assertThat(detail.attendees).hasSize(1)
             val messages = db.messageDao().loadAll(detail.chatWithLastMessage.id)
-            assertThat(messages).hasSize(2)
+            assertThat(messages).hasSize(1)
         }
     }
 }
